@@ -11,24 +11,38 @@ Other options:
 - infiniband=false Disables infinband
 """
 # pylint: disable=invalid-name, undefined-variable, used-before-assignment
-
 import os
-from hpccm.templates.git import git
+import sys
+sys.path.append(os.getcwd())
+
+from building_blocks.jenkins_node import jenkins_node
+from building_blocks.ogs import ogs
+from building_blocks.ogs_base import ogs_base
+from building_blocks.osu_benchmarks import osu_benchmarks
+from hpccm.toolchain import toolchain
+from hpccm.common import linux_distro
 
 singularity = hpccm.config.g_ctype == container_type.SINGULARITY
 docker = hpccm.config.g_ctype == container_type.DOCKER
-
 
 ##### Tools #####
 def str2bool(v):
   return v.lower() in ("yes", "true", "t", "1")
 
 ##### Options #####
-centos =     str2bool(USERARG.get('centos',     'True'))
-ogs =        str2bool(USERARG.get('ogs',        'True'))
-infiniband = str2bool(USERARG.get('infiniband', 'True'))
-ompi_version =        USERARG.get('ompi',       '3.0.2')
-benchmarks = str2bool(USERARG.get('benchmarks', 'True'))
+centos =       str2bool(USERARG.get('centos',     'False'))
+build_ogs =    str2bool(USERARG.get('ogs',        'True'))
+infiniband =   str2bool(USERARG.get('infiniband', 'True'))
+benchmarks =   str2bool(USERARG.get('benchmarks', 'True'))
+jenkins =      str2bool(USERARG.get('jenkins',    'False'))
+ompi_version =          USERARG.get('ompi',       'off')
+ompi = True
+if (ompi_version == "off"):
+  ompi = False
+  infiniband = False
+  benchmarks = False
+if jenkins:
+  build_ogs = False
 
 repo =                USERARG.get('repo',       'https://github.com/ufz/ogs')
 branch =              USERARG.get('branch',     'master')
@@ -38,7 +52,7 @@ cmake_args =          USERARG.get('cmake',      '')
 # Devel stage
 ######
 
-Stage0 += comment(__doc__, reformat=False)
+# Stage0 += comment(__doc__, reformat=False)
 
 # Choose between either Ubuntu 16.04 (default) or CentOS 7
 # Add '--userarg centos=true' to the command line to select CentOS
@@ -47,120 +61,51 @@ if centos:
   image = 'centos/devtoolset-6-toolchain-centos7'
 
 Stage0.baseimage(image=image)
-
 if centos:
   Stage0 += user(user='root')
   Stage0 += packages(ospackages=['epel-release'])
-
-# Common directories
-Stage0 += shell(commands=['mkdir -p /apps /scratch /lustre /work /projects'])
-
-# Common packages
-Stage0 += packages(ospackages=['curl', 'ca-certificates'])
-
-if singularity:
-  Stage0 += packages(ospackages=['locales'])
-  Stage0 += shell(commands=['echo "LC_ALL=en_US.UTF-8" >> /etc/environment',
-                            'echo "en_US.UTF-8 UTF-8" >> /etc/locale.gen',
-                            'echo "LANG=en_US.UTF-8" > /etc/locale.conf',
-                            'locale-gen en_US.UTF-8'])
-
-# Python
-if centos:
-  Stage0 += packages(ospackages=['python34-setuptools'])
-  Stage0 += shell(commands=['easy_install-3.4 pip'])
-else:
-  Stage0 += packages(ospackages=['python3-setuptools', 'python3-pip'])
-Stage0 += shell(commands=['python3 -m pip install --upgrade pip'])
-
-# GNU compilers
-if not centos:
-  Stage0 += gnu(fortran=False)
+Stage0 += packages(ospackages=['wget', 'tar', 'curl'])
 
 # Mellanox OFED
 if infiniband:
   Stage0 += mlnx_ofed(version='3.4-1.0.0.0')
 
 # OpenMPI
-Stage0 += openmpi(version=ompi_version, cuda=False, infiniband=infiniband)
+toolchain = toolchain()
+if hpccm.config.g_linux_distro == linux_distro.UBUNTU:
+  gcc = gnu(fortran=False, extra_repository=True, version='4.9')
+  toolchain = gcc.toolchain
+  Stage0 += gcc
 
-# SCI-F: mpi-bandwidth
-# scif_mpi = scif(
-  # name = 'mpi-bandwidth',
-  # install = ['wget -q -nc --no-check-certificate -P /var/tmp https://computing.llnl.gov/tutorials/mpi/samples/C/mpi_bandwidth.c',
-            #  'mpicc -o bin/mpi-bandwidth /var/tmp/mpi_bandwidth.c'],
-  # run = 'exec /scif/apps/mpi-bandwidth/bin/mpi-bandwidth "\$@"',
-  # help = 'This app provides a MPI bandwidth test program',
-  # test = 'mpirun -np 2 /scif/apps/mpi-bandwidth/bin/mpi-bandwidth "\$@"'
-# )
-# Stage0 += scif_mpi.install()
+if ompi:
+  mpicc = openmpi(version=ompi_version, cuda=False, infiniband=infiniband, toolchain=toolchain)
+  toolchain = mpicc.toolchain
+  Stage0 += mpicc
 
-app = 'mpi-bandwidth'
-Stage0 += shell(commands=[
-    'wget -q -nc --no-check-certificate -P /var/tmp https://computing.llnl.gov/tutorials/mpi/samples/C/mpi_bandwidth.c',
-    'mpicc -o bin/mpi-bandwidth /var/tmp/mpi_bandwidth.c'], _app=app, _appenv=True)
-Stage0 += runscript(commands=['/scif/apps/mpi-bandwidth/bin/mpi-bandwidth "$@"'], _app=app)
-Stage0 += raw(singularity='\
+  app = 'mpi-bandwidth'
+  Stage0 += shell(commands=[
+      'wget -q -nc --no-check-certificate -P /var/tmp https://computing.llnl.gov/tutorials/mpi/samples/C/mpi_bandwidth.c',
+      'mpicc -o bin/mpi-bandwidth /var/tmp/mpi_bandwidth.c'], _app=app, _appenv=True)
+  Stage0 += runscript(commands=['/scif/apps/mpi-bandwidth/bin/mpi-bandwidth "$@"'], _app=app)
+  Stage0 += raw(singularity='\
 %apphelp {0}\n    This app provides a MPI bandwidth test program\n\n\
 %apptest {0}\n    mpirun -np 2 /scif/apps/mpi-bandwidth/bin/mpi-bandwidth "$@"\n\n'.format(app))
 
-### OGS ###
-if ogs:
-  Stage0 += shell(commands=['python3 -m pip install cmake conan==1.6.1']) # Conan 1.7 requires newer Python than 3.4
-  if centos:
-    Stage0 += shell(commands=['curl -s https://packagecloud.io/install/repositories/github/git-lfs/script.rpm.sh | bash'])
-  else:
-    Stage0 += packages(ospackages=['software-properties-common'])
-    Stage0 += shell(commands=['cd ~',
-                              'add-apt-repository ppa:git-core/ppa',
-                              'curl -s https://packagecloud.io/install/repositories/github/git-lfs/script.deb.sh | bash'])
-  Stage0 += packages(ospackages=['git', 'git-lfs'])
-  Stage0 += shell(commands=['git lfs install'])
+  Stage0 += label(metadata={
+    'openmpi.version': ompi_version,
+    'infiniband': infiniband
+  })
 
-  Stage0 += shell(commands=[
-    git().clone_step(repository=repo, branch=branch, path='/scif/apps/ogs',
-                       directory='src', lfs=centos),
-    'cd /scif/apps/ogs/src && git fetch --tags',
-    'mkdir -p /scif/apps/ogs/build',
-    'cd /scif/apps/ogs/build',
-    ('CONAN_SYSREQUIRES_SUDO=0 CC=mpicc CXX=mpic++ cmake /scif/apps/ogs/src ' +
-     '-DCMAKE_BUILD_TYPE=Release ' +
-     '-DCMAKE_INSTALL_PREFIX=/scif/apps/ogs ' +
-     '-DOGS_USE_PETSC=ON ' +
-     '-DOGS_USE_CONAN=ON ' +
-     '-DOGS_CONAN_USE_SYSTEM_OPENMPI=ON ' +
-     cmake_args
-     ),
-    'make -j',
-    'make install'
-  ], _app='ogs', _appenv=True)
-  Stage0 += runscript(commands=['/scif/apps/ogs/bin/ogs "$@"'], _app='ogs')
-  Stage0 += label(metadata={'REPOSITORY': repo, 'BRANCH': branch}, _app='ogs')
-  Stage0 += raw(singularity='%apptest ogs\n    /scif/apps/ogs/bin/ogs --help')
-  
-  # Is also default runscript
-  Stage0 += runscript(commands=['/scif/apps/ogs/bin/ogs "$@"'])
-  
-### OSU Benchmarks
+Stage0 += ogs_base()
+if build_ogs:
+  Stage0 += ogs(repo=repo, branch=branch, toolchain=toolchain, parallel=2)
+
 if benchmarks:
-  Stage0 += shell(commands=[
-    'OSU_VERSION=5.4.2',
-    'wget http://mvapich.cse.ohio-state.edu/download/mvapich/osu-micro-benchmarks-${OSU_VERSION}.tar.gz --no-check-certificate',
-    'tar -xf osu-micro-benchmarks-${OSU_VERSION}.tar.gz',
-    'cd osu-micro-benchmarks-${OSU_VERSION}/',
-    './configure ' +
-    'CC=mpicc CXX=mpicxx ' +
-    '--prefix=/scif/apps/osu',
-    'make -j',
-    'make install',
-    'cd ../',
-    'rm -fr osu-micro-benchmarks-${OSU_VERSION}*',
-  ], _app='osu', _appenv=True)
+  Stage0 += osu_benchmarks()
 
-Stage0 += label(metadata={
-  'openmpi.version': ompi_version,
-  'infiniband': infiniband
-})
+if jenkins:
+  Stage0 += jenkins_node()
+
 ######
 # Runtime image
 ######
