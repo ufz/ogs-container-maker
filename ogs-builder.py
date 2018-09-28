@@ -58,7 +58,7 @@ cmake_args =          USERARG.get('cmake',      '')
 # Add '--userarg centos=true' to the command line to select CentOS
 image = 'ubuntu:16.04'
 if centos:
-  image = 'centos/devtoolset-6-toolchain-centos7'
+  image = 'centos:7'
 
 Stage0.baseimage(image=image)
 if centos:
@@ -66,16 +66,15 @@ if centos:
   Stage0 += packages(ospackages=['epel-release'])
 Stage0 += packages(ospackages=['wget', 'tar', 'curl'])
 
-# Mellanox OFED
+gcc_version = '4.9'
+if hpccm.config.g_linux_distro == linux_distro.CENTOS:
+  gcc_version = '6' # installs devtoolset-6 which is gcc-6.3.1
+gcc = gnu(fortran=False, extra_repository=True, version=gcc_version)
+toolchain = gcc.toolchain
+Stage0 += gcc
+
 if infiniband:
   Stage0 += mlnx_ofed(version='3.4-1.0.0.0')
-
-# OpenMPI
-toolchain = toolchain()
-if hpccm.config.g_linux_distro == linux_distro.UBUNTU:
-  gcc = gnu(fortran=False, extra_repository=True, version='4.9')
-  toolchain = gcc.toolchain
-  Stage0 += gcc
 
 if ompi:
   mpicc = openmpi(version=ompi_version, cuda=False, infiniband=infiniband, toolchain=toolchain)
