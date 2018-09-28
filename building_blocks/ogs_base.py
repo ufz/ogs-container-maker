@@ -55,8 +55,8 @@ class ogs_base(ConfigureMake, rm, tar, wget):
     instructions.extend([
       python(),
       packages(
-        apt=['python3-setuptools', 'python3-pip', 'python3-dev'],
-        yum=['python34-setuptools', 'python34-dev'])
+        apt=['python3-setuptools', 'python3-pip', 'python3-dev', 'python-dev'],
+        yum=['python34-setuptools', 'python34-dev', 'python-dev'])
     ])
     if hpccm.config.g_linux_distro == linux_distro.CENTOS:
       instructions.append(shell(commands=['easy_install-3.4 pip']))
