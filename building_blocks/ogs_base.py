@@ -15,6 +15,7 @@ import hpccm.config
 
 from hpccm.building_blocks.gnu import gnu
 from hpccm.building_blocks.packages import packages
+from hpccm.building_blocks.python import python
 from hpccm.common import linux_distro
 from hpccm.primitives.comment import comment
 from hpccm.primitives.label import label
@@ -51,14 +52,14 @@ class ogs_base(ConfigureMake, rm, tar, wget):
     instructions = []
     instructions.append(comment('OGS base'))
     dist = 'deb'
-    instructions.append(packages(
-      apt=['python3-setuptools', 'python3-pip'],
-      yum=['python34-setuptools'])
-    )
+    instructions.extend([
+      python(),
+      packages(
+        apt=['python3-setuptools', 'python3-pip', 'python3-dev'],
+        yum=['python34-setuptools', 'python34-dev'])
+    ])
     if hpccm.config.g_linux_distro == linux_distro.CENTOS:
-      instructions.append(shell(commands=[
-        self.__commands.append('easy_install-3.4 pip'),
-      ]))
+      instructions.append(shell(commands=['easy_install-3.4 pip']))
 
     if hpccm.config.g_linux_distro == linux_distro.CENTOS:
       dist = 'rpm'
@@ -74,8 +75,7 @@ class ogs_base(ConfigureMake, rm, tar, wget):
 
 
   def __setup(self):
-    self.__ospackages.extend(['git', 'git-lfs', 'make', 'ninja-build'])
-    #self.__ospackages.extend(['curl', 'ca-certificates'])
+    self.__ospackages.extend(['git', 'git-lfs', 'make', 'ninja-build', 'doxygen'])
 
     if hpccm.config.g_ctype == hpccm.container_type.SINGULARITY:
       self.__ospackages.append('locales')
@@ -88,7 +88,8 @@ class ogs_base(ConfigureMake, rm, tar, wget):
     # Common directories
     self.__commands.append('mkdir -p /apps /scratch /lustre /work /projects')
     self.__commands.append('python3 -m pip install --upgrade pip')
-    self.__commands.append('python3 -m pip install cmake conan==1.6.1') # Conan 1.7 requires newer Python than 3.4
+    # Conan 1.7 requires newer Python than 3.4
+    self.__commands.append('python3 -m pip install cmake conan==1.6.1')
 
   def runtime(self, _from='0'):
     """Install the runtime from a full build in a previous stage.  In this
