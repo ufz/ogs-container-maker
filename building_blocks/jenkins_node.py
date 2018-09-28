@@ -43,8 +43,6 @@ class jenkins_node(rm, tar, wget):
     tar.__init__(self, **kwargs)
     wget.__init__(self, **kwargs)
 
-    self.__ospackages = kwargs.get('ospackages', [])
-
     self.__commands = [] # Filled in by __setup()
     self.__wd = '/var/tmp' # working directory
 
@@ -55,6 +53,8 @@ class jenkins_node(rm, tar, wget):
     instructions = []
     instructions.extend([
       comment('Jenkins node'),
+      # For Doxygen diagrams and bibtex references
+      packages(ospackages=['graphviz', 'biber']),
       shell(commands=[
         'adduser --uid 500 --disabled-password --gecos "" jenkins',
         'echo "jenkins ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers',
