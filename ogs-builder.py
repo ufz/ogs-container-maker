@@ -31,6 +31,7 @@ def str2bool(v):
 
 ##### Options #####
 centos =       str2bool(USERARG.get('centos',     'False'))
+clang =        str2bool(USERARG.get('clang',     'False'))
 build_ogs =    str2bool(USERARG.get('ogs',        'True'))
 infiniband =   str2bool(USERARG.get('infiniband', 'True'))
 benchmarks =   str2bool(USERARG.get('benchmarks', 'True'))
@@ -66,12 +67,23 @@ if centos:
   Stage0 += packages(ospackages=['epel-release'])
 Stage0 += packages(ospackages=['wget', 'tar', 'curl'])
 
+# base compiler
 gcc_version = '4.9'
+clang_version = '6.0'
 if hpccm.config.g_linux_distro == linux_distro.CENTOS:
   gcc_version = '6' # installs devtoolset-6 which is gcc-6.3.1
-gcc = gnu(fortran=False, extra_repository=True, version=gcc_version)
-toolchain = gcc.toolchain
-Stage0 += gcc
+  clang_version = '7' # installs llvm-toolset-7-clang which is clang 5.0.1
+if clang:
+  compiler = llvm(extra_repository=True, version=clang_version)
+else:
+  compiler = gnu(fortran=False, extra_repository=True, version=gcc_version)
+toolchain = compiler.toolchain
+Stage0 += compiler
+if clang:
+  Stage0 += packages(
+    apt=["clang-tidy-{}".format(clang_version)],
+    yum=["llvm-toolset-{}-clang-tools-extra".format(clang_version)]
+  )
 
 if infiniband:
   Stage0 += mlnx_ofed(version='3.4-1.0.0.0')
