@@ -9,7 +9,6 @@ from __future__ import absolute_import
 from __future__ import unicode_literals
 from __future__ import print_function
 
-import logging # pylint: disable=unused-import
 import os
 
 from hpccm.building_blocks.packages import packages
@@ -46,16 +45,11 @@ class osu_benchmarks(ConfigureMake, rm, tar, wget):
     self.__commands = [] # Filled in by __setup()
     self.__wd = '/var/tmp' # working directory
 
-
-
     self.__setup()
-
 
   def __str__(self):
     """String representation of the building block"""
-    instructions = []
-    instructions.append(comment(
-      'OSE benchmarks version {}'.format(self.__version)))
+    instructions = [comment('OSE benchmarks version {}'.format(self.__version))]
     instructions.append(packages(ospackages=self.__ospackages))
     instructions.append(shell(commands=self.__commands, _app='osu', _appenv=True))
     instructions.append(label(metadata={'osu.version': self.__version}, _app='osu'))
@@ -63,24 +57,22 @@ class osu_benchmarks(ConfigureMake, rm, tar, wget):
     return '\n'.join(str(x) for x in instructions)
 
   def __setup(self):
-    dir = 'osu-micro-benchmarks-{}'.format(self.__version)
-    tarball = '{}.tar.gz'.format(dir)
+    directory = 'osu-micro-benchmarks-{}'.format(self.__version)
+    tarball = '{}.tar.gz'.format(directory)
     self.__commands.append(self.download_step(
       url="http://mvapich.cse.ohio-state.edu/download/mvapich/{}".format(tarball),
       directory=self.__wd))
     self.__commands.append(self.untar_step(
       tarball=os.path.join(self.__wd, tarball), directory=self.__wd))
     self.__commands.append(self.configure_step(
-      directory=os.path.join(self.__wd, dir),
+      directory=os.path.join(self.__wd, directory),
       toolchain=self.toolchain))
     self.__commands.append(self.build_step())
     self.__commands.append(self.install_step())
 
-
     self.__commands.append(self.cleanup_step(
       items=[os.path.join(self.__wd, tarball),
-             os.path.join(self.__wd, dir)]))
-
+             os.path.join(self.__wd, directory)]))
 
   def runtime(self, _from='0'):
     """Install the runtime from a full build in a previous stage.  In this

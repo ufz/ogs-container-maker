@@ -1,5 +1,4 @@
 
-
 # pylint: disable=invalid-name, too-few-public-methods
 # pylint: disable=too-many-instance-attributes
 
@@ -9,11 +8,9 @@ from __future__ import absolute_import
 from __future__ import unicode_literals
 from __future__ import print_function
 
-import logging # pylint: disable=unused-import
 import os
 import hpccm.config
 
-from hpccm.building_blocks.gnu import gnu
 from hpccm.building_blocks.packages import packages
 from hpccm.building_blocks.python import python
 from hpccm.common import linux_distro
@@ -25,6 +22,7 @@ from hpccm.templates.rm import rm
 from hpccm.templates.tar import tar
 from hpccm.templates.wget import wget
 
+
 class ogs_base(ConfigureMake, rm, tar, wget):
   """OGS base building block"""
 
@@ -33,7 +31,7 @@ class ogs_base(ConfigureMake, rm, tar, wget):
 
     # Trouble getting MRO with kwargs working correctly, so just call
     # the parent class constructors manually for now.
-    #super(python, self).__init__(**kwargs)
+    # super(python, self).__init__(**kwargs)
     ConfigureMake.__init__(self, **kwargs)
     rm.__init__(self, **kwargs)
     tar.__init__(self, **kwargs)
@@ -46,11 +44,9 @@ class ogs_base(ConfigureMake, rm, tar, wget):
 
     self.__setup()
 
-
   def __str__(self):
     """String representation of the building block"""
-    instructions = []
-    instructions.append(comment('OGS base'))
+    instructions = [comment(__doc__, reformat=False)]
     dist = 'deb'
     instructions.extend([
       python(),
@@ -58,8 +54,6 @@ class ogs_base(ConfigureMake, rm, tar, wget):
         apt=['python3-setuptools', 'python3-pip', 'python3-dev', 'python-dev'],
         yum=['python34-setuptools', 'python34-dev', 'python-dev'])
     ])
-    if hpccm.config.g_linux_distro == linux_distro.CENTOS:
-      instructions.append(shell(commands=['easy_install-3.4 pip']))
 
     if hpccm.config.g_linux_distro == linux_distro.CENTOS:
       dist = 'rpm'
@@ -73,7 +67,6 @@ class ogs_base(ConfigureMake, rm, tar, wget):
 
     return '\n'.join(str(x) for x in instructions)
 
-
   def __setup(self):
     self.__ospackages.extend(['git', 'git-lfs', 'make', 'ninja-build', 'doxygen'])
 
@@ -85,11 +78,20 @@ class ogs_base(ConfigureMake, rm, tar, wget):
                               'locale-gen en_US.UTF-8'])
 
     self.__commands.append('git lfs install')
+
+    # Install CMake to /usr/local
+    self.__commands.extend([
+      self.download_step(
+        url='https://cmake.org/files/v3.12/cmake-3.12.2-Linux-x86_64.tar.gz',
+        directory=self.__wd),
+      self.untar_step(
+        tarball=os.path.join(self.__wd, 'cmake-3.12.2-Linux-x86_64.tar.gz'),
+        directory='/usr/local',
+        args='--strip-components=1')
+    ])
+
     # Common directories
     self.__commands.append('mkdir -p /apps /scratch /lustre /work /projects')
-    self.__commands.append('python3 -m pip install --upgrade pip')
-    # Conan 1.7 requires newer Python than 3.4
-    self.__commands.append('python3 -m pip install cmake conan==1.6.1')
 
   def runtime(self, _from='0'):
     """Install the runtime from a full build in a previous stage.  In this
