@@ -87,7 +87,7 @@ class ogs_base(ConfigureMake, rm, tar, wget):
       self.untar_step(
         tarball=os.path.join(self.__wd, 'cmake-3.12.2-Linux-x86_64.tar.gz'),
         directory='/usr/local',
-        args='--strip-components=1')
+        args=['--strip-components=1'])
     ])
 
     # Common directories

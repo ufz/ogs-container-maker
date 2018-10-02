@@ -16,6 +16,8 @@ import sys
 sys.path.append(os.getcwd())
 import hpccm
 
+import config
+from config import package_manager
 from building_blocks.jenkins_node import jenkins_node
 from building_blocks.ogs import ogs
 from building_blocks.ogs_base import ogs_base
@@ -30,7 +32,7 @@ docker = hpccm.config.g_ctype == container_type.DOCKER
 
 # ---- Tools ----
 def str2bool(v):
-    return v.lower() in ("yes", "true", "t", "1")
+  return v.lower() in ("yes", "true", "t", "1")
 
 
 # ---- Options ----
@@ -40,9 +42,7 @@ build_ogs = str2bool(USERARG.get('ogs', 'True'))
 infiniband = str2bool(USERARG.get('infiniband', 'True'))
 benchmarks = str2bool(USERARG.get('benchmarks', 'True'))
 jenkins = str2bool(USERARG.get('jenkins', 'False'))
-pm = USERARG.get('pm', 'conan')
-if pm not in ['conan', 'spack', 'easybuild', 'guix']:
-    raise ValueError('Invalid package manager!')
+pm = package_manager.set(pm=USERARG.get('pm', 'conan'))
 ompi_version = USERARG.get('ompi', 'off')
 ompi = True
 if ompi_version == "off":
@@ -118,9 +118,9 @@ if ompi:
     })
 
 Stage0 += ogs_base()
-if pm == "conan":
+if pm == config.package_manager.CONAN:
     Stage0 += pm_conan()
-elif pm == "spack":
+elif pm == config.package_manager.SPACK:
     Stage0 += pm_spack()
     Stage0 += shell(commands=[
         # Without this env var some spack package installations may fail due to running as root.
@@ -146,9 +146,9 @@ elif pm == "spack":
     Stage0 += shell(commands=[
         'spack install boost@1.64.0%gcc@4.9',
     ])
-elif pm == "easybuild":
+elif pm == config.package_manager.EASYBUILD:
     print('Easybuild not implemented.')
-elif pm == "guix":
+elif pm == config.package_manager.GUIX:
     print('guix not implemented.')
 
 if build_ogs:

@@ -13,6 +13,8 @@ import logging # pylint: disable=unused-import
 import os
 import traceback
 
+import config
+from config import package_manager
 from hpccm.building_blocks.packages import packages
 from hpccm.primitives.comment import comment
 from hpccm.primitives.label import label
@@ -71,23 +73,22 @@ class ogs(ConfigureCMake):
         branch=self.__branch, path=self.__prefix,  directory='src'),
       "cd {0}/src && git fetch --tags".format(self.__prefix)
     ])
-    self.configure_opts = [
+    self.configure_opts.extend([
       "-G Ninja",
       "-DCMAKE_BUILD_TYPE=Release",
       "-DCMAKE_INSTALL_PREFIX={}".format(self.__prefix),
-      "-DOGS_USE_CONAN=ON"
-    ]
+    ])
+    if config.g_package_manager == config.package_manager.CONAN:
+      self.configure_opts.append("-DOGS_USE_CONAN=ON")
     if self.__toolchain.CC == 'mpicc':
-    #if self.__ompi:
-      self.configure_opts.extend([
-        "-DOGS_USE_PETSC=ON",
-        "-DOGS_CONAN_USE_SYSTEM_OPENMPI=ON"
-      ])
-    # TODO: cmake_cmd = 'CONAN_SYSREQUIRES_SUDO=0 '
-    self
+      self.configure_opts.append("-DOGS_USE_PETSC=ON")
+      if config.g_package_manager == config.package_manager.CONAN:
+        self.configure_opts.append("-DOGS_CONAN_USE_SYSTEM_OPENMPI=ON")
+
     self.__commands.append(self.configure_step(
       directory='{}/src'.format(self.__prefix),
       build_directory='{}/build'.format(self.__prefix),
+      opts=self.configure_opts,
       toolchain=self.__toolchain))
     self.__commands.append(self.build_step(target='install'))
     self.__commands.append(self.build_step(target='clean'))
