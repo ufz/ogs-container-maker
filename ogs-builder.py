@@ -22,6 +22,7 @@ from building_blocks.jenkins_node import jenkins_node
 from building_blocks.ogs import ogs
 from building_blocks.ogs_base import ogs_base
 from building_blocks.pm_conan import pm_conan
+from building_blocks.pm_easybuild import pm_easybuild
 from building_blocks.pm_spack import pm_spack
 from building_blocks.osu_benchmarks import osu_benchmarks
 from hpccm.common import linux_distro, container_type
@@ -88,7 +89,8 @@ else:
         fortran = True
     compiler = gnu(fortran=fortran, extra_repository=True, version=gcc_version)
 toolchain = compiler.toolchain
-Stage0 += compiler
+if pm != config.package_manager.EASYBUILD:
+  Stage0 += compiler
 if clang:
     Stage0 += packages(
         apt=["clang-tidy-{}".format(clang_version)],
@@ -147,7 +149,21 @@ elif pm == config.package_manager.SPACK:
         'spack install boost@1.64.0%gcc@4.9',
     ])
 elif pm == config.package_manager.EASYBUILD:
-    print('Easybuild not implemented.')
+    pm_instance = pm_easybuild()
+    Stage0 += pm_instance
+    Stage0 += pm_instance.install(
+      ospackages=['libibverbs-dev', 'libncurses5-dev'],
+      configs=[
+        'Eigen-3.3.4.eb',
+        'Boost-1.66.0-foss-2018a.eb',
+        # 'VTK-8.1.0-foss-2018a-Python-3.6.4.eb'
+    ])
+    Stage0 += pm_instance.install(configs=[
+      'Python-3.6.4-foss-2018a.eb'
+    ])
+    Stage0 += pm_instance.install(configs=[
+      'VTK-8.1.0-foss-2018a-Python-3.6.4.eb'
+    ])
 elif pm == config.package_manager.GUIX:
     print('guix not implemented.')
 

@@ -26,11 +26,11 @@ from hpccm.templates.git import git
 from hpccm.templates.rm import rm
 from hpccm.templates.tar import tar
 from hpccm.templates.wget import wget
-from hpccm.templates.ConfigureCMake import ConfigureCMake
+from hpccm.templates.CMakeBuild import CMakeBuild
 from hpccm.toolchain import toolchain
 
 
-class ogs(ConfigureCMake):
+class ogs(CMakeBuild):
   """OGS building block"""
 
   def __init__(self, **kwargs):
@@ -39,7 +39,7 @@ class ogs(ConfigureCMake):
     # Trouble getting MRO with kwargs working correctly, so just call
     # the parent class constructors manually for now.
     #super(python, self).__init__(**kwargs)
-    ConfigureCMake.__init__(self, **kwargs)
+    CMakeBuild.__init__(self, **kwargs)
 
     self.__ospackages = []
     self.__prefix = kwargs.get('prefix', '/scif/apps/ogs')
