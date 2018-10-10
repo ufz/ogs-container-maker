@@ -1,0 +1,35 @@
+packages:
+    all:
+        compiler: [gcc@4.9]
+        providers:
+            mpi: [openmpi]
+    openmpi:
+        paths:
+            openmpi@2.1.1%gcc@4.9 fabrics=verbs: /usr/local/openmpi
+        buildable: False
+    mpich:
+        buildable: False
+    mvapich2:
+        buildable: False
+    intel-mpi:
+        buildable: False
+    spectrum-mpi:
+
+        buildable: False
+    intel-parallel-studio:
+        buildable: False
+    opengl:
+        paths:
+           opengl@4.5.0: /usr
+        buildable: False
+    cmake:
+        paths:
+            cmake@3.12.2%gcc@4.9: /usr/local
+        buildable: False
+    python:
+        paths:
+            python@2.7.12: /usr
+        buildable: False
+
+    eigen:
+        variants: -fftw -mpfr -scotch -suitesparse
