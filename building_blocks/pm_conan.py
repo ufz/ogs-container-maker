@@ -28,7 +28,7 @@ class pm_conan():
     """String representation of the building block"""
     commands = []
     instructions = [comment(__doc__, reformat=False)]
-    conan_version = "1.7.4"
+    conan_version = "1.8.1"
     if hpccm.config.g_linux_distro == linux_distro.CENTOS:
       commands.append('easy_install-3.4 pip')
       # Conan 1.7 requires newer Python than 3.4
