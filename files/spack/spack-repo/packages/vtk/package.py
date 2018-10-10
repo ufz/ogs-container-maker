@@ -53,6 +53,13 @@ class Vtk(CMakePackage):
     # See https://bugzilla.redhat.com/show_bug.cgi?id=1460059#c13
     variant('haru', default=True, description='Enable libharu')
 
+    # e.g. when using Ubuntu's libgl1-mesa-dev, packages.yaml:
+    # opengl:
+    #     paths:
+    #        opengl@4.5.0: /usr
+    #     buildable: False
+    variant('systemgl', default=False, description='No GL search magic')
+
     patch('gcc.patch', when='@6.1.0')
 
     # At the moment, we cannot build with both osmesa and qt, but as of
@@ -182,7 +189,7 @@ class Vtk(CMakePackage):
                 '-DOSMESA_INCLUDE_DIR:PATH={0}'.format(osmesa_include_dir),
                 '-DOSMESA_LIBRARY:FILEPATH={0}'.format(osmesa_library),
             ])
-        else:
+        elif '~systemgl' in spec:
             prefix = spec['opengl'].prefix
 
             opengl_include_dir = prefix.include
