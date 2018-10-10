@@ -42,7 +42,6 @@ class pm_conan():
     ])
     instructions.append(shell(commands=commands))
     instructions.append(environment(variables={
-      'CONAN_SYSREQUIRES_SUDO': 0,
       'CONAN_USER_HOME': '/opt/conan'
     }))
     instructions.append(label(metadata={

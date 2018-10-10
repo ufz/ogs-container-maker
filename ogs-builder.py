@@ -122,6 +122,8 @@ if ompi:
 Stage0 += ogs_base()
 if pm == config.package_manager.CONAN:
     Stage0 += pm_conan()
+    if not jenkins:
+      Stage0 += environment(variables={'CONAN_SYSREQUIRES_SUDO': 0})
 elif pm == config.package_manager.SPACK:
     Stage0 += pm_spack()
     Stage0 += shell(commands=[

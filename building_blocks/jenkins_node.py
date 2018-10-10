@@ -54,7 +54,7 @@ class jenkins_node(rm, tar, wget):
     instructions.extend([
       comment('Jenkins node'),
       # For Doxygen diagrams and bibtex references
-      packages(ospackages=['graphviz', 'biber']),
+      packages(ospackages=['graphviz', 'biber', 'sudo']),
       shell(commands=[
         'adduser --uid 500 --disabled-password --gecos "" jenkins',
         'echo "jenkins ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers',
