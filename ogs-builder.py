@@ -109,7 +109,8 @@ if ompi:
     Stage0 += shell(commands=[
         'wget -q -nc --no-check-certificate -P /var/tmp https://computing.llnl.gov/tutorials/mpi/samples/C/mpi_bandwidth.c',
         'mpicc -o bin/mpi-bandwidth /var/tmp/mpi_bandwidth.c'], _app=app, _appenv=True)
-    Stage0 += runscript(commands=['/scif/apps/mpi-bandwidth/bin/mpi-bandwidth "$@"'], _app=app)
+    if singularity:
+      Stage0 += runscript(commands=['/scif/apps/mpi-bandwidth/bin/mpi-bandwidth "$@"'], _app=app)
     Stage0 += raw(singularity='\
 %apphelp {0}\n    This app provides a MPI bandwidth test program\n\n\
 %apptest {0}\n    mpirun -np 2 /scif/apps/mpi-bandwidth/bin/mpi-bandwidth "$@"\n\n'.format(app))
@@ -126,30 +127,18 @@ if pm == config.package_manager.CONAN:
       Stage0 += environment(variables={'CONAN_SYSREQUIRES_SUDO': 0})
 elif pm == config.package_manager.SPACK:
     Stage0 += pm_spack()
+    Stage0 += copy(src='files/spack/packages.yaml', dest='/etc/spack/packages.yaml')
+    Stage0 += copy(src='files/spack/spack-repo', dest='/opt/spack/var/spack/repos/ogs')
+    Stage0 += shell(commands=['spack repo add /opt/spack/var/spack/repos/ogs'])
+    Stage0 += packages(yum=['mesa-libGL-devel'], apt=['libgl1-mesa-dev', 'libxt-dev'])
     Stage0 += shell(commands=[
-        # Without this env var some spack package installations may fail due to running as root.
-        # 'export FORCE_UNSAFE_CONFIGURE=1',
-        # 'spack install tar@1.30%gcc@4.9',
-        'spack install eigen@3.2.9%gcc@4.9',
-        # 'spack install vtk@8.1.1 % gcc@4.9',
-        # 'spack install boost@1.64.0 % gcc@4.9',
-        # 'spack clean --all'
+      'spack install eigen@3.2.9',
+      'spack install boost@1.64.0',
+      'spack install ogs.vtk@8.1.1{}'.format('+mpi' if ompi else ''),
+      'spack install petsc@3.8.3',
+      'spack clean --all'
     ])
-    # ubuntu: libgl1-mesa-dev libxt-dev , centos: mesa-libGL-devel
-    # ~/.spack/packages.yaml:
-    # packages:
-    #   opengl:
-    #     paths:
-    #       opengl@4.5.0: /usr
-    #     buildable: False
-    #
-    # oder alternativ vtk@8.1.1%gcc@4.9+osmesa ?
-    Stage0 += shell(commands=[
-        'spack install --no-checksum vtk@8.1.1%gcc@4.9',
-    ])
-    Stage0 += shell(commands=[
-        'spack install boost@1.64.0%gcc@4.9',
-    ])
+
 elif pm == config.package_manager.EASYBUILD:
     pm_instance = pm_easybuild()
     Stage0 += pm_instance

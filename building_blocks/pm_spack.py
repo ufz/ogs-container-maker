@@ -36,30 +36,27 @@ class pm_spack():
     """String representation of the building block"""
     instructions = [comment(__doc__, reformat=False)]
     instructions.append(packages(ospackages=self.__ospackages))
-    instructions.append(shell(commands=self.__commands))
+    instructions.append(packages(yum=['xz'], apt=['xz-utils']))
     # Without the FORCE_UNSAFE_CONFIGURE env var some spack package
     # installations may fail due to running as root.
     instructions.append(environment(variables={'PATH': '/opt/spack/bin:$PATH',
                                                'FORCE_UNSAFE_CONFIGURE': '1'}))
+    instructions.append(shell(commands=self.__commands))
     instructions.append(label(metadata={'PACKAGE_MANAGER': 'spack'}))
 
     return '\n'.join(str(x) for x in instructions)
 
   def __setup(self):
-    self.__ospackages.extend(['autoconf', 'build-essential', 'bzip2', 'ca-certificates',
-              'coreutils', 'curl', 'environment-modules', 'git', 'gzip',
-              'libssl-dev', 'make', 'openssh-client', 'patch', 'pkg-config',
-              'tcl', 'tar', 'unzip', 'zlib1g'])
+    self.__ospackages.extend(['patch'])
     self.__commands.extend([
       git().clone_step(repository='https://github.com/spack/spack',
                        branch='develop', path='/opt'),
-      '/opt/spack/bin/spack bootstrap',
+      'spack bootstrap',
+      # TODO: There is no init system inside the container -> files are not
+      # sourced!
       'ln -s /opt/spack/share/spack/setup-env.sh /etc/profile.d/spack.sh',
       'ln -s /opt/spack/share/spack/spack-completion.bash /etc/profile.d',
-      #'spack install eigen@3.2.9 % gcc@4.9',
-      #'spack install vtk@8.1.1 % gcc@4.9',
-      #'spack install boost@1.64.0 % gcc@4.9',
-      #'spack clean --all'
+      'spack clean --all'
     ])
 
   def runtime(self, _from='0'):

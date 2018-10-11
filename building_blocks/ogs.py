@@ -78,9 +78,15 @@ class ogs(CMakeBuild):
       "-DCMAKE_BUILD_TYPE=Release",
       "-DCMAKE_INSTALL_PREFIX={}".format(self.__prefix),
     ])
-    if config.g_package_manager == config.package_manager.CONAN:
-      self.configure_opts.append("-DOGS_USE_CONAN=ON")
+    if config.g_package_manager == config.package_manager.SPACK:
+      self.__commands.extend([
+        '. /opt/spack/share/spack/setup-env.sh',
+        'spack load boost',
+        'spack load eigen',
+        'spack load vtk'
+      ])
     if self.__toolchain.CC == 'mpicc':
+      self.__commands.append('spack load petsc')
       self.configure_opts.append("-DOGS_USE_PETSC=ON")
       if config.g_package_manager == config.package_manager.CONAN:
         self.configure_opts.append("-DOGS_CONAN_USE_SYSTEM_OPENMPI=ON")
