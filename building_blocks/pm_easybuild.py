@@ -37,13 +37,16 @@ class pm_easybuild():
     """String representation of the building block"""
     instructions = [comment(__doc__, reformat=False)]
     instructions.append(packages(ospackages=self.__ospackages))
+    instructions.append(packages(yum=['xz'], apt=['xz-utils']))
     instructions.append(lmod(version='7.8.6'))
     instructions.append(shell(commands=self.__commands))
     # Without the FORCE_UNSAFE_CONFIGURE env var some spack package
     # installations may fail due to running as root.
     instructions.append(environment(variables={
       'MODULEPATH': '/opt/easybuild/modules/all:/home/easybuild/.local/easybuild/modules/all:$MODULEPATH',
-      'FORCE_UNSAFE_CONFIGURE': '1'
+      'FORCE_UNSAFE_CONFIGURE': '1',
+      # https://github.com/docker-library/python/blob/edde349541e11f66dcc79cde1674317d065ddbdd/3.6/Dockerfile#L8
+      'LANG': 'C.UTF-8'
     }))
     instructions.append(label(metadata={'PACKAGE_MANAGER': 'easybuild'}))
 
@@ -54,7 +57,7 @@ class pm_easybuild():
       'build-essential', 'bzip2', 'file', 'git', 'gzip',
       'libssl-dev', 'libtool', 'make', 'openssh-client',
       'patch', 'python-pip', 'python-setuptools', 'rsh-client',
-      'tar', 'wget', 'unzip', 'xz-utils'
+      'tar', 'wget', 'unzip'
     ])
     self.__commands.extend([
       'useradd -m easybuild',
