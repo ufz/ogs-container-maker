@@ -48,7 +48,7 @@ class Vtk(CMakePackage):
     variant('osmesa', default=False, description='Enable OSMesa support')
     variant('python', default=False, description='Enable Python support')
     variant('qt', default=False, description='Build with support for Qt')
-    variant('mpi', default=False, description='Enable MPI support')
+    variant('mpi', default=True, description='Enable MPI support')
 
     # Haru causes trouble on Fedora and Ubuntu in v8.1.1
     # See https://bugzilla.redhat.com/show_bug.cgi?id=1460059#c13

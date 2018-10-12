@@ -134,7 +134,7 @@ elif pm == config.package_manager.SPACK:
     Stage0 += shell(commands=[
       'spack install eigen@3.2.9',
       'spack install boost@1.64.0',
-      'spack install ogs.vtk@8.1.1{}'.format('+mpi' if ompi else ''),
+      'spack install ogs.vtk@8.1.1{}'.format('~mpi' if not ompi else ''),
       'spack install petsc@3.8.3',
       'spack clean --all'
     ])
