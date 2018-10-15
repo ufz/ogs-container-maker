@@ -127,10 +127,10 @@ if pm == config.package_manager.CONAN:
       Stage0 += environment(variables={'CONAN_SYSREQUIRES_SUDO': 0})
 elif pm == config.package_manager.SPACK:
     Stage0 += pm_spack()
-    Stage0 += copy(src='files/spack/packages.yaml', dest='/etc/spack/packages.yaml')
-    Stage0 += copy(src='files/spack/spack-repo', dest='/opt/spack/var/spack/repos/ogs')
+    Stage0 += copy(src='files/spack/packages.yaml', dest='/etc/spack/packages.yaml', _mkdir=True)
+    Stage0 += copy(src='files/spack/spack-repo', dest='/opt/spack/var/spack/repos/ogs', _post=True)
     Stage0 += shell(commands=['spack repo add /opt/spack/var/spack/repos/ogs'])
-    Stage0 += packages(yum=['mesa-libGL-devel'], apt=['libgl1-mesa-dev', 'libxt-dev'])
+    Stage0 += packages(yum=['mesa-libGL-devel', 'bzip2'], apt=['libgl1-mesa-dev', 'libxt-dev'])
     Stage0 += shell(commands=[
       'spack install eigen@3.2.9',
       'spack install boost@1.64.0',

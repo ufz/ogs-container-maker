@@ -19,7 +19,7 @@ pipeline {
             sh """
               python3 -m venv ./venv
               . ./venv/bin/activate
-              pip install --upgrade https://github.com/NVIDIA/hpc-container-maker/archive/master.zip
+              pip install --upgrade https://github.com/bilke/hpc-container-maker/archive/dev.zip
 
               ml singularity/2.6.0
               mkdir -p _gen
