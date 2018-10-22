@@ -68,6 +68,8 @@ class ogs(CMakeBuild):
     return '\n'.join(str(x) for x in instructions)
 
   def __setup(self):
+    spack = config.g_package_manager == config.package_manager.SPACK
+    conan = config.g_package_manager == config.package_manager.CONAN
     self.__commands.extend([
       git().clone_step(repository=self.__repo,
         branch=self.__branch, path=self.__prefix,  directory='src'),
@@ -78,7 +80,7 @@ class ogs(CMakeBuild):
       "-DCMAKE_BUILD_TYPE=Release",
       "-DCMAKE_INSTALL_PREFIX={}".format(self.__prefix),
     ])
-    if config.g_package_manager == config.package_manager.SPACK:
+    if spack:
       self.__commands.extend([
         '. /opt/spack/share/spack/setup-env.sh',
         'spack load boost',
@@ -86,9 +88,10 @@ class ogs(CMakeBuild):
         'spack load vtk'
       ])
     if self.__toolchain.CC == 'mpicc':
-      self.__commands.append('spack load petsc')
+      if spack:
+        self.__commands.append('spack load petsc')
       self.configure_opts.append("-DOGS_USE_PETSC=ON")
-      if config.g_package_manager == config.package_manager.CONAN:
+      if conan:
         self.configure_opts.append("-DOGS_CONAN_USE_SYSTEM_OPENMPI=ON")
 
     self.__commands.append(self.configure_step(
