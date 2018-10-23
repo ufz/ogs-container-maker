@@ -162,7 +162,8 @@ elif pm == config.package_manager.GUIX:
     print('guix not implemented.')
 
 if build_ogs:
-    Stage0 += ogs(repo=repo, branch=branch, toolchain=toolchain, parallel=2)
+    Stage0 += ogs(repo=repo, branch=branch, toolchain=toolchain, parallel=2,
+      app='ogs')
 
 if benchmarks:
     Stage0 += osu_benchmarks()

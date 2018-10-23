@@ -14,19 +14,20 @@ import os
 import traceback
 
 import config
+import hpccm.config
 from config import package_manager
 from hpccm.building_blocks.packages import packages
+from hpccm.common import container_type
 from hpccm.primitives.comment import comment
 from hpccm.primitives.label import label
 from hpccm.primitives.raw import raw
 from hpccm.primitives.runscript import runscript
 from hpccm.primitives.shell import shell
+from hpccm.templates.CMakeBuild import CMakeBuild
 from hpccm.templates.ConfigureMake import ConfigureMake
-from hpccm.templates.git import git
 from hpccm.templates.rm import rm
 from hpccm.templates.tar import tar
 from hpccm.templates.wget import wget
-from hpccm.templates.CMakeBuild import CMakeBuild
 from hpccm.toolchain import toolchain
 
 
@@ -42,28 +43,31 @@ class ogs(CMakeBuild):
     CMakeBuild.__init__(self, **kwargs)
 
     self.__ospackages = []
-    self.__prefix = kwargs.get('prefix', '/scif/apps/ogs')
+    self.__app = kwargs.get('app', 'ogs')
+    self.__prefix = kwargs.get('prefix', '/scif/apps/{}'.format(self.__app))
     self.__repo = kwargs.get('repo', 'https://github.com/ufz/ogs')
     self.__branch = kwargs.get('branch', 'master')
     self.configure_opts = kwargs.get('configure_opts', [])
     self.__toolchain = kwargs.get('toolchain', toolchain())
 
     self.__commands = [] # Filled in by __setup()
-    self.__wd = self.__prefix # working directory
 
     self.__setup()
 
   def __str__(self):
     """String representation of the building block"""
+    ogs_binary = '{}/bin/ogs'.format(self.__prefix)
     instructions = []
     instructions.append(comment(
       'OpenGeoSys build from repo {0}, branch {1}'.format(self.__repo, self.__branch)))
     instructions.append(packages(ospackages=self.__ospackages))
-    instructions.append(shell(commands=self.__commands, _app='ogs', _appenv=True))
-    instructions.append(runscript(commands=['/scif/apps/ogs/bin/ogs "$@"'], _app='ogs'))
+    instructions.append(shell(commands=self.__commands, _app=self.__app, _appenv=True))
+    instructions.append(runscript(commands=['{} "$@"'.format(ogs_binary)], _app='ogs'))
     instructions.append(label(metadata={'REPOSITORY': self.__repo, 'BRANCH': self.__branch}, _app='ogs'))
-    instructions.append(raw(singularity='%apptest ogs\n    /scif/apps/ogs/bin/ogs --help'))
-    instructions.append(runscript(commands=['/scif/apps/ogs/bin/ogs "$@"'])) # Is also default runscript
+    instructions.append(raw(singularity='%apptest {}\n    {} --help'.format(self.__app, ogs_binary)))
+    if hpccm.config.g_ctype == container_type.SINGULARITY:
+      # Is also default runscript in singularity
+      instructions.append(runscript(commands=['{} "$@"'.format(ogs_binary)]))
 
     return '\n'.join(str(x) for x in instructions)
 
@@ -71,9 +75,8 @@ class ogs(CMakeBuild):
     spack = config.g_package_manager == config.package_manager.SPACK
     conan = config.g_package_manager == config.package_manager.CONAN
     self.__commands.extend([
-      git().clone_step(repository=self.__repo,
-        branch=self.__branch, path=self.__prefix,  directory='src'),
-      "cd {0}/src && git fetch --tags".format(self.__prefix)
+      'git clone --depth=1 --branch {} {} src'.format(self.__branch, self.__repo),
+      "(cd src && git fetch --tags)"
     ])
     self.configure_opts.extend([
       "-G Ninja",

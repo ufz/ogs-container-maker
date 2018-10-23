@@ -25,5 +25,9 @@ hpccm --recipe ogs-builder.py --format singularity --userarg ompi=2.1.3 centos=t
 ## Dev
 
 ```bash
+# Local
 hpccm --recipe ogs-builder.py --userarg centos=False ompi=off | docker build -t test-builder -
+
+# Remote
+hpccm --recipe ogs-builder.py --userarg centos=False ompi=off | ssh singularity1 "docker build -t test-builder -"
 ```
