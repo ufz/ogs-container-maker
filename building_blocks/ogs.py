@@ -49,6 +49,7 @@ class ogs(CMakeBuild):
     self.__branch = kwargs.get('branch', 'master')
     self.configure_opts = kwargs.get('configure_opts', [])
     self.__toolchain = kwargs.get('toolchain', toolchain())
+    self.__skip_lfs = kwargs.get('skip_lfs', False)
 
     self.__commands = [] # Filled in by __setup()
 
@@ -75,14 +76,18 @@ class ogs(CMakeBuild):
     spack = config.g_package_manager == config.package_manager.SPACK
     conan = config.g_package_manager == config.package_manager.CONAN
     self.__commands.extend([
-      'git clone --depth=1 --branch {} {} src'.format(self.__branch, self.__repo),
-      "(cd src && git fetch --tags)"
+        '{}git clone --depth=1 --branch {} {} src'.format(
+            'GIT_LFS_SKIP_SMUDGE=1 ' if self.__skip_lfs else '',
+            self.__branch, self.__repo),
+        "(cd src && git fetch --tags)"
     ])
     self.configure_opts.extend([
       "-G Ninja",
       "-DCMAKE_BUILD_TYPE=Release",
       "-DCMAKE_INSTALL_PREFIX={}".format(self.__prefix),
     ])
+    if self.__skip_lfs:
+      self.configure_opts.append('-DOGS_BUILD_TESTS=OFF')
     if spack:
       self.__commands.extend([
         '. /opt/spack/share/spack/setup-env.sh',
