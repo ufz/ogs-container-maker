@@ -14,9 +14,10 @@ Other options:
 import os
 import sys
 sys.path.append(os.getcwd())
-import hpccm
 
 import config
+import hpccm
+import multiprocessing
 from config import package_manager
 from building_blocks.jenkins_node import jenkins_node
 from building_blocks.ogs import ogs
@@ -55,7 +56,9 @@ if jenkins:
 
 repo = USERARG.get('repo', 'https://github.com/ufz/ogs')
 branch = USERARG.get('branch', 'master')
-cmake_args = USERARG.get('cmake', '')
+# Use : instead of = e.g. -DCMAKE_BUILD_TYPE:Release
+cmake_args = USERARG.get('cmake_args', '')
+cmake_args = cmake_args.replace(":", "=")
 
 if pm == 'spack' and not ompi:
   logging.error('spack needs mpi!')
@@ -162,8 +165,9 @@ elif pm == config.package_manager.GUIX:
     print('guix not implemented.')
 
 if build_ogs:
-    Stage0 += ogs(repo=repo, branch=branch, toolchain=toolchain, parallel=2,
-      app='ogs')
+    Stage0 += ogs(repo=repo, branch=branch, toolchain=toolchain,
+      cmake_args=cmake_args, parallel=multiprocessing.cpu_count()-1,
+      app='ogs', skip_lfs=True, remove_dev=True)
 
 if benchmarks:
     Stage0 += osu_benchmarks()

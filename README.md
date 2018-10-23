@@ -14,12 +14,22 @@ conda env update -f=../../environment.yml
 
 ## Usage
 
+### Generate
+
 ```bash
 hpccm --recipe ogs-builder.py > Dockerfile
 hpccm --recipe ogs-builder.py --format singularity > Singularity
 
 # With user options
 hpccm --recipe ogs-builder.py --format singularity --userarg ompi=2.1.3 centos=true
+```
+
+### Run
+
+Overwrite Docker entry point:
+
+```bash
+docker run --it --entrypoint "/bin/bash" test-builder
 ```
 
 ## Dev

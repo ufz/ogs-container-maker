@@ -17,6 +17,7 @@ cli.add_argument("--pm", nargs="*", type=str, choices=["conan", "spack", "easybu
 cli.add_argument("--ompi", nargs="*", type=str, choices=["off", "2.1.1", "2.1.5", "3.0.1", "3.1.2"], default=["off", "2.1.1", "2.1.5", "3.0.1", "3.1.2"])
 cli.add_argument("--ogs", nargs="*", type=bool, choices=[True, False], default=[True, False])
 cli.add_argument("--upload", dest='upload', action='store_true')
+cli.add_argument("--cmake_args", type=str, default="")
 cli.set_defaults(upload=False)
 args = cli.parse_args()
 
@@ -32,7 +33,7 @@ for build in c:
     img_file = def_file.replace(".def", ".simg")
   else:
     img_file = def_file.replace(".def", ".simg")
-  hpccm_args = f"--format {format} --userarg ogs={ogs} pm={pm} ompi={ompi}"
+  hpccm_args = f"--format {format} --userarg ogs={ogs} pm={pm} ompi={ompi} cmake_args='{args.cmake_args}'"
 
   cmds = []
   cmds.append(f"hpccm --recipe {args.recipe} {hpccm_args} > {args.output}/{def_file}")

@@ -44,6 +44,7 @@ class ogs(CMakeBuild):
 
     self.__app = kwargs.get('app', 'ogs')
     self.__branch = kwargs.get('branch', 'master')
+    self.__cmake_args = kwargs.get('cmake_args', '')
     self.__ospackages = []
     self.__parallel = kwargs.get('parallel', 4)
     self.__prefix = kwargs.get('prefix', '/scif/apps/{}'.format(self.__app))
@@ -104,7 +105,7 @@ class ogs(CMakeBuild):
       self.configure_opts.append("-DOGS_USE_PETSC=ON")
       if conan:
         self.configure_opts.append("-DOGS_CONAN_USE_SYSTEM_OPENMPI=ON")
-
+    self.configure_opts.append(self.__cmake_args)
     self.__commands.append(self.configure_step(
       directory='{}/src'.format(self.__prefix),
       build_directory='{}/build'.format(self.__prefix),

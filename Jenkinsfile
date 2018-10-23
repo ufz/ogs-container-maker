@@ -11,6 +11,7 @@ pipeline {
     string(name: 'format', defaultValue: 'docker singularity', description: 'Container format')
     string(name: 'openmpi_versions', defaultValue: 'off 2.1.1 2.1.5 3.0.1 3.1.2', description: 'OpenMPI versions')
     string(name: 'pm', defaultValue: 'conan spack', description: 'Package manager to install third-party libs')
+    string(name: 'cmake', defaultValue: '', description: 'CMake args, use : instead of = , e.g. -DFOO:BAR')
   }
   stages {
     stage('Build') {
@@ -22,7 +23,7 @@ pipeline {
             pip install --upgrade https://github.com/bilke/hpc-container-maker/archive/dev.zip
             ml singularity/2.6.0
             mkdir -p _gen
-            python build.py --output _gen --format ${params.format} --ogs ${params.ogs} --ompi ${params.openmpi_versions} --pm ${params.pm} > _gen_script.sh
+            python build.py --output _gen --format ${params.format} --ogs ${params.ogs} --ompi ${params.openmpi_versions} --pm ${params.pm} --cmake_args '${params.cmake}' > _gen_script.sh
             bash _gen_script.sh
           """.stripIndent()
         }
