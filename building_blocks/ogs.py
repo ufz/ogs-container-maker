@@ -45,6 +45,7 @@ class ogs(CMakeBuild):
     self.__app = kwargs.get('app', 'ogs')
     self.__branch = kwargs.get('branch', 'master')
     self.__ospackages = []
+    self.__parallel = kwargs.get('parallel', 4)
     self.__prefix = kwargs.get('prefix', '/scif/apps/{}'.format(self.__app))
     self.__remove_dev = kwargs.get('remove_dev', False)
     self.__repo = kwargs.get('repo', 'https://github.com/ufz/ogs')
@@ -77,7 +78,8 @@ class ogs(CMakeBuild):
     spack = config.g_package_manager == config.package_manager.SPACK
     conan = config.g_package_manager == config.package_manager.CONAN
     self.__commands.extend([
-        '{}git clone --depth=1 --branch {} {} src'.format(
+        # TODO: --depth=1 --> ogs --version does not work
+        '{}git clone --branch {} {} src'.format(
             'GIT_LFS_SKIP_SMUDGE=1 ' if self.__skip_lfs else '',
             self.__branch, self.__repo),
         "(cd src && git fetch --tags)"
@@ -108,10 +110,10 @@ class ogs(CMakeBuild):
       build_directory='{}/build'.format(self.__prefix),
       opts=self.configure_opts,
       toolchain=self.__toolchain))
-    self.__commands.append(self.build_step(target='install'))
+    self.__commands.append(self.build_step(target='install', parallel=self.__parallel))
     if self.__remove_dev:
       # Remove whole src and build directories
-      self.__commands.append('rm -r src build')
+      self.__commands.append('cd {} && rm -r src build'.format(self.__prefix))
     else:
       # Just run the clean-target
       self.__commands.append(self.build_step(target='clean'))
