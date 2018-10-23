@@ -42,14 +42,15 @@ class ogs(CMakeBuild):
     #super(python, self).__init__(**kwargs)
     CMakeBuild.__init__(self, **kwargs)
 
-    self.__ospackages = []
     self.__app = kwargs.get('app', 'ogs')
-    self.__prefix = kwargs.get('prefix', '/scif/apps/{}'.format(self.__app))
-    self.__repo = kwargs.get('repo', 'https://github.com/ufz/ogs')
     self.__branch = kwargs.get('branch', 'master')
-    self.configure_opts = kwargs.get('configure_opts', [])
-    self.__toolchain = kwargs.get('toolchain', toolchain())
+    self.__ospackages = []
+    self.__prefix = kwargs.get('prefix', '/scif/apps/{}'.format(self.__app))
+    self.__remove_dev = kwargs.get('remove_dev', False)
+    self.__repo = kwargs.get('repo', 'https://github.com/ufz/ogs')
     self.__skip_lfs = kwargs.get('skip_lfs', False)
+    self.__toolchain = kwargs.get('toolchain', toolchain())
+    self.configure_opts = kwargs.get('configure_opts', [])
 
     self.__commands = [] # Filled in by __setup()
 
@@ -108,7 +109,12 @@ class ogs(CMakeBuild):
       opts=self.configure_opts,
       toolchain=self.__toolchain))
     self.__commands.append(self.build_step(target='install'))
-    self.__commands.append(self.build_step(target='clean'))
+    if self.__remove_dev:
+      # Remove whole src and build directories
+      self.__commands.append('rm -r src build')
+    else:
+      # Just run the clean-target
+      self.__commands.append(self.build_step(target='clean'))
 
   def runtime(self, _from='0'):
     """Install the runtime from a full build in a previous stage.  In this
