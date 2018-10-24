@@ -8,6 +8,7 @@
 # easybuild toolchain: 2017b (2.1.1), 2018a (2.1.2), 2018b (3.1.1)
 import argparse
 import itertools
+from subprocess import run
 
 cli = argparse.ArgumentParser()
 cli.add_argument("--output", type=str, default=".")
@@ -35,17 +36,13 @@ for build in c:
     img_file = def_file.replace(".def", ".simg")
   hpccm_args = f"--format {format} --userarg ogs={ogs} pm={pm} ompi={ompi} cmake_args='{args.cmake_args}'"
 
-  cmds = []
-  cmds.append(f"hpccm --recipe {args.recipe} {hpccm_args} > {args.output}/{def_file}")
+  run(f"hpccm --recipe {args.recipe} {hpccm_args} > {args.output}/{def_file}", shell=True)
   if format == 'singularity':
-    cmds.extend([
-      f"sudo `which singularity` build {args.output}/{img_file} {args.output}/{def_file}",
-      f"sudo chown $USER:$USER {args.output}/{img_file}",
-    ])
+    run(f"sudo `which singularity` build {args.output}/{img_file} {args.output}/{def_file}", shell=True)
+    run(f"sudo chown $USER:$USER {args.output}/{img_file}", shell=True)
   else:
     tag = f"registry.opengeosys.org/ogs/docker/openmpi-{ompi}/{pm}" # :{tag}
-    cmds.append(f"docker build -t {tag} -f {def_file} {args.output}")
+    run(f"docker build -t {tag} -f {def_file} {args.output}", shell=True)
     if args.upload:
-      cmds.append(f"docker push {tag}")
+      run(f"docker push {tag}", shell=True)
 
-  print('\n'.join(cmds))

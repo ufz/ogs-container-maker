@@ -4,7 +4,7 @@ pipeline {
   }
   agent { label 'singularity' }
   parameters {
-    // booleanParam(name: 'centos', defaultValue: true, description: 'ubuntu or centos')
+    booleanParam(name: 'singularity_via_docker', defaultValue: false, description: 'Build Docker, then convert to Singularity (maybe faster)')
     // string(name: 'repo', defaultValue: 'https://github.com/ufz/ogs', description: 'Git repository URL')
     // string(name: 'branch', defaultValue: 'master', description: 'Git repository branch')
     string(name: 'ogs', defaultValue: 'True False', description: 'Build OGS in container')
@@ -17,14 +17,18 @@ pipeline {
     stage('Build') {
       steps {
         script {
+          def script = "build.py"
+          if(params.singularity_via_docker) {
+            script = "spython_build.py"
+          }
           sh """
             python3 -m venv ./venv
             . ./venv/bin/activate
             pip install --upgrade https://github.com/bilke/hpc-container-maker/archive/dev.zip
             ml singularity/2.6.0
+            alias singularity=`which singularity`
             mkdir -p _gen
-            python build.py --output _gen --format ${params.format} --ogs ${params.ogs} --ompi ${params.openmpi_versions} --pm ${params.pm} --cmake_args '${params.cmake}' > _gen_script.sh
-            bash _gen_script.sh
+            python ${script} --output _gen --format ${params.format} --ogs ${params.ogs} --ompi ${params.openmpi_versions} --pm ${params.pm} --cmake_args '${params.cmake}'
           """.stripIndent()
         }
       }
