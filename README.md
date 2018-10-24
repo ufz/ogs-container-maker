@@ -38,6 +38,9 @@ docker run --it --entrypoint "/bin/bash" test-builder
 # Local
 hpccm --recipe ogs-builder.py --userarg centos=False ompi=off | docker build -t test-builder -
 
+# Local with context
+hpccm --recipe ogs-builder.py --userarg centos=False ompi=off > Dockerfile && docker build -t test-builder . && rm Dockerfile
+
 # Remote
 hpccm --recipe ogs-builder.py --userarg centos=False ompi=off | ssh singularity1 "docker build -t test-builder -"
 ```

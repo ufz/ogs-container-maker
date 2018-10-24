@@ -21,6 +21,9 @@ from hpccm.templates.tar import tar
 from hpccm.templates.wget import wget
 from hpccm.toolchain import toolchain
 
+from building_blocks.scif import scif
+from building_blocks.scif import scif_app
+
 
 class osu_benchmarks(ConfigureMake, rm, tar, wget):
   """OSU benchmarks building block"""
@@ -51,8 +54,14 @@ class osu_benchmarks(ConfigureMake, rm, tar, wget):
     """String representation of the building block"""
     instructions = [comment('OSE benchmarks version {}'.format(self.__version))]
     instructions.append(packages(ospackages=self.__ospackages))
-    instructions.append(shell(commands=self.__commands, _app='osu', _appenv=True))
-    instructions.append(label(metadata={'osu.version': self.__version}, _app='osu'))
+
+    scif_osu = scif()
+    scif_osu.install(scif_app(
+      name = 'osu',
+      labels = {'osu.version': self.__version},
+      install = self.__commands
+    ))
+    instructions.extend(scif_osu.instructions)
 
     return '\n'.join(str(x) for x in instructions)
 

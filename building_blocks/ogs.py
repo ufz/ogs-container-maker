@@ -9,27 +9,14 @@ from __future__ import absolute_import
 from __future__ import unicode_literals
 from __future__ import print_function
 
-import logging # pylint: disable=unused-import
-import os
-import traceback
-
-import config
-import hpccm.config
-from config import package_manager
 from hpccm.building_blocks.packages import packages
-from hpccm.common import container_type
 from hpccm.primitives.comment import comment
-from hpccm.primitives.label import label
-from hpccm.primitives.raw import raw
-from hpccm.primitives.runscript import runscript
-from hpccm.primitives.shell import shell
 from hpccm.templates.CMakeBuild import CMakeBuild
-from hpccm.templates.ConfigureMake import ConfigureMake
-from hpccm.templates.rm import rm
-from hpccm.templates.tar import tar
-from hpccm.templates.wget import wget
 from hpccm.toolchain import toolchain
+import config
 
+from building_blocks.scif import scif
+from building_blocks.scif import scif_app
 
 class ogs(CMakeBuild):
   """OGS building block"""
@@ -60,18 +47,19 @@ class ogs(CMakeBuild):
 
   def __str__(self):
     """String representation of the building block"""
-    ogs_binary = '{}/bin/ogs'.format(self.__prefix)
     instructions = []
     instructions.append(comment(
       'OpenGeoSys build from repo {0}, branch {1}'.format(self.__repo, self.__branch)))
     instructions.append(packages(ospackages=self.__ospackages))
-    instructions.append(shell(commands=self.__commands, _app=self.__app, _appenv=True))
-    instructions.append(runscript(commands=['{} "$@"'.format(ogs_binary)], _app='ogs'))
-    instructions.append(label(metadata={'REPOSITORY': self.__repo, 'BRANCH': self.__branch}, _app='ogs'))
-    instructions.append(raw(singularity='%apptest {}\n    {} --help'.format(self.__app, ogs_binary)))
-    if hpccm.config.g_ctype == container_type.SINGULARITY:
-      # Is also default runscript in singularity
-      instructions.append(runscript(commands=['{} "$@"'.format(ogs_binary)]))
+
+    scif_ogs = scif()
+    scif_ogs.install(scif_app(
+      name = 'ogs',
+      run = 'ogs',
+      labels = {'REPOSITORY': self.__repo, 'BRANCH': self.__branch},
+      install = self.__commands
+    ))
+    instructions.extend(scif_ogs.instructions)
 
     return '\n'.join(str(x) for x in instructions)
 

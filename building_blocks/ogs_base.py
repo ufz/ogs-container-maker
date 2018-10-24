@@ -15,7 +15,6 @@ from hpccm.building_blocks.packages import packages
 from hpccm.building_blocks.python import python
 from hpccm.common import linux_distro
 from hpccm.primitives.comment import comment
-from hpccm.primitives.label import label
 from hpccm.primitives.shell import shell
 from hpccm.templates.ConfigureMake import ConfigureMake
 from hpccm.templates.rm import rm

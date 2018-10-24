@@ -17,15 +17,19 @@ sys.path.append(os.getcwd())
 
 import config
 import hpccm
+import logging
 import multiprocessing
-from config import package_manager
+
 from building_blocks.jenkins_node import jenkins_node
 from building_blocks.ogs import ogs
 from building_blocks.ogs_base import ogs_base
+from building_blocks.osu_benchmarks import osu_benchmarks
 from building_blocks.pm_conan import pm_conan
 from building_blocks.pm_easybuild import pm_easybuild
 from building_blocks.pm_spack import pm_spack
-from building_blocks.osu_benchmarks import osu_benchmarks
+from building_blocks.scif import scif
+from building_blocks.scif import scif_app
+from config import package_manager
 from hpccm.common import linux_distro, container_type
 
 singularity = hpccm.config.g_ctype == container_type.SINGULARITY
@@ -111,15 +115,19 @@ if ompi:
     toolchain = mpicc.toolchain
     Stage0 += mpicc
 
-    app = 'mpi-bandwidth'
-    Stage0 += shell(commands=[
-        'wget -q -nc --no-check-certificate -P /var/tmp https://computing.llnl.gov/tutorials/mpi/samples/C/mpi_bandwidth.c',
-        'mpicc -o bin/mpi-bandwidth /var/tmp/mpi_bandwidth.c'], _app=app, _appenv=True)
-    if singularity:
-      Stage0 += runscript(commands=['/scif/apps/mpi-bandwidth/bin/mpi-bandwidth "$@"'], _app=app)
-    Stage0 += raw(singularity='\
-%apphelp {0}\n    This app provides a MPI bandwidth test program\n\n\
-%apptest {0}\n    mpirun -np 2 /scif/apps/mpi-bandwidth/bin/mpi-bandwidth "$@"\n\n'.format(app))
+    scif_bw = scif()
+    scif_bw.install(scif_app(
+      name='mpi-bw',
+      run='mpi-bandwidth',
+      install=[
+        'wget -q -nc --no-check-certificate -P src https://computing.llnl.gov/tutorials/mpi/samples/C/mpi_bandwidth.c',
+        'mkdir -p bin',
+        'mpicc -o bin/mpi-bandwidth src/mpi_bandwidth.c'
+      ],
+      help='This app provides a MPI bandwidth test program',
+      test='mpirun -np 2 mpi-bandwidth'
+    ))
+    Stage0 += scif_bw.instructions
 
     Stage0 += label(metadata={
         'openmpi.version': ompi_version,
