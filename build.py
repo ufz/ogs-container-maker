@@ -9,7 +9,6 @@
 # easybuild toolchain: 2017b (2.1.1), 2018a (2.1.2), 2018b (3.1.1)
 import argparse
 import itertools
-import os
 from subprocess import run
 
 cli = argparse.ArgumentParser()
@@ -53,8 +52,8 @@ for build in c:
             shell=True)
         run(f"sudo chown $USER:$USER {out_dir}/{img_file}", shell=True)
     else:
-        # :{tag}
-        tag = f"registry.opengeosys.org/ogs/docker/openmpi-{ompi}/{pm}"
+        ogs_tag = ogs.replace('/', '.').replace('@', '.')
+        tag = f"registry.opengeosys.org/ogs/ogs/openmpi-{ompi}/{pm}:{ogs_tag}"
         run(f"docker build -t {tag} -f {out_dir}/Dockerfile .", shell=True)
         if args.upload:
             run(f"docker push {tag}", shell=True)

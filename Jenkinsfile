@@ -14,30 +14,36 @@ pipeline {
            description: 'Package manager to install third-party libs')
     string(name: 'cmake', defaultValue: '',
            description: 'CMake args, use : instead of = , e.g. -DFOO:BAR')
+    booleanParam(name: 'upload', defaultValue: true,
+           description: 'Upload docker image to registry?')
   }
   stages {
     stage('Build') {
       steps {
         script {
-          sh """
-            python3 -m venv ./venv
-            . ./venv/bin/activate
-            pip install --upgrade \
-              https://github.com/bilke/hpc-container-maker/archive/dev.zip
-            ml singularity/2.6.0
-            alias singularity=`which singularity`
-            export PYTHONPATH="\$PYTHONPATH:./"
-            python build.py --format ${params.format} \
-              --ogs ${params.ogs} --ompi ${params.openmpi_versions} \
-              --pm ${params.pm} --cmake_args '${params.cmake}'
-          """.stripIndent()
+          if (params.upload)
+            upload = '--upload'
+          docker.withRegistry('https://registry.opengeosys.org', 'gitlab-bilke-api') {
+            sh """
+              python3 -m venv ./venv
+              . ./venv/bin/activate
+              pip install --upgrade \
+                https://github.com/bilke/hpc-container-maker/archive/dev.zip
+              ml singularity/2.6.0
+              alias singularity=`which singularity`
+              export PYTHONPATH="\$PYTHONPATH:./"
+              python build.py --format ${params.format} \
+                --ogs ${params.ogs} --ompi ${params.openmpi_versions} \
+                --pm ${params.pm} --cmake_args '${params.cmake}' ${upload}
+            """.stripIndent()
+          }
         }
       }
     }
   }
   post {
     always {
-      archiveArtifacts artifacts: '_out/**/*.simg,_out/**/*.def,_out/**/Dockerfile'
+      archiveArtifacts artifacts: '_out/**/*.simg,_out/**/*.def,_out/**/Dockerfile,_out/**/*.scif'
     }
     cleanup { sh 'rm -rf _out' }
   }
