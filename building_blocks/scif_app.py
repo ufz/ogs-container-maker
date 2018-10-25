@@ -7,6 +7,7 @@ from __future__ import absolute_import
 from __future__ import unicode_literals
 from __future__ import print_function
 
+import logging
 import os
 
 from hpccm.common import container_type
@@ -46,17 +47,24 @@ class scif_app():
         instructions_string = '\n'.join(str(x) for x in instructions)
         hpccm.config.g_ctype = ct
 
-        out_dir = '_gen'
-        self.__scif_path = os.path.join(out_dir, '{}.scif'.format(self.name))
-        scif_file = open(self.__scif_path, "w")
-        scif_file.write(instructions_string)
-        scif_file.close()
+        if hpccm.config.g_output_directory:
+            self.__scif_path = os.path.join(hpccm.config.g_output_directory,
+                                            '{}.scif'.format(self.name))
+            scif_file = open(self.__scif_path, "w")
+            scif_file.write(instructions_string)
+            scif_file.close()
+        else:
+            logging.error('No output directory specified but it is necessary '
+                          'for using scif_app()! Specify with --out argument.')
 
     def __str__(self):
-        instructions = [
-          copy(src=[self.__scif_path], dest='/scif/recipes/', _mkdir=True),
-          shell(commands=[
-              'scif install /scif/recipes/{}.scif'.format(self.name)
-          ])
-        ]
-        return '\n'.join(str(x) for x in instructions)
+        if hpccm.config.g_output_directory:
+            instructions = [
+                copy(src=[self.__scif_path], dest='/scif/recipes/',
+                     _mkdir=True),
+                shell(commands=[
+                    'scif install /scif/recipes/{}.scif'.format(self.name)
+                ])
+            ]
+            return '\n'.join(str(x) for x in instructions)
+        return ''
