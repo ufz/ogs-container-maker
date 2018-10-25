@@ -23,8 +23,7 @@ cli.add_argument("--pm", nargs="*", type=str,
 cli.add_argument("--ompi", nargs="*", type=str, choices=[
                  "off", "2.1.1", "2.1.5", "3.0.1", "3.1.2"],
                  default=["off", "2.1.1", "2.1.5", "3.0.1", "3.1.2"])
-cli.add_argument("--ogs", nargs="*", type=str,
-                 choices=['True', 'False'], default=['True', 'False'])
+cli.add_argument("--ogs", nargs="*", type=str, default=['ufz/ogs@master'])
 cli.add_argument("--upload", dest='upload', action='store_true')
 cli.add_argument("--cmake_args", type=str, default="")
 cli.set_defaults(upload=False)
@@ -39,6 +38,7 @@ for build in c:
 
     out_dir = f"_out/{format}/openmpi-{ompi}/{pm}"
 
+    # TODO: handle exit code of run (for Jenkins)
     print('Run:\n' + f"hpccm --recipe {args.recipe} --format {format} --out {out_dir} " +
         f"--userarg ogs={ogs} pm={pm} ompi={ompi} " +
         f"cmake_args='{args.cmake_args}'")

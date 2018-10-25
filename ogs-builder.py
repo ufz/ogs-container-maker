@@ -40,7 +40,7 @@ def str2bool(v):
 # ---- Options ----
 centos = str2bool(USERARG.get('centos', 'False'))
 clang = str2bool(USERARG.get('clang', 'False'))
-build_ogs = str2bool(USERARG.get('ogs', 'True'))
+ogs_version = USERARG.get('ogs', 'ufz/ogs@master')
 infiniband = str2bool(USERARG.get('infiniband', 'True'))
 benchmarks = str2bool(USERARG.get('benchmarks', 'True'))
 jenkins = str2bool(USERARG.get('jenkins', 'False'))
@@ -52,7 +52,7 @@ if ompi_version == "off":
     infiniband = False
     benchmarks = False
 if jenkins:
-    build_ogs = False
+    ogs_version = 'off'
 
 repo = USERARG.get('repo', 'https://github.com/ufz/ogs')
 branch = USERARG.get('branch', 'master')
@@ -173,8 +173,8 @@ elif pm == config.package_manager.EASYBUILD:
 elif pm == config.package_manager.GUIX:
     print('guix not implemented.')
 
-if build_ogs:
-    Stage0 += ogs(repo=repo, branch=branch, toolchain=toolchain,
+if ogs_version != 'off':
+    Stage0 += ogs(version=ogs_version, toolchain=toolchain,
                   cmake_args=cmake_args, parallel=multiprocessing.cpu_count()-1,
                   app='ogs', skip_lfs=True, remove_dev=True)
 

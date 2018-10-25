@@ -15,6 +15,7 @@ from hpccm.primitives.comment import comment
 from hpccm.templates.CMakeBuild import CMakeBuild
 from hpccm.toolchain import toolchain
 import config
+import re
 
 
 class ogs(CMakeBuild):
@@ -28,15 +29,17 @@ class ogs(CMakeBuild):
         # super(python, self).__init__(**kwargs)
         CMakeBuild.__init__(self, **kwargs)
 
+        self.__version = kwargs.get('version', 'ufz/ogs@master')
+        m = re.search('(.+\/.*)@(.*)', self.__version)
+        self.__repo = m.group(1)
+        self.__branch = m.group(2)
         self.__app = kwargs.get('app', 'ogs')
-        self.__branch = kwargs.get('branch', 'master')
         self.__cmake_args = kwargs.get('cmake_args', '')
         self.__ospackages = []
         self.__parallel = kwargs.get('parallel', 4)
         self.__prefix = kwargs.get(
             'prefix', '/scif/apps/{}'.format(self.__app))
         self.__remove_dev = kwargs.get('remove_dev', False)
-        self.__repo = kwargs.get('repo', 'https://github.com/ufz/ogs')
         self.__skip_lfs = kwargs.get('skip_lfs', False)
         self.__toolchain = kwargs.get('toolchain', toolchain())
         self.configure_opts = kwargs.get('configure_opts', [])
@@ -68,7 +71,7 @@ class ogs(CMakeBuild):
         conan = config.g_package_manager == config.package_manager.CONAN
         self.__commands.extend([
             # TODO: --depth=1 --> ogs --version does not work
-            '{}git clone --branch {} {} src'.format(
+            '{}git clone --branch {} https://github.com/{} src'.format(
                 'GIT_LFS_SKIP_SMUDGE=1 ' if self.__skip_lfs else '',
                 self.__branch, self.__repo),
             "(cd src && git fetch --tags)"

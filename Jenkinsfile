@@ -4,8 +4,8 @@ pipeline {
   }
   agent { label 'singularity' }
   parameters {
-    string(name: 'ogs', defaultValue: 'True False',
-           description: 'Build OGS in container')
+    string(name: 'ogs', defaultValue: 'ufz/ogs@master',
+           description: 'Build OGS in container (Github user/repo@branch)')
     string(name: 'format', defaultValue: 'docker singularity',
            description: 'Container format')
     string(name: 'openmpi_versions', defaultValue: 'off 2.1.1 2.1.5 3.0.1 3.1.2',
