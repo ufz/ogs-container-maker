@@ -11,10 +11,6 @@ Other options:
 - infiniband=false Disables infinband
 """
 # pylint: disable=invalid-name, undefined-variable, used-before-assignment
-import os
-import sys
-sys.path.append(os.getcwd())
-
 import config
 import hpccm
 import logging
@@ -28,7 +24,7 @@ from building_blocks.pm_conan import pm_conan
 from building_blocks.pm_easybuild import pm_easybuild
 from building_blocks.pm_spack import pm_spack
 from building_blocks.scif import scif
-from building_blocks.scif import scif_app
+from building_blocks.scif_app import scif_app
 from config import package_manager
 from hpccm.common import linux_distro, container_type
 
@@ -38,7 +34,7 @@ docker = hpccm.config.g_ctype == container_type.DOCKER
 
 # ---- Tools ----
 def str2bool(v):
-  return v.lower() in ("yes", "true", "t", "1")
+    return v.lower() in ("yes", "true", "t", "1")
 
 
 # ---- Options ----
@@ -65,7 +61,7 @@ cmake_args = USERARG.get('cmake_args', '')
 cmake_args = cmake_args.replace(":", "=")
 
 if pm == 'spack' and not ompi:
-  logging.error('spack needs mpi!')
+    logging.error('spack needs mpi!')
 
 ######
 # Devel stage
@@ -107,27 +103,29 @@ if clang:
         yum=["llvm-toolset-{}-clang-tools-extra".format(clang_version)]
     )
 
+Stage0 += scif()
+
 if infiniband:
     Stage0 += mlnx_ofed(version='3.4-1.0.0.0')
 
 if ompi:
-    mpicc = openmpi(version=ompi_version, cuda=False, infiniband=infiniband, toolchain=toolchain)
+    mpicc = openmpi(version=ompi_version, cuda=False, infiniband=infiniband,
+                    toolchain=toolchain)
     toolchain = mpicc.toolchain
     Stage0 += mpicc
 
-    scif_bw = scif()
-    scif_bw.install(scif_app(
+    Stage0 += scif_app(
       name='mpi-bw',
       run='mpi-bandwidth',
       install=[
-        'wget -q -nc --no-check-certificate -P src https://computing.llnl.gov/tutorials/mpi/samples/C/mpi_bandwidth.c',
+        'wget -q -nc --no-check-certificate -P src '
+        'https://computing.llnl.gov/tutorials/mpi/samples/C/mpi_bandwidth.c',
         'mkdir -p bin',
         'mpicc -o bin/mpi-bandwidth src/mpi_bandwidth.c'
       ],
       help='This app provides a MPI bandwidth test program',
       test='mpirun -np 2 mpi-bandwidth'
-    ))
-    Stage0 += scif_bw.instructions
+    )
 
     Stage0 += label(metadata={
         'openmpi.version': ompi_version,
@@ -141,10 +139,13 @@ if pm == config.package_manager.CONAN:
       Stage0 += environment(variables={'CONAN_SYSREQUIRES_SUDO': 0})
 elif pm == config.package_manager.SPACK:
     Stage0 += pm_spack()
-    Stage0 += copy(src='files/spack/packages.yaml', dest='/etc/spack/packages.yaml', _mkdir=True)
-    Stage0 += copy(src='files/spack/spack-repo', dest='/opt/spack/var/spack/repos/ogs', _post=True)
+    Stage0 += copy(src='files/spack/packages.yaml',
+                   dest='/etc/spack/packages.yaml', _mkdir=True)
+    Stage0 += copy(src='files/spack/spack-repo',
+                   dest='/opt/spack/var/spack/repos/ogs', _post=True)
     Stage0 += shell(commands=['spack repo add /opt/spack/var/spack/repos/ogs'])
-    Stage0 += packages(yum=['mesa-libGL-devel', 'bzip2'], apt=['libgl1-mesa-dev', 'libxt-dev', 'bzip2'])
+    Stage0 += packages(yum=['mesa-libGL-devel', 'bzip2'],
+                       apt=['libgl1-mesa-dev', 'libxt-dev', 'bzip2'])
     Stage0 += shell(commands=[
       'spack install eigen@3.2.9',
       'spack install boost@1.64.0',
@@ -157,25 +158,25 @@ elif pm == config.package_manager.EASYBUILD:
     pm_instance = pm_easybuild()
     Stage0 += pm_instance
     Stage0 += pm_instance.install(
-      ospackages=['libibverbs-dev', 'libncurses5-dev'],
-      configs=[
-        'Eigen-3.3.4.eb',
-        'Boost-1.66.0-foss-2018a.eb',
-        # 'VTK-8.1.0-foss-2018a-Python-3.6.4.eb'
+        ospackages=['libibverbs-dev', 'libncurses5-dev'],
+        configs=[
+            'Eigen-3.3.4.eb',
+            'Boost-1.66.0-foss-2018a.eb',
+            # 'VTK-8.1.0-foss-2018a-Python-3.6.4.eb'
+        ])
+    Stage0 += pm_instance.install(configs=[
+        'Python-3.6.4-foss-2018a.eb'
     ])
     Stage0 += pm_instance.install(configs=[
-      'Python-3.6.4-foss-2018a.eb'
-    ])
-    Stage0 += pm_instance.install(configs=[
-      'VTK-8.1.0-foss-2018a-Python-3.6.4.eb'
+        'VTK-8.1.0-foss-2018a-Python-3.6.4.eb'
     ])
 elif pm == config.package_manager.GUIX:
     print('guix not implemented.')
 
 if build_ogs:
     Stage0 += ogs(repo=repo, branch=branch, toolchain=toolchain,
-      cmake_args=cmake_args, parallel=multiprocessing.cpu_count()-1,
-      app='ogs', skip_lfs=True, remove_dev=True)
+                  cmake_args=cmake_args, parallel=multiprocessing.cpu_count()-1,
+                  app='ogs', skip_lfs=True, remove_dev=True)
 
 if benchmarks:
     Stage0 += osu_benchmarks()
