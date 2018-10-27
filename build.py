@@ -24,8 +24,10 @@ cli.add_argument("--ompi", nargs="*", type=str, choices=[
                  default=["off", "2.1.1", "2.1.5", "3.0.1", "3.1.2"])
 cli.add_argument("--ogs", nargs="*", type=str, default=['ufz/ogs@master'])
 cli.add_argument("--upload", dest='upload', action='store_true')
+cli.add_argument("--convert", dest='convert', action='store_true')
 cli.add_argument("--cmake_args", type=str, default="")
 cli.set_defaults(upload=False)
+cli.set_defaults(convert=False)
 args = cli.parse_args()
 
 c = list(itertools.product(args.format, args.ogs, args.pm, args.ompi))
@@ -57,3 +59,7 @@ for build in c:
         run(f"docker build -t {tag} -f {out_dir}/Dockerfile .", shell=True)
         if args.upload:
             run(f"docker push {tag}", shell=True)
+        if args.convert:
+            run(f"docker run -v /var/run/docker.sock:/var/run/docker.sock "
+                f"-v $PWD/{out_dir}:/output --privileged -t --rm "
+                f"singularityware/docker2singularity {tag}", shell=True)

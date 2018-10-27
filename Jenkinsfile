@@ -13,9 +13,11 @@ pipeline {
     string(name: 'pm', defaultValue: 'conan spack',
            description: 'Package manager to install third-party libs')
     string(name: 'cmake', defaultValue: '',
-           description: 'CMake args, use : instead of = , e.g. -DFOO:BAR')
+           description: 'CMake args, use : instead of = , e.g. "-DFOO:BAR"')
     booleanParam(name: 'upload', defaultValue: true,
            description: 'Upload docker image to registry?')
+    booleanParam(name: 'convert', defaultValue: false,
+           description: 'Convert docker image to Singularity?')
   }
   stages {
     stage('Build') {
@@ -23,6 +25,8 @@ pipeline {
         script {
           if (params.upload)
             upload = '--upload'
+          if (params.convert)
+            convert = '--convert'
           docker.withRegistry('https://registry.opengeosys.org', 'gitlab-bilke-api') {
             sh """
               python3 -m venv ./venv
@@ -34,7 +38,8 @@ pipeline {
               export PYTHONPATH="\$PYTHONPATH:./"
               python build.py --format ${params.format} \
                 --ogs ${params.ogs} --ompi ${params.openmpi_versions} \
-                --pm ${params.pm} --cmake_args '${params.cmake}' ${upload}
+                --pm ${params.pm} --cmake_args '${params.cmake}' ${upload} \
+                ${convert}
             """.stripIndent()
           }
         }
