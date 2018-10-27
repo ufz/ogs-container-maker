@@ -32,6 +32,11 @@ Overwrite Docker entry point:
 docker run --it --entrypoint "/bin/bash" test-builder
 ```
 
+```
+docker run registry.opengeosys.org/ogs/ogs/openmpi-2.1.1/conan:ufz.ogs.master scif run ogs
+singularity exec ogs-openmpi-off-conan.simg scif run ogs
+```
+
 ## Dev
 
 ```bash

@@ -30,6 +30,7 @@ class scif_app():
         self.install = kwargs.get('install')
         self.labels = kwargs.get('labels')
         self.test = kwargs.get('test')
+        self.__entrypoint = kwargs.get('entrypoint', False)
 
         # SCIF format is always in Singularity syntax
         ct = hpccm.config.g_ctype
@@ -38,7 +39,7 @@ class scif_app():
         if self.install:
             instructions.append(shell(commands=self.install, _app=self.name))
         if self.run:
-            instructions.append(runscript(commands=[self.run], _app=self.name))
+            instructions.append(runscript(commands=['{} \"$@\"'.format(self.run)], _app=self.name))
         if self.labels:
             instructions.append(label(metadata=self.labels, _app=self.name))
         if self.test:
@@ -66,5 +67,8 @@ class scif_app():
                     'scif install /scif/recipes/{}.scif'.format(self.name)
                 ])
             ]
+            if self.__entrypoint and self.run:
+                instructions.append(runscript(commands=[
+                    'scif run {} \"$@\"'.format(self.name)]))
             return '\n'.join(str(x) for x in instructions)
         return ''

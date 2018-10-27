@@ -61,7 +61,8 @@ class ogs(CMakeBuild):
             name='ogs',
             run='ogs',
             labels={'REPOSITORY': self.__repo, 'BRANCH': self.__branch},
-            install=self.__commands
+            install=self.__commands,
+            entrypoint=True
         ))
 
         return '\n'.join(str(x) for x in instructions)
