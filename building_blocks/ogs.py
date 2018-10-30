@@ -12,6 +12,7 @@ from __future__ import print_function
 from building_blocks.scif_app import scif_app
 from hpccm.building_blocks.packages import packages
 from hpccm.primitives.comment import comment
+from hpccm.primitives.environment import environment
 from hpccm.primitives.runscript import runscript
 from hpccm.templates.CMakeBuild import CMakeBuild
 from hpccm.toolchain import toolchain
@@ -64,9 +65,11 @@ class ogs(CMakeBuild):
             labels={'REPOSITORY': self.__repo, 'BRANCH': self.__branch},
             install=self.__commands
         ))
-        # Set as global runscript
-        instructions.append(
-            runscript(commands=['/scif/apps/ogs/bin/ogs']))
+        # Add to PATH and set as global runscript
+        instructions.extend([
+            environment(variables={'PATH': '/scif/apps/ogs/bin:$PATH'}),
+            runscript(commands=['ogs'])
+        ])
 
         return '\n'.join(str(x) for x in instructions)
 
