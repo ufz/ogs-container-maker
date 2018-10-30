@@ -16,51 +16,53 @@ from hpccm.templates.git import git
 
 
 class pm_spack():
-  """Package manager spack building block"""
+    """Package manager spack building block"""
 
-  def __init__(self, **kwargs):
-    """Initialize building block"""
+    def __init__(self, **kwargs):
+        """Initialize building block"""
 
-    # Trouble getting MRO with kwargs working correctly, so just call
-    # the parent class constructors manually for now.
-    #super(python, self).__init__(**kwargs)
+        # Trouble getting MRO with kwargs working correctly, so just call
+        # the parent class constructors manually for now.
+        # super(python, self).__init__(**kwargs)
 
-    self.__ospackages = kwargs.get('ospackages', [])
+        self.__ospackages = kwargs.get('ospackages', [])
 
-    self.__commands = [] # Filled in by __setup()
-    self.__wd = '/var/tmp' # working directory
+        self.__commands = []  # Filled in by __setup()
+        self.__wd = '/var/tmp'  # working directory
 
-    self.__setup()
+        self.__setup()
 
-  def __str__(self):
-    """String representation of the building block"""
-    instructions = [comment(__doc__, reformat=False)]
-    instructions.append(packages(ospackages=self.__ospackages))
-    instructions.append(packages(yum=['xz'], apt=['xz-utils']))
-    # Without the FORCE_UNSAFE_CONFIGURE env var some spack package
-    # installations may fail due to running as root.
-    instructions.append(environment(variables={'PATH': '/opt/spack/bin:$PATH',
-                                               'FORCE_UNSAFE_CONFIGURE': '1'}))
-    instructions.append(shell(commands=self.__commands))
-    instructions.append(label(metadata={'org.opengeosys.pm': 'spack'}))
+    def __str__(self):
+        """String representation of the building block"""
+        instructions = [comment(__doc__, reformat=False)]
+        instructions.append(packages(ospackages=self.__ospackages))
+        instructions.append(packages(yum=['xz'], apt=['xz-utils']))
+        # Without the FORCE_UNSAFE_CONFIGURE env var some spack package
+        # installations may fail due to running as root.
+        instructions.append(environment(variables={
+            'PATH': '/opt/spack/bin:$PATH',
+            'FORCE_UNSAFE_CONFIGURE': '1'
+        }))
+        instructions.append(shell(commands=self.__commands))
+        instructions.append(label(metadata={'org.opengeosys.pm': 'spack'}))
 
-    return '\n'.join(str(x) for x in instructions)
+        return '\n'.join(str(x) for x in instructions)
 
-  def __setup(self):
-    self.__ospackages.extend(['patch'])
-    self.__commands.extend([
-      git().clone_step(repository='https://github.com/spack/spack',
-                       branch='develop', path='/opt'),
-      'spack bootstrap',
-      # TODO: There is no init system inside the container -> files are not
-      # sourced!
-      'ln -s /opt/spack/share/spack/setup-env.sh /etc/profile.d/spack.sh',
-      'ln -s /opt/spack/share/spack/spack-completion.bash /etc/profile.d',
-      'spack clean --all'
-    ])
+    def __setup(self):
+        self.__ospackages.extend(['patch'])
+        self.__commands.extend([
+            git().clone_step(repository='https://github.com/spack/spack',
+                             branch='develop', path='/opt'),
+            'spack bootstrap',
+            # TODO: There is no init system inside the container -> files are
+            # not sourced!
+            'ln -s /opt/spack/share/spack/setup-env.sh /etc/profile.d/spack.sh',
+            'ln -s /opt/spack/share/spack/spack-completion.bash /etc/profile.d',
+            'spack clean --all'
+        ])
 
-  def runtime(self, _from='0'):
-    """Install the runtime from a full build in a previous stage.  In this
-       case there is no difference between the runtime and the
-       full build."""
-    return str(self)
+    def runtime(self, _from='0'):
+        """Install the runtime from a full build in a previous stage.  In this
+           case there is no difference between the runtime and the
+           full build."""
+        return str(self)

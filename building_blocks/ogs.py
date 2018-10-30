@@ -68,10 +68,11 @@ class ogs(CMakeBuild):
         # Add to PATH and set as global runscript
         instructions.extend([
             environment(variables={'PATH': '/scif/apps/ogs/bin:$PATH'}),
-            runscript(commands=['ogs'])
+            runscript(commands=['ogs']),
             label(metadata={
                 'org.opengeosys.version': self.__version,
-                'org.opengeosys.configure_opts': self.configure_opts
+                'org.opengeosys.configure_opts': '\'' +
+                ' '.join(self.configure_opts) + '\''
             })
         ])
 
