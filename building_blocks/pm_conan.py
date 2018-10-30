@@ -45,9 +45,9 @@ class pm_conan():
       'CONAN_USER_HOME': '/opt/conan'
     }))
     instructions.append(label(metadata={
-      'PACKAGE_MANAGER': 'conan',
-      'CONAN_VERSION': conan_version,
-      'CONAN_USER_HOME': '/opt/conan'
+      'org.opengeosys.pm': 'conan',
+      'org.opengeosys.pm.conan.version': conan_version,
+      'org.opengeosys.pm.conan.user_home': '/opt/conan'
     }))
 
     return '\n'.join(str(x) for x in instructions)

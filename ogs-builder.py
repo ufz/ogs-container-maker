@@ -128,8 +128,9 @@ if ompi:
     )
 
     Stage0 += label(metadata={
-        'openmpi.version': ompi_version,
-        'infiniband': infiniband
+        'org.opengeosys.mpi': 'openmpi',
+        'org.opengeosys.mpi.version': ompi_version,
+        'org.opengeosys.infiniband': infiniband
     })
 
 Stage0 += ogs_base()

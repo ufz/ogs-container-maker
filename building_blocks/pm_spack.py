@@ -42,7 +42,7 @@ class pm_spack():
     instructions.append(environment(variables={'PATH': '/opt/spack/bin:$PATH',
                                                'FORCE_UNSAFE_CONFIGURE': '1'}))
     instructions.append(shell(commands=self.__commands))
-    instructions.append(label(metadata={'PACKAGE_MANAGER': 'spack'}))
+    instructions.append(label(metadata={'org.opengeosys.pm': 'spack'}))
 
     return '\n'.join(str(x) for x in instructions)
 
