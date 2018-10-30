@@ -12,6 +12,7 @@ import os
 
 from hpccm.common import container_type
 from hpccm.primitives.copy import copy
+from hpccm.primitives.environment import environment
 from hpccm.primitives.label import label
 from hpccm.primitives.raw import raw
 from hpccm.primitives.runscript import runscript
@@ -25,10 +26,12 @@ class scif_app():
     def __init__(self, **kwargs):
         """Initialize building block"""
 
-        self.name = kwargs.get('name')
-        self.run = kwargs.get('run')
+        self.env = kwargs.get('env')
+        self.help = kwargs.get('help')
         self.install = kwargs.get('install')
         self.labels = kwargs.get('labels')
+        self.name = kwargs.get('name')
+        self.run = kwargs.get('run')
         self.test = kwargs.get('test')
         self.__entrypoint = kwargs.get('entrypoint', False)
 
@@ -36,10 +39,17 @@ class scif_app():
         ct = hpccm.config.g_ctype
         hpccm.config.g_ctype = container_type.SINGULARITY
         instructions = []
+        if self.env:
+            instructions.append(environment(variables=self.env,
+                                            _app=self.name))
+        if self.help:
+            instructions.append(raw(singularity='%apphelp {}\n    {}'.format(
+                self.name, self.help)))
         if self.install:
             instructions.append(shell(commands=self.install, _app=self.name))
         if self.run:
-            instructions.append(runscript(commands=['{} \"$@\"'.format(self.run)], _app=self.name))
+            instructions.append(runscript(commands=['{} \"$@\"'.format(
+                self.run)], _app=self.name))
         if self.labels:
             instructions.append(label(metadata=self.labels, _app=self.name))
         if self.test:
