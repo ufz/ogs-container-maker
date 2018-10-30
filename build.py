@@ -48,8 +48,8 @@ for build in c:
         f"cmake_args='{args.cmake_args}'",
         shell=True)
 
+    img_file = f"ogs-openmpi-{ompi}-{pm}.simg"
     if format == 'singularity':
-        img_file = f"ogs-openmpi-{ompi}-{pm}.simg"
         run(f"sudo `which singularity` build {out_dir}/{img_file} {out_dir}/Singularity.def",
             shell=True)
         run(f"sudo chown $USER:$USER {out_dir}/{img_file}", shell=True)
@@ -62,4 +62,5 @@ for build in c:
         if args.convert:
             run(f"docker run -v /var/run/docker.sock:/var/run/docker.sock "
                 f"-v $PWD/{out_dir}:/output --privileged -t --rm "
-                f"singularityware/docker2singularity {tag}", shell=True)
+                f"singularityware/docker2singularity --name {img_file} {tag}",
+                shell=True)
