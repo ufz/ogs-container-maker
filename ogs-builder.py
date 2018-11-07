@@ -23,8 +23,6 @@ from building_blocks.osu_benchmarks import osu_benchmarks
 from building_blocks.pm_conan import pm_conan
 from building_blocks.pm_easybuild import pm_easybuild
 from building_blocks.pm_spack import pm_spack
-from building_blocks.scif import scif
-from building_blocks.scif_app import scif_app
 from config import package_manager
 from hpccm.common import linux_distro, container_type
 

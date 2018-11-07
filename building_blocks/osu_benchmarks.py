@@ -11,8 +11,8 @@ from __future__ import print_function
 
 import os
 
-from building_blocks.scif_app import scif_app
 from hpccm.building_blocks.packages import packages
+from hpccm.building_blocks.scif_app import scif_app
 from hpccm.primitives.comment import comment
 from hpccm.templates.ConfigureMake import ConfigureMake
 from hpccm.templates.rm import rm

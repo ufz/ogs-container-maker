@@ -9,8 +9,8 @@ from __future__ import absolute_import
 from __future__ import unicode_literals
 from __future__ import print_function
 
-from building_blocks.scif_app import scif_app
 from hpccm.building_blocks.packages import packages
+from hpccm.building_blocks.scif_app import scif_app
 from hpccm.primitives.comment import comment
 from hpccm.primitives.environment import environment
 from hpccm.primitives.label import label
