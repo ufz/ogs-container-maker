@@ -18,6 +18,8 @@ pipeline {
            description: 'Upload docker image to registry?')
     booleanParam(name: 'convert', defaultValue: false,
            description: 'Convert docker image to Singularity?')
+    booleanParam(name: 'deploy', defaultValue: false,
+           description: 'Deploy Singularity images')
   }
   stages {
     stage('Build') {
@@ -43,6 +45,8 @@ pipeline {
                 --pm ${params.pm} --cmake_args '${params.cmake}' ${upload} \
                 ${convert}
             """.stripIndent()
+          if (params.deploy)
+            sh "cp -f _out/**/*.simg /datadrive/images"
           }
         }
       }
