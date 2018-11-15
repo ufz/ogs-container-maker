@@ -91,15 +91,13 @@ else:
         fortran = True
     compiler = gnu(fortran=fortran, extra_repository=True, version=gcc_version)
 toolchain = compiler.toolchain
-if pm != config.package_manager.EASYBUILD:
+if pm != package_manager.EASYBUILD:
   Stage0 += compiler
 if clang:
     Stage0 += packages(
         apt=["clang-tidy-{}".format(clang_version)],
         yum=["llvm-toolset-{}-clang-tools-extra".format(clang_version)]
     )
-
-Stage0 += scif()
 
 if infiniband:
     Stage0 += mlnx_ofed(version='3.4-1.0.0.0')
@@ -110,18 +108,17 @@ if ompi:
     toolchain = mpicc.toolchain
     Stage0 += mpicc
 
-    Stage0 += scif_app(
-      name='mpi-bw',
-      run='mpi-bandwidth',
-      install=[
+    mpi_bw = scif(name="mpi-bw")
+    mpi_bw += runscript(commands=['mpi-bandwidth'])
+    mpi_bw += shell(commands=[
         'wget -q -nc --no-check-certificate -P src '
         'https://computing.llnl.gov/tutorials/mpi/samples/C/mpi_bandwidth.c',
         'mkdir -p bin',
         'mpicc -o bin/mpi-bandwidth src/mpi_bandwidth.c'
-      ],
-      help='This app provides a MPI bandwidth test program',
-      test='mpirun -np 2 mpi-bandwidth'
-    )
+    ])
+    # help This app provides a MPI bandwidth test program
+    # test mpirun -np 2 mpi-bandwidth
+    Stage0 += mpi_bw
 
     Stage0 += label(metadata={
         'org.opengeosys.mpi': 'openmpi',
@@ -133,11 +130,11 @@ if ompi:
         Stage0 += osu_benchmarks()
 
 Stage0 += ogs_base()
-if pm == config.package_manager.CONAN:
+if pm == package_manager.CONAN:
     Stage0 += pm_conan()
     if not jenkins:
       Stage0 += environment(variables={'CONAN_SYSREQUIRES_SUDO': 0})
-elif pm == config.package_manager.SPACK:
+elif pm == package_manager.SPACK:
     Stage0 += pm_spack()
     Stage0 += copy(src='files/spack/packages.yaml',
                    dest='/etc/spack/packages.yaml', _mkdir=True)
@@ -154,7 +151,7 @@ elif pm == config.package_manager.SPACK:
       'spack clean --all'
     ])
 
-elif pm == config.package_manager.EASYBUILD:
+elif pm == package_manager.EASYBUILD:
     pm_instance = pm_easybuild()
     Stage0 += pm_instance
     Stage0 += pm_instance.install(
@@ -170,7 +167,7 @@ elif pm == config.package_manager.EASYBUILD:
     Stage0 += pm_instance.install(configs=[
         'VTK-8.1.0-foss-2018a-Python-3.6.4.eb'
     ])
-elif pm == config.package_manager.GUIX:
+elif pm == package_manager.GUIX:
     print('guix not implemented.')
 
 if ogs_version != 'off':

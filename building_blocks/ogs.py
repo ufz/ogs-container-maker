@@ -10,14 +10,15 @@ from __future__ import unicode_literals
 from __future__ import print_function
 
 from hpccm.building_blocks.packages import packages
-from hpccm.building_blocks.scif_app import scif_app
+from hpccm.building_blocks.scif import scif
 from hpccm.primitives.comment import comment
 from hpccm.primitives.environment import environment
 from hpccm.primitives.label import label
 from hpccm.primitives.runscript import runscript
+from hpccm.primitives.shell import shell
 from hpccm.templates.CMakeBuild import CMakeBuild
 from hpccm.toolchain import toolchain
-import config
+import hpccm
 import re
 
 
@@ -36,6 +37,7 @@ class ogs(CMakeBuild):
         m = re.search('(.+\/.*)@(.*)', self.__version)
         self.__repo = m.group(1)
         self.__branch = m.group(2)
+
         self.__app = kwargs.get('app', 'ogs')
         self.__cmake_args = kwargs.get('cmake_args', '')
         self.__ospackages = []
@@ -60,13 +62,13 @@ class ogs(CMakeBuild):
         ))
         instructions.append(packages(ospackages=self.__ospackages))
 
-        instructions.append(scif_app(
-            name='ogs',
-            run='ogs',
-            install=self.__commands
-        ))
-        # Add to PATH and set as global runscript
+        app = scif(name='ogs')
+        app += runscript(commands=['ogs'])
+        app += shell(commands=self.__commands)
+
         instructions.extend([
+            app,
+            # Add to PATH and set as global runscript
             environment(variables={'PATH': '/scif/apps/ogs/bin:$PATH'}),
             runscript(commands=['ogs']),
             label(metadata={
@@ -79,8 +81,8 @@ class ogs(CMakeBuild):
         return '\n'.join(str(x) for x in instructions)
 
     def __setup(self):
-        spack = config.g_package_manager == config.package_manager.SPACK
-        conan = config.g_package_manager == config.package_manager.CONAN
+        spack = hpccm.config.g_package_manager == hpccm.config.package_manager.SPACK
+        conan = hpccm.config.g_package_manager == hpccm.config.package_manager.CONAN
         self.__commands.extend([
             # TODO: --depth=1 --> ogs --version does not work
             '{}git clone --branch {} https://github.com/{} src'.format(

@@ -12,8 +12,10 @@ from __future__ import print_function
 import os
 
 from hpccm.building_blocks.packages import packages
-from hpccm.building_blocks.scif_app import scif_app
+from hpccm.building_blocks.scif import scif
 from hpccm.primitives.comment import comment
+from hpccm.primitives.label import label
+from hpccm.primitives.shell import shell
 from hpccm.templates.ConfigureMake import ConfigureMake
 from hpccm.templates.rm import rm
 from hpccm.templates.tar import tar
@@ -51,12 +53,10 @@ class osu_benchmarks(ConfigureMake, rm, tar, wget):
         instructions = [
             comment('OSE benchmarks version {}'.format(self.__version))]
         instructions.append(packages(ospackages=self.__ospackages))
-
-        instructions.append(scif_app(
-            name='osu',
-            labels={'osu.version': self.__version},
-            install=self.__commands
-        ))
+        app = scif(name='osu')
+        app += label(metadata={'osu.version': self.__version})
+        app += shell(commands=self.__commands)
+        instructions.append(app)
 
         return '\n'.join(str(x) for x in instructions)
 
