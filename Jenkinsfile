@@ -45,9 +45,10 @@ pipeline {
                 --pm ${params.pm} --cmake_args '${params.cmake}' ${upload} \
                 ${convert}
             """.stripIndent()
-          if (params.deploy)
-            sh "cp -f _out/**/*.simg /datadrive/images"
           }
+          if (params.deploy)
+            sh """shopt -s globstar
+                  cp -f _out/**/*.simg /datadrive/images""".stripIndent()
         }
       }
     }
