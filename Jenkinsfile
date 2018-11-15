@@ -23,6 +23,8 @@ pipeline {
     stage('Build') {
       steps {
         script {
+          upload = ""
+          convert = ""
           if (params.upload)
             upload = '--upload'
           if (params.convert)
@@ -31,7 +33,7 @@ pipeline {
             sh """
               python3 -m venv ./venv
               . ./venv/bin/activate
-              pip install --upgrade \
+              pip install --upgrade requests \
                 https://github.com/bilke/hpc-container-maker/archive/dev.zip
               ml singularity/2.6.0
               alias singularity=`which singularity`

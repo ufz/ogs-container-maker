@@ -173,6 +173,7 @@ elif pm == config.package_manager.GUIX:
     print('guix not implemented.')
 
 if ogs_version != 'off':
+    Stage0 += raw(docker='ARG OGS_COMMIT_HASH=0')
     Stage0 += ogs(version=ogs_version, toolchain=toolchain,
                   cmake_args=cmake_args, parallel=multiprocessing.cpu_count()-1,
                   app='ogs', skip_lfs=True, remove_dev=True)

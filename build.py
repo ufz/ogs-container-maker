@@ -9,6 +9,8 @@
 # easybuild toolchain: 2017b (2.1.1), 2018a (2.1.2), 2018b (3.1.1)
 import argparse
 import itertools
+import json
+import requests
 from subprocess import run
 
 cli = argparse.ArgumentParser()
@@ -54,9 +56,19 @@ for build in c:
             shell=True)
         run(f"sudo chown $USER:$USER {out_dir}/{img_file}", shell=True)
     else:
+        # Get git commit hash and construct image tag name
+        repo, branch = ogs.split("@")
+        url = f"https://api.github.com/repos/{repo}/commits?sha={branch}"
+        response = requests.get(url)
+        response_data = json.loads(response.text)
+        commit_hash = response_data[0]['sha']
         ogs_tag = ogs.replace('/', '.').replace('@', '.')
         tag = f"registry.opengeosys.org/ogs/ogs/openmpi-{ompi}/{pm}:{ogs_tag}"
-        run(f"docker build -t {tag} -f {out_dir}/Dockerfile .", shell=True)
+
+        build_cmd = (f"docker build --build-arg OGS_COMMIT_HASH={commit_hash} "
+                     f"-t {tag} -f {out_dir}/Dockerfile .")
+        print(f"Running: {build_cmd}")
+        run(build_cmd, shell=True)
         if args.upload:
             run(f"docker push {tag}", shell=True)
         if args.convert:
