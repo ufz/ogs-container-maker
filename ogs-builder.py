@@ -48,7 +48,6 @@ ompi = True
 if ompi_version == "off":
     ompi = False
     infiniband = False
-    benchmarks = False
 if jenkins:
     ogs_version = 'off'
 
@@ -131,6 +130,9 @@ if ompi:
         'org.opengeosys.infiniband': infiniband
     })
 
+    if benchmarks:
+        Stage0 += osu_benchmarks()
+
 Stage0 += ogs_base()
 if pm == config.package_manager.CONAN:
     Stage0 += pm_conan()
@@ -177,9 +179,6 @@ if ogs_version != 'off':
     Stage0 += ogs(version=ogs_version, toolchain=toolchain,
                   cmake_args=cmake_args, parallel=multiprocessing.cpu_count()-1,
                   app='ogs', skip_lfs=True, remove_dev=True)
-
-if benchmarks:
-    Stage0 += osu_benchmarks()
 
 if jenkins:
     Stage0 += jenkins_node()
