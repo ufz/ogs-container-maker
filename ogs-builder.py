@@ -11,7 +11,6 @@ Other options:
 - infiniband=false Disables infinband
 """
 # pylint: disable=invalid-name, undefined-variable, used-before-assignment
-import config
 import hpccm
 import logging
 import multiprocessing
@@ -23,7 +22,7 @@ from building_blocks.osu_benchmarks import osu_benchmarks
 from building_blocks.pm_conan import pm_conan
 from building_blocks.pm_easybuild import pm_easybuild
 from building_blocks.pm_spack import pm_spack
-from config import package_manager
+from base.config import package_manager
 from hpccm.common import linux_distro, container_type
 
 singularity = hpccm.config.g_ctype == container_type.SINGULARITY
