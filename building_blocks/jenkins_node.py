@@ -56,7 +56,8 @@ class jenkins_node(rm, tar, wget):
       # For Doxygen diagrams and bibtex references
       packages(ospackages=['graphviz', 'texlive-base', 'sudo']),
       shell(commands=[
-        'adduser --uid 500 --disabled-password --gecos "" jenkins',
+        'groupadd --gid 1001 jenkins',
+        'adduser --uid 500 --gid 1001 --disabled-password --gecos "" jenkins',
         'echo "jenkins ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers',
         'echo "jenkins:jenkins" | chpasswd'
       ]),
