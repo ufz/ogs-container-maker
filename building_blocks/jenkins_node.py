@@ -32,7 +32,6 @@ class jenkins_node(rm, tar, wget):
     # Trouble getting MRO with kwargs working correctly, so just call
     # the parent class constructors manually for now.
     # super(python, self).__init__(**kwargs)
-    ConfigureMake.__init__(self, **kwargs)
     rm.__init__(self, **kwargs)
     tar.__init__(self, **kwargs)
     wget.__init__(self, **kwargs)
