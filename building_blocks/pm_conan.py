@@ -15,7 +15,7 @@ from hpccm.primitives.label import label
 from hpccm.primitives.shell import shell
 
 
-class pm_conan():
+class pm_conan(object):
     """Package manager Conan building block"""
 
     def __init__(self, **kwargs):

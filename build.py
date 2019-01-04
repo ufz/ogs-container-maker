@@ -34,24 +34,24 @@ args = cli.parse_args()
 
 c = list(itertools.product(args.format, args.ogs, args.pm, args.ompi))
 for build in c:
-    format = build[0]
+    __format = build[0]
     ogs = build[1]
     pm = build[2]
     ompi = build[3]
 
-    out_dir = f"_out/{format}/openmpi-{ompi}/{pm}"
+    out_dir = f"_out/{__format}/openmpi-{ompi}/{pm}"
 
     # TODO: handle exit code of run (for Jenkins)
-    print('Run:\n' + f"hpccm --recipe {args.recipe} --format {format} --out {out_dir} " +
-        f"--userarg ogs={ogs} pm={pm} ompi={ompi} " +
-        f"cmake_args='{args.cmake_args}'")
-    run(f"hpccm --recipe {args.recipe} --format {format} --out {out_dir} " +
+    print('Run:\n' + f"hpccm --recipe {args.recipe} --format {__format} --out {out_dir} " +
+          f"--userarg ogs={ogs} pm={pm} ompi={ompi} " +
+          f"cmake_args='{args.cmake_args}'")
+    run(f"hpccm --recipe {args.recipe} --format {__format} --out {out_dir} " +
         f"--userarg ogs={ogs} pm={pm} ompi={ompi} " +
         f"cmake_args='{args.cmake_args}'",
         shell=True)
 
     img_file = f"ogs-openmpi-{ompi}-{pm}.simg"
-    if format == 'singularity':
+    if __format == 'singularity':
         run(f"sudo `which singularity` build {out_dir}/{img_file} {out_dir}/Singularity.def",
             shell=True)
         run(f"sudo chown $USER:$USER {out_dir}/{img_file}", shell=True)

@@ -51,8 +51,8 @@ class osu_benchmarks(ConfigureMake, rm, tar, wget):
     def __str__(self):
         """String representation of the building block"""
         instructions = [
-            comment('OSE benchmarks version {}'.format(self.__version))]
-        instructions.append(packages(ospackages=self.__ospackages))
+            comment('OSE benchmarks version {}'.format(self.__version)),
+            packages(ospackages=self.__ospackages)]
         app = scif(name='osu')
         app += label(metadata={'osu.version': self.__version})
         app += shell(commands=self.__commands)

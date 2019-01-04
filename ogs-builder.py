@@ -8,7 +8,7 @@ $ hpccm.py --recipe ogs-builder.py --userarg ompi=2.1.3 centos=true \
 
 Other options:
 - ogs=false Builds a MPI test container
-- infiniband=false Disables infinband
+- infiniband=false Disables infiniband
 """
 # pylint: disable=invalid-name, undefined-variable, used-before-assignment
 import hpccm

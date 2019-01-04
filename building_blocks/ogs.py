@@ -18,7 +18,6 @@ from hpccm.primitives.runscript import runscript
 from hpccm.primitives.shell import shell
 from hpccm.templates.CMakeBuild import CMakeBuild
 from hpccm.toolchain import toolchain
-import hpccm
 import base
 import re
 
@@ -35,7 +34,7 @@ class ogs(CMakeBuild):
         CMakeBuild.__init__(self, **kwargs)
 
         self.__version = kwargs.get('version', 'ufz/ogs@master')
-        m = re.search('(.+\/.*)@(.*)', self.__version)
+        m = re.search('(.+/.*)@(.*)', self.__version)
         self.__repo = m.group(1)
         self.__branch = m.group(2)
 
@@ -56,12 +55,10 @@ class ogs(CMakeBuild):
 
     def __str__(self):
         """String representation of the building block"""
-        instructions = []
-        instructions.append(comment(
+        instructions = [comment(
             'OpenGeoSys build from repo {0}, branch {1}'.format(self.__repo,
                                                                 self.__branch)
-        ))
-        instructions.append(packages(ospackages=self.__ospackages))
+        ), packages(ospackages=self.__ospackages)]
 
         app = scif(name='ogs')
         app += runscript(commands=['ogs'])

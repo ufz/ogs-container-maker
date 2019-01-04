@@ -13,10 +13,9 @@ from hpccm.primitives.comment import comment
 from hpccm.primitives.environment import environment
 from hpccm.primitives.label import label
 from hpccm.primitives.shell import shell
-from hpccm.templates.git import git
 
 
-class pm_easybuild():
+class pm_easybuild(object):
   """Package manager easybuild building block"""
 
   def __init__(self, **kwargs):
@@ -24,31 +23,32 @@ class pm_easybuild():
 
     # Trouble getting MRO with kwargs working correctly, so just call
     # the parent class constructors manually for now.
-    #super(python, self).__init__(**kwargs)
+    # super(python, self).__init__(**kwargs)
 
     self.__ospackages = kwargs.get('ospackages', [])
 
-    self.__commands = [] # Filled in by __setup()
-    self.__wd = '/var/tmp' # working directory
+    self.__commands = []  # Filled in by __setup()
+    self.__wd = '/var/tmp'  # working directory
 
     self.__setup()
 
   def __str__(self):
     """String representation of the building block"""
-    instructions = [comment(__doc__, reformat=False)]
-    instructions.append(packages(ospackages=self.__ospackages))
-    instructions.append(packages(yum=['xz'], apt=['xz-utils']))
-    instructions.append(lmod(version='7.8.6'))
-    instructions.append(shell(commands=self.__commands))
+    instructions = [
+      comment(__doc__, reformat=False),
+      packages(ospackages=self.__ospackages),
+      packages(yum=['xz'], apt=['xz-utils']),
+      lmod(version='7.8.6'), shell(commands=self.__commands),
+      environment(variables={
+        'MODULEPATH': '/opt/easybuild/modules/all:/home/easybuild/.local/'
+                      'easybuild/modules/all:$MODULEPATH',
+        'FORCE_UNSAFE_CONFIGURE': '1',
+        # https://github.com/docker-library/python/blob/edde349541e11f66dcc79cde1674317d065ddbdd/3.6/Dockerfile#L8
+        'LANG': 'C.UTF-8'
+      }), label(metadata={'PACKAGE_MANAGER': 'easybuild'})
+    ]
     # Without the FORCE_UNSAFE_CONFIGURE env var some spack package
     # installations may fail due to running as root.
-    instructions.append(environment(variables={
-      'MODULEPATH': '/opt/easybuild/modules/all:/home/easybuild/.local/easybuild/modules/all:$MODULEPATH',
-      'FORCE_UNSAFE_CONFIGURE': '1',
-      # https://github.com/docker-library/python/blob/edde349541e11f66dcc79cde1674317d065ddbdd/3.6/Dockerfile#L8
-      'LANG': 'C.UTF-8'
-    }))
-    instructions.append(label(metadata={'PACKAGE_MANAGER': 'easybuild'}))
 
     return '\n'.join(str(x) for x in instructions)
 

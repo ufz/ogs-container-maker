@@ -38,8 +38,8 @@ class ogs_base(ConfigureMake, rm, tar, wget):
 
     self.__ospackages = kwargs.get('ospackages', [])
 
-    self.__commands = [] # Filled in by __setup()
-    self.__wd = '/var/tmp' # working directory
+    self.__commands = []  # Filled in by __setup()
+    self.__wd = '/var/tmp'  # working directory
 
     self.__setup()
 
@@ -57,17 +57,19 @@ class ogs_base(ConfigureMake, rm, tar, wget):
     if hpccm.config.g_linux_distro == linux_distro.CENTOS:
       dist = 'rpm'
     instructions.append(shell(commands=[
-        "curl -s https://packagecloud.io/install/repositories/github/git-lfs/script.{0}.sh | bash".format(dist)
+        "curl -s https://packagecloud.io/install/repositories/github/git-lfs/"
+        "script.{0}.sh | bash".format(dist)
       ]))
     instructions.append(packages(ospackages=self.__ospackages,
-      apt_ppas=['ppa:git-core/ppa'], epel=True))
+                                 apt_ppas=['ppa:git-core/ppa'], epel=True))
 
     instructions.append(shell(commands=self.__commands))
 
     return '\n'.join(str(x) for x in instructions)
 
   def __setup(self):
-    self.__ospackages.extend(['git', 'git-lfs', 'make', 'ninja-build', 'doxygen'])
+    self.__ospackages.extend(['git', 'git-lfs', 'make', 'ninja-build',
+                              'doxygen'])
 
     if hpccm.config.g_ctype == hpccm.container_type.SINGULARITY:
       self.__ospackages.append('locales')

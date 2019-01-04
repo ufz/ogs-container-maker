@@ -9,16 +9,11 @@ from __future__ import absolute_import
 from __future__ import unicode_literals
 from __future__ import print_function
 
-import logging # pylint: disable=unused-import
-import os
-import hpccm.config
+import logging  # pylint: disable=unused-import
 
-from hpccm.building_blocks.gnu import gnu
 from hpccm.building_blocks.packages import packages
-from hpccm.common import linux_distro
 from hpccm.primitives.comment import comment
 from hpccm.primitives.environment import environment
-from hpccm.primitives.label import label
 from hpccm.primitives.shell import shell
 from hpccm.primitives.user import user
 from hpccm.primitives.workdir import workdir
@@ -26,7 +21,6 @@ from hpccm.templates.ConfigureMake import ConfigureMake
 from hpccm.templates.rm import rm
 from hpccm.templates.tar import tar
 from hpccm.templates.wget import wget
-from hpccm.toolchain import toolchain
 
 
 class jenkins_node(rm, tar, wget):
@@ -37,14 +31,14 @@ class jenkins_node(rm, tar, wget):
 
     # Trouble getting MRO with kwargs working correctly, so just call
     # the parent class constructors manually for now.
-    #super(python, self).__init__(**kwargs)
+    # super(python, self).__init__(**kwargs)
     ConfigureMake.__init__(self, **kwargs)
     rm.__init__(self, **kwargs)
     tar.__init__(self, **kwargs)
     wget.__init__(self, **kwargs)
 
-    self.__commands = [] # Filled in by __setup()
-    self.__wd = '/var/tmp' # working directory
+    self.__commands = []  # Filled in by __setup()
+    self.__wd = '/var/tmp'  # working directory
 
 
   def __str__(self):
