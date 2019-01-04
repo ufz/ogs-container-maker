@@ -65,9 +65,9 @@ if pm == 'spack' and not ompi:
 
 # Stage0 += comment(__doc__, reformat=False)
 
-# Choose between either Ubuntu 16.04 (default) or CentOS 7
+# Choose between either Ubuntu 17.10 (default) or CentOS 7
 # Add '--userarg centos=true' to the command line to select CentOS
-image = 'ubuntu:16.04'
+image = 'ubuntu:17.10'
 if centos:
     image = 'centos:7'
 
@@ -78,7 +78,7 @@ if centos:
 Stage0 += packages(ospackages=['wget', 'tar', 'curl'])
 
 # base compiler
-gcc_version = '4.9'
+gcc_version = '6'
 clang_version = '6.0'
 if hpccm.config.g_linux_distro == linux_distro.CENTOS:
     gcc_version = '6'  # installs devtoolset-6 which is gcc-6.3.1

@@ -19,6 +19,7 @@ from hpccm.primitives.shell import shell
 from hpccm.templates.CMakeBuild import CMakeBuild
 from hpccm.toolchain import toolchain
 import hpccm
+import base
 import re
 
 
@@ -81,8 +82,8 @@ class ogs(CMakeBuild):
         return '\n'.join(str(x) for x in instructions)
 
     def __setup(self):
-        spack = hpccm.config.g_package_manager == hpccm.config.package_manager.SPACK
-        conan = hpccm.config.g_package_manager == hpccm.config.package_manager.CONAN
+        spack = base.config.g_package_manager == base.config.package_manager.SPACK
+        conan = base.config.g_package_manager == base.config.package_manager.CONAN
         self.__commands.extend([
             # TODO: --depth=1 --> ogs --version does not work
             '{}git clone --branch {} https://github.com/{} src'.format(
