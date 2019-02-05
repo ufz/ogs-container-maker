@@ -48,7 +48,7 @@ class ogs_base(ConfigureMake, rm, tar, wget):
     instructions = [comment(__doc__, reformat=False)]
     dist = 'deb'
     instructions.extend([
-      python(),
+      python(python2=False),
       packages(
         apt=['python3-setuptools', 'python3-pip', 'python3-dev', 'python-dev'],
         yum=['python34-setuptools', 'python34-dev', 'python-dev'])
@@ -95,7 +95,9 @@ class ogs_base(ConfigureMake, rm, tar, wget):
     self.__commands.append('mkdir -p /apps /scratch /lustre /work /projects')
 
   def runtime(self, _from='0'):
-    """Install the runtime from a full build in a previous stage.  In this
-       case there is no difference between the runtime and the
-       full build."""
-    return str(self)
+    p = python(python2=False)
+    instructions = []
+    instructions.append(comment(__doc__, reformat=False))
+    instructions.append(p.runtime())
+
+    return '\n'.join(str(x) for x in instructions)

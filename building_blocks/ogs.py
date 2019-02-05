@@ -1,5 +1,3 @@
-
-
 # pylint: disable=invalid-name, too-few-public-methods
 # pylint: disable=too-many-instance-attributes
 
@@ -10,8 +8,8 @@ from __future__ import unicode_literals
 from __future__ import print_function
 
 from hpccm.building_blocks.packages import packages
-from hpccm.building_blocks.scif import scif
 from hpccm.primitives.comment import comment
+from hpccm.primitives.copy import copy
 from hpccm.primitives.environment import environment
 from hpccm.primitives.label import label
 from hpccm.primitives.runscript import runscript
@@ -60,15 +58,9 @@ class ogs(CMakeBuild):
                                                                 self.__branch)
         ), packages(ospackages=self.__ospackages)]
 
-        app = scif(name='ogs')
-        app += runscript(commands=['ogs'])
-        app += shell(commands=self.__commands)
-
         instructions.extend([
-            app,
-            # Add to PATH and set as global runscript
+            shell(commands=self.__commands),
             environment(variables={'PATH': '/scif/apps/ogs/bin:$PATH'}),
-            runscript(commands=['ogs']),
             label(metadata={
                 'org.opengeosys.version': self.__version,
                 'org.opengeosys.configure_opts': '\'' +
@@ -82,6 +74,7 @@ class ogs(CMakeBuild):
         spack = base.config.g_package_manager == base.config.package_manager.SPACK
         conan = base.config.g_package_manager == base.config.package_manager.CONAN
         self.__commands.extend([
+            'mkdir -p {0} && cd {0}'.format(self.__prefix),
             # TODO: --depth=1 --> ogs --version does not work
             '{}git clone --branch {} https://github.com/{} src'.format(
                 'GIT_LFS_SKIP_SMUDGE=1 ' if self.__skip_lfs else '',
@@ -125,7 +118,10 @@ class ogs(CMakeBuild):
             self.__commands.append(self.build_step(target='clean'))
 
     def runtime(self, _from='0'):
-        """Install the runtime from a full build in a previous stage.  In this
-           case there is no difference between the runtime and the
-           full build."""
-        return str(self)
+        instructions = []
+        instructions.append(comment(
+            'OpenGeoSys build from repo {0}, branch {1}'.format(self.__repo,
+                                                                self.__branch)))
+        instructions.append(copy(_from=_from, src=self.__prefix,
+                                dest=self.__prefix))
+        return '\n'.join(str(x) for x in instructions)

@@ -54,7 +54,5 @@ class pm_conan(object):
         return '\n'.join(str(x) for x in instructions)
 
     def runtime(self, _from='0'):
-        """Install the runtime from a full build in a previous stage.  In this
-           case there is no difference between the runtime and the
-           full build."""
-        return str(self)
+        """No runtime."""
+        return ''

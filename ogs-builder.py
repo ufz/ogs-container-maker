@@ -4,7 +4,7 @@ Note: no validation is performed on the user supplied information.
 Usage:
 $ hpccm.py --recipe ogs-builder.py --userarg ompi=2.1.3 centos=true \
   repo=https://github.com/bilke/ogs branch=singularity \
-  cmake="-DOGS_BUILD_UTILS=ON -DOGS_BUILD_TESTS=OFF"
+  cmake="-DOGS_BUILD_UTILS;ON"
 
 Other options:
 - ogs=false Builds a MPI test container
@@ -13,6 +13,7 @@ Other options:
 # pylint: disable=invalid-name, undefined-variable, used-before-assignment
 import hpccm
 import logging
+import math
 import multiprocessing
 
 from building_blocks.jenkins_node import jenkins_node
@@ -62,8 +63,6 @@ if pm == 'spack' and not ompi:
 ######
 # Devel stage
 ######
-
-# Stage0 += comment(__doc__, reformat=False)
 
 # Choose between either Ubuntu 17.10 (default) or CentOS 7
 # Add '--userarg centos=true' to the command line to select CentOS
@@ -173,7 +172,7 @@ elif pm == package_manager.GUIX:
 if ogs_version != 'off':
     Stage0 += raw(docker='ARG OGS_COMMIT_HASH=0')
     Stage0 += ogs(version=ogs_version, toolchain=toolchain,
-                  cmake_args=cmake_args, parallel=multiprocessing.cpu_count()-1,
+                  cmake_args=cmake_args, parallel=math.ceil(multiprocessing.cpu_count()/2),
                   app='ogs', skip_lfs=True, remove_dev=True)
 
 if jenkins:
@@ -182,3 +181,5 @@ if jenkins:
 ######
 # Runtime image
 ######
+Stage1.baseimage(image=image)
+Stage1 += Stage0.runtime()
