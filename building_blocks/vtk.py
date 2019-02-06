@@ -41,7 +41,7 @@ class vtk(CMakeBuild, rm, tar, wget):
     # Examples
 
     ```python
-    VTK(version='7.1.1')
+    vtk(version='7.1.1')
     ```
 
     """
@@ -78,8 +78,7 @@ class vtk(CMakeBuild, rm, tar, wget):
         """String representation of the building block"""
 
         instructions = []
-        instructions.append(comment(
-            'VTK version {}'.format(self.__version)))
+        instructions.append(comment('VTK {}'.format(self.__version)))
         instructions.append(packages(ospackages=self.__ospackages))
         instructions.append(shell(commands=self.__commands))
         if self.__environment_variables:
@@ -139,7 +138,7 @@ class vtk(CMakeBuild, rm, tar, wget):
         if not self.__shared:
             return str(comment('VTK (empty)'))
         instructions = []
-        instructions.append(comment('VTK'))
+        instructions.append(comment('VTK {}'.format(self.__version)))
         instructions.append(copy(_from=_from, src=self.__prefix,
                                  dest=self.__prefix))
 

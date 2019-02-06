@@ -51,6 +51,7 @@ class ogs(CMakeBuild, rm,):
 
         self.__setup()
 
+
     def __str__(self):
         """String representation of the building block"""
         instructions = []

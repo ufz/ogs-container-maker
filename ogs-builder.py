@@ -21,6 +21,7 @@ from building_blocks.jenkins_node import jenkins_node
 from building_blocks.ogs import ogs
 from building_blocks.ogs_base import ogs_base
 from building_blocks.osu_benchmarks import osu_benchmarks
+from building_blocks.petsc import petsc
 from building_blocks.pm_conan import pm_conan
 from building_blocks.pm_easybuild import pm_easybuild
 from building_blocks.pm_spack import pm_spack
@@ -110,17 +111,20 @@ if ompi:
     toolchain = mpicc.toolchain
     Stage0 += mpicc
 
-    mpi_bw = scif(name="mpi-bw")
-    mpi_bw += runscript(commands=['mpi-bandwidth'])
-    mpi_bw += shell(commands=[
-        'wget -q -nc --no-check-certificate -P src '
-        'https://computing.llnl.gov/tutorials/mpi/samples/C/mpi_bandwidth.c',
-        'mkdir -p bin',
-        'mpicc -o bin/mpi-bandwidth src/mpi_bandwidth.c'
-    ])
+    # mpi_bw = scif(name="mpi-bw")
+    #Stage0 += comment('mpi-bw')
+    # mpi_bw += runscript(commands=['mpi-bandwidth'])
+    #Stage0 += shell(commands=[
+    #    'mkdir -p /usr/local/mpi-bw',
+    #    'cd /usr/local/mpi-bw',
+    #    'wget -q -nc --no-check-certificate -P src '
+    #    'https://computing.llnl.gov/tutorials/mpi/samples/C/mpi_bandwidth.c',
+    #    'mkdir -p bin',
+    #    'mpicc -o bin/mpi-bandwidth src/mpi_bandwidth.c'
+    #])
     # help This app provides a MPI bandwidth test program
     # test mpirun -np 2 mpi-bandwidth
-    Stage0 += mpi_bw
+    # Stage0 += mpi_bw
 
     Stage0 += label(metadata={
         'org.opengeosys.mpi': 'openmpi',
@@ -136,41 +140,6 @@ if pm == package_manager.CONAN:
     Stage0 += pm_conan()
     if not jenkins:
       Stage0 += environment(variables={'CONAN_SYSREQUIRES_SUDO': 0})
-elif pm == package_manager.SPACK:
-    Stage0 += pm_spack()
-    Stage0 += copy(src='files/spack/packages.yaml',
-                   dest='/etc/spack/packages.yaml', _mkdir=True)
-    Stage0 += copy(src='files/spack/spack-repo',
-                   dest='/opt/spack/var/spack/repos/ogs', _post=True)
-    Stage0 += shell(commands=['spack repo add /opt/spack/var/spack/repos/ogs'])
-    Stage0 += packages(yum=['mesa-libGL-devel', 'bzip2'],
-                       apt=['libgl1-mesa-dev', 'libxt-dev', 'bzip2'])
-    Stage0 += shell(commands=[
-      'spack install eigen@3.2.9',
-      'spack install boost@1.64.0',
-      'spack install ogs.vtk@8.1.1{}'.format('~mpi' if not ompi else ''),
-      'spack install petsc@3.8.3',
-      'spack clean --all'
-    ])
-
-elif pm == package_manager.EASYBUILD:
-    pm_instance = pm_easybuild()
-    Stage0 += pm_instance
-    Stage0 += pm_instance.install(
-        ospackages=['libibverbs-dev', 'libncurses5-dev'],
-        configs=[
-            'Eigen-3.3.4.eb',
-            'Boost-1.66.0-foss-2018a.eb',
-            # 'VTK-8.1.0-foss-2018a-Python-3.6.4.eb'
-        ])
-    Stage0 += pm_instance.install(configs=[
-        'Python-3.6.4-foss-2018a.eb'
-    ])
-    Stage0 += pm_instance.install(configs=[
-        'VTK-8.1.0-foss-2018a-Python-3.6.4.eb'
-    ])
-elif pm == package_manager.GUIX:
-    print('guix not implemented.')
 elif pm == package_manager.SYSTEM:
     Stage0 += boost()  # header only?
     Stage0 += environment(variables={'BOOST_ROOT': '/usr/local/boost'})
@@ -181,6 +150,8 @@ elif pm == package_manager.SYSTEM:
         '-DModule_vtkIOXML=ON'
     ]
     Stage0 += vtk(cmake_args=vtk_cmake_args, toolchain=toolchain)
+    if ompi:
+        Stage0 += petsc()
 
 if ogs_version != 'off':
     Stage0 += raw(docker='ARG OGS_COMMIT_HASH=0')

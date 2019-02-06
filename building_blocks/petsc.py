@@ -1,18 +1,20 @@
-
-
 # pylint: disable=invalid-name, too-few-public-methods
 # pylint: disable=too-many-instance-attributes
 
-"""OSU benchmarks building block"""
+"""PETSc building block"""
 
 from __future__ import absolute_import
 from __future__ import unicode_literals
 from __future__ import print_function
 
+import logging # pylint: disable=unused-import
+import re
 import os
 
+import hpccm.config
+
 from hpccm.building_blocks.packages import packages
-from hpccm.building_blocks.scif import scif
+from hpccm.common import linux_distro
 from hpccm.primitives.comment import comment
 from hpccm.primitives.copy import copy
 from hpccm.primitives.environment import environment
@@ -25,8 +27,25 @@ from hpccm.templates.wget import wget
 from hpccm.toolchain import toolchain
 
 
-class osu_benchmarks(ConfigureMake, rm, tar, wget):
-    """OSU benchmarks building block"""
+class petsc(ConfigureMake, rm, tar, wget):
+    """The `PETSc` building block downloads and installs the
+    [VTK](https://vtk.org/) component.
+
+    # Parameters
+
+    prefix: The top level installation location.  The default value
+    is `/usr/local/petsc`.
+
+    version: The version of PETSc source to download.  The default
+    value is `3.8.3`.
+
+    # Examples
+
+    ```python
+    petsc(version='3.8.1')
+    ```
+
+    """
 
     def __init__(self, **kwargs):
         """Initialize building block"""
@@ -36,12 +55,14 @@ class osu_benchmarks(ConfigureMake, rm, tar, wget):
         tar.__init__(self, **kwargs)
         wget.__init__(self, **kwargs)
 
-        self.__ospackages = kwargs.get('ospackages', ['wget', 'tar'])
-        self.prefix = kwargs.get('prefix', '/usr/local/osu-benchmarks')
-        self.__version = kwargs.get('version', '5.4.2')
+        self.__ospackages = kwargs.get('ospackages', [])
+        self.parallel = 1
+        self.prefix = kwargs.get('prefix', '/usr/local/petsc')
         self.__toolchain = toolchain(CC='mpicc', CXX='mpicxx')
         self.configure_opts = kwargs.get('configure_opts', [])
-        self.__wd = '/var/tmp'  # working directory
+        self.__version = kwargs.get('version', '3.8.3')
+        self.__wd = '/var/tmp' # working directory
+        self.__baseurl = kwargs.get('baseurl', 'http://ftp.mcs.anl.gov/pub/petsc/release-snapshots')
 
         # Filled in by __setup():
         self.__commands = []
@@ -50,11 +71,11 @@ class osu_benchmarks(ConfigureMake, rm, tar, wget):
 
         self.__setup()
 
-
     def __str__(self):
         """String representation of the building block"""
+
         instructions = []
-        instructions.append(comment('OSU benchmarks version {}'.format(self.__version)))
+        instructions.append(comment('PETSc {}'.format(self.__version)))
         instructions.append(packages(ospackages=self.__ospackages))
         instructions.append(shell(commands=self.__commands))
         if self.__environment_variables:
@@ -62,47 +83,59 @@ class osu_benchmarks(ConfigureMake, rm, tar, wget):
                 variables=self.__environment_variables))
         if self.__labels:
             instructions.append(label(metadata=self.__labels))
-
         return '\n'.join(str(x) for x in instructions)
-
 
     def __setup(self):
         """Construct the series of shell commands, i.e., fill in
            self.__commands"""
 
         # Get the source
-        directory = 'osu-micro-benchmarks-{}'.format(self.__version)
-        tarball = '{}.tar.gz'.format(directory)
-        self.__commands.append(self.download_step(
-            url="http://mvapich.cse.ohio-state.edu/download/mvapich/{}".format(
-                tarball),
-            directory=self.__wd))
+        directory = 'petsc-{}'.format(self.__version)
+        tarball = 'petsc-lite-{}.tar.gz'.format(self.__version)
+        url = '{0}/{1}'.format(self.__baseurl, tarball)
+
+        self.__commands.append(self.download_step(url=url,
+                                                  directory=self.__wd))
         self.__commands.append(self.untar_step(
             tarball=os.path.join(self.__wd, tarball), directory=self.__wd))
 
+        # Default configure opts
+        self.configure_opts.extend([
+            'CC={}'.format(self.__toolchain.CC),
+            'CXX={}'.format(self.__toolchain.CXX),
+            '--CFLAGS=\'-O3\'',
+            '--CXXFLAGS=\'-O3\'',
+            '--FFLAGS=\'-O3\'',
+            '--with-debugging=no',
+            '--with-fc=0',
+            '--download-f2cblaslapack=1'
+        ])
+
         # Configure, build, install
         self.__commands.append(self.configure_step(
-            directory=os.path.join(self.__wd, directory),
-            toolchain=self.__toolchain))
+            directory=os.path.join(self.__wd, directory)))
         self.__commands.append(self.build_step())
         self.__commands.append(self.install_step())
 
-        # Cleanup
+        # Cleanup tarball and directory
         self.__commands.append(self.cleanup_step(
             items=[os.path.join(self.__wd, tarball),
                    os.path.join(self.__wd, directory)]))
 
         # Environment
-        self.__environment_variables['PATH'] = '{0}/bin:$PATH'.format(self.prefix)
+        self.__environment_variables['PETSC_DIR'] = '{}'.format(self.prefix)
+        libpath = os.path.join(self.prefix, 'lib')
+        self.__environment_variables['LD_LIBRARY_PATH'] = '{}:$LD_LIBRARY_PATH'.format(libpath)
 
         # Labels
-        self.__labels['osu.version'] = self.__version
+        self.__labels['petsc.version'] = self.__version
 
     def runtime(self, _from='0'):
         instructions = []
-        instructions.append(comment('OSU benchmarks version {}'.format(self.__version)))
+        instructions.append(comment('PETSc {}'.format(self.__version)))
         instructions.append(copy(_from=_from, src=self.prefix,
-                                dest=self.prefix))
+                                 dest=self.prefix))
+
         if self.__environment_variables:
             instructions.append(environment(
                 variables=self.__environment_variables))
