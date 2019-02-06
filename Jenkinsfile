@@ -6,17 +6,17 @@ pipeline {
   parameters {
     string(name: 'ogs', defaultValue: 'ufz/ogs@master',
            description: 'Build OGS in container (Github user/repo@branch)')
-    string(name: 'format', defaultValue: 'docker singularity',
-           description: 'Container format')
-    string(name: 'openmpi_versions', defaultValue: 'off 2.1.1 2.1.5 3.0.1 3.1.2',
-           description: 'OpenMPI versions')
-    string(name: 'pm', defaultValue: 'conan spack',
-           description: 'Package manager to install third-party libs')
+    string(name: 'format', defaultValue: 'docker',
+           description: 'Container format, e.g.: docker singularity')
+    string(name: 'openmpi_versions', defaultValue: '3.1.2',
+           description: 'OpenMPI versions, e.g.: off 2.1.2 2.1.5 3.0.1 3.1.2, ...')
+    string(name: 'pm', defaultValue: 'system',
+           description: 'Package manager to install third-party libs, e.g.: system conan')
     string(name: 'cmake', defaultValue: '',
            description: 'CMake args, use : instead of = , e.g. "-DFOO:BAR"')
     booleanParam(name: 'upload', defaultValue: true,
            description: 'Upload docker image to registry?')
-    booleanParam(name: 'convert', defaultValue: false,
+    booleanParam(name: 'convert', defaultValue: true,
            description: 'Convert docker image to Singularity?')
     booleanParam(name: 'deploy', defaultValue: false,
            description: 'Deploy Singularity images')
@@ -35,8 +35,7 @@ pipeline {
             sh """
               python3 -m venv ./venv
               . ./venv/bin/activate
-              pip install --upgrade requests \
-                https://github.com/bilke/hpc-container-maker/archive/dev.zip
+              pip install --upgrade requests hpccm
               ml singularity/2.6.0
               alias singularity=`which singularity`
               export PYTHONPATH="\$PYTHONPATH:./"
@@ -48,7 +47,7 @@ pipeline {
           }
           if (params.deploy)
             sh """shopt -s globstar
-                  cp -f _out/**/*.simg /datadrive/images""".stripIndent()
+                  cp -f _out/**/*.simg /var/images""".stripIndent()
         }
       }
     }

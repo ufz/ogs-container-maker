@@ -2,7 +2,7 @@
 #   --ogs True --ompi off 2.1.1)"
 
 # OpenMPI versions:
-#  Taurus: 1.8.8, 1.10.2, 2.1.0, 2.1.1, 3.0.0
+#  Taurus: 1.8.8, 1.10.2, 2.1.0, 2.1.1, 3.0.0, 3.1.2
 #  Eve: 1.8.8, 1.10.2, 2.1.1
 #  --> 2.1.1
 # https://easybuild.readthedocs.io/en/latest/Common-toolchains.html#common-toolchains-overview
@@ -10,6 +10,7 @@
 import argparse
 import itertools
 import json
+import os
 import requests
 from subprocess import run
 
@@ -19,10 +20,9 @@ cli.add_argument("--format", nargs="*", type=str,
                  choices=['docker', 'singularity'],
                  default=['docker', 'singularity'])
 cli.add_argument("--pm", nargs="*", type=str,
-                 choices=["conan", "spack", "easybuild"],
-                 default=["conan", "spack", "easybuild"])
-cli.add_argument("--ompi", nargs="*", type=str, choices=[
-                 "off", "2.1.1", "2.1.5", "3.0.1", "3.1.2"],
+                 choices=["system", "conan"],
+                 default=["system", "conan"])
+cli.add_argument("--ompi", nargs="*", type=str,
                  default=["off", "2.1.1", "2.1.5", "3.0.1", "3.1.2"])
 cli.add_argument("--ogs", nargs="*", type=str, default=['ufz/ogs@master'])
 cli.add_argument("--upload", dest='upload', action='store_true')
@@ -40,19 +40,26 @@ for build in c:
     ompi = build[3]
 
     out_dir = f"_out/{__format}/openmpi-{ompi}/{pm}"
+    if not os.path.exists(out_dir):
+        os.makedirs(out_dir)
+    definition_file = 'Dockerfile'
+    if __format == 'singularity':
+        definition_file = 'Singularity.def'
+    definition_file = os.path.join(out_dir, definition_file)
+
 
     # TODO: handle exit code of run (for Jenkins)
-    print('Run:\n' + f"hpccm --recipe {args.recipe} --format {__format} --out {out_dir} " +
+    print('Run:\n' + f"hpccm --print-exceptions --recipe {args.recipe} --format {__format} " +
           f"--userarg ogs={ogs} pm={pm} ompi={ompi} " +
           f"cmake_args='{args.cmake_args}'")
-    run(f"hpccm --recipe {args.recipe} --format {__format} --out {out_dir} " +
+    run(f"hpccm --print-exceptions --recipe {args.recipe} --format {__format} " +
         f"--userarg ogs={ogs} pm={pm} ompi={ompi} " +
-        f"cmake_args='{args.cmake_args}'",
+        f"cmake_args='{args.cmake_args}' > {definition_file}",
         shell=True)
 
     img_file = f"ogs-openmpi-{ompi}-{pm}.simg"
     if __format == 'singularity':
-        run(f"sudo `which singularity` build {out_dir}/{img_file} {out_dir}/Singularity.def",
+        run(f"sudo `which singularity` build {out_dir}/{img_file} {definition_file}",
             shell=True)
         run(f"sudo chown $USER:$USER {out_dir}/{img_file}", shell=True)
     else:
@@ -66,7 +73,7 @@ for build in c:
         tag = f"registry.opengeosys.org/ogs/ogs/openmpi-{ompi}/{pm}:{ogs_tag}"
 
         build_cmd = (f"docker build --build-arg OGS_COMMIT_HASH={commit_hash} "
-                     f"-t {tag} -f {out_dir}/Dockerfile .")
+                     f"-t {tag} -f {definition_file} .")
         print(f"Running: {build_cmd}")
         run(build_cmd, shell=True)
         if args.upload:

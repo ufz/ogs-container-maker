@@ -12,7 +12,6 @@ from __future__ import print_function
 import os
 
 from hpccm.building_blocks.packages import packages
-from hpccm.building_blocks.scif import scif
 from hpccm.primitives.comment import comment
 from hpccm.primitives.copy import copy
 from hpccm.primitives.environment import environment

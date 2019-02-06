@@ -45,7 +45,7 @@ ogs_version = USERARG.get('ogs', 'ufz/ogs@master')
 infiniband = str2bool(USERARG.get('infiniband', 'True'))
 benchmarks = str2bool(USERARG.get('benchmarks', 'True'))
 jenkins = str2bool(USERARG.get('jenkins', 'False'))
-pm = package_manager.set(pm=USERARG.get('pm', 'conan'))
+pm = package_manager.set(pm=USERARG.get('pm', 'system'))
 ompi_version = USERARG.get('ompi', 'off')
 ompi = True
 if ompi_version == "off":
@@ -110,21 +110,6 @@ if ompi:
                     toolchain=toolchain)
     toolchain = mpicc.toolchain
     Stage0 += mpicc
-
-    # mpi_bw = scif(name="mpi-bw")
-    #Stage0 += comment('mpi-bw')
-    # mpi_bw += runscript(commands=['mpi-bandwidth'])
-    #Stage0 += shell(commands=[
-    #    'mkdir -p /usr/local/mpi-bw',
-    #    'cd /usr/local/mpi-bw',
-    #    'wget -q -nc --no-check-certificate -P src '
-    #    'https://computing.llnl.gov/tutorials/mpi/samples/C/mpi_bandwidth.c',
-    #    'mkdir -p bin',
-    #    'mpicc -o bin/mpi-bandwidth src/mpi_bandwidth.c'
-    #])
-    # help This app provides a MPI bandwidth test program
-    # test mpirun -np 2 mpi-bandwidth
-    # Stage0 += mpi_bw
 
     Stage0 += label(metadata={
         'org.opengeosys.mpi': 'openmpi',
