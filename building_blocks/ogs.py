@@ -73,6 +73,7 @@ class ogs(CMakeBuild):
     def __setup(self):
         spack = base.config.g_package_manager == base.config.package_manager.SPACK
         conan = base.config.g_package_manager == base.config.package_manager.CONAN
+        system = base.config.g_package_manager == base.config.package_manager.SYSTEM
         self.__commands.extend([
             'mkdir -p {0} && cd {0}'.format(self.__prefix),
             # TODO: --depth=1 --> ogs --version does not work
@@ -124,4 +125,5 @@ class ogs(CMakeBuild):
                                                                 self.__branch)))
         instructions.append(copy(_from=_from, src=self.__prefix,
                                 dest=self.__prefix))
+        instructions.append(environment(variables={'PATH': '/scif/apps/ogs/bin:$PATH'}))
         return '\n'.join(str(x) for x in instructions)

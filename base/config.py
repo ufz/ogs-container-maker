@@ -8,6 +8,7 @@ class package_manager(Enum):
   SPACK = 2
   EASYBUILD = 3
   GUIX = 4
+  SYSTEM = 5
 
   @staticmethod
   def set(pm):
@@ -19,6 +20,8 @@ class package_manager(Enum):
       g_package_manager = package_manager.EASYBUILD
     elif pm == 'guix':
       g_package_manager = package_manager.GUIX
+    elif pm == 'system':
+      g_package_manager = package_manager.SYSTEM
     else:
       raise ValueError('Invalid package manager!')
 

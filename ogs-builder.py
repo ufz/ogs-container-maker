@@ -16,6 +16,7 @@ import logging
 import math
 import multiprocessing
 
+from building_blocks.eigen import eigen
 from building_blocks.jenkins_node import jenkins_node
 from building_blocks.ogs import ogs
 from building_blocks.ogs_base import ogs_base
@@ -23,6 +24,7 @@ from building_blocks.osu_benchmarks import osu_benchmarks
 from building_blocks.pm_conan import pm_conan
 from building_blocks.pm_easybuild import pm_easybuild
 from building_blocks.pm_spack import pm_spack
+from building_blocks.vtk import vtk
 from base.config import package_manager
 from hpccm.common import linux_distro, container_type
 
@@ -168,6 +170,21 @@ elif pm == package_manager.EASYBUILD:
     ])
 elif pm == package_manager.GUIX:
     print('guix not implemented.')
+elif pm == package_manager.SYSTEM:
+    Stage0 += boost()  # header only?
+    Stage0 += environment(variables={'BOOST_ROOT': '/usr/local/boost'})
+    Stage0 += eigen()
+    vtk_cmake_args = [
+        '-DVTK_Group_StandAlone=OFF',
+        '-DVTK_Group_Rendering=OFF',
+        '-DModule_vtkIOXML=ON'
+    ]
+    if ompi:
+        vtk_cmake_args.extend([
+            '-DModule_vtkIOParallelXML=ON',
+            '-DModule_vtkParallelMPI=ON'
+        ])
+    Stage0 += vtk(cmake_args=vtk_cmake_args)
 
 if ogs_version != 'off':
     Stage0 += raw(docker='ARG OGS_COMMIT_HASH=0')
