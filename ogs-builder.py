@@ -58,6 +58,7 @@ branch = USERARG.get('branch', 'master')
 # Use : instead of = e.g. -DCMAKE_BUILD_TYPE:Release
 cmake_args = USERARG.get('cmake_args', '')
 cmake_args = cmake_args.replace(":", "=")
+cmake_args = cmake_args.split(' ')
 
 if pm == 'spack' and not ompi:
     logging.error('spack needs mpi!')
@@ -179,12 +180,7 @@ elif pm == package_manager.SYSTEM:
         '-DVTK_Group_Rendering=OFF',
         '-DModule_vtkIOXML=ON'
     ]
-    if ompi:
-        vtk_cmake_args.extend([
-            '-DModule_vtkIOParallelXML=ON',
-            '-DModule_vtkParallelMPI=ON'
-        ])
-    Stage0 += vtk(cmake_args=vtk_cmake_args)
+    Stage0 += vtk(cmake_args=vtk_cmake_args, toolchain=toolchain)
 
 if ogs_version != 'off':
     Stage0 += raw(docker='ARG OGS_COMMIT_HASH=0')

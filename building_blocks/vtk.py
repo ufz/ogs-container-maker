@@ -23,6 +23,8 @@ from hpccm.templates.CMakeBuild import CMakeBuild
 from hpccm.templates.rm import rm
 from hpccm.templates.tar import tar
 from hpccm.templates.wget import wget
+from hpccm.toolchain import toolchain
+
 
 class vtk(CMakeBuild, rm, tar, wget):
     """The `VTK` building block downloads and installs the
@@ -52,23 +54,24 @@ class vtk(CMakeBuild, rm, tar, wget):
         tar.__init__(self, **kwargs)
         wget.__init__(self, **kwargs)
 
+        self.__cmake_args = kwargs.get('cmake_args', [])
         self.__ospackages = kwargs.get('ospackages', [])
         self.__parallel = kwargs.get('parallel', '$(nproc)')
         self.__prefix = kwargs.get('prefix', '/usr/local/vtk')
-        self.__cmake_args = kwargs.get('cmake_args', [])
         self.__shared = kwargs.get('shared', True)
+        self.__toolchain = kwargs.get('toolchain', toolchain())
         self.__version = kwargs.get('version', '8.2.0')
+        self.__wd = '/var/tmp' # working directory
         match = re.match(r'(?P<major>\d+)\.(?P<minor>\d+)\.(?P<revision>\d+)',
                          self.__version)
         short_version = '{0}.{1}'.format(match.groupdict()['major'], match.groupdict()['minor'])
         self.__baseurl = kwargs.get('baseurl',
                                     'https://www.vtk.org/files/release/{0}'.format(short_version))
 
-        self.__commands = [] # Filled in by __setup()
-        self.__environment_variables = {} # Filled in by __setup()
-        self.__wd = '/var/tmp' # working directory
+        # Filled in by __setup():
+        self.__commands = []
+        self.__environment_variables = {}
 
-        # Construct the series of steps to execute
         self.__setup()
 
     def __str__(self):
@@ -97,7 +100,11 @@ class vtk(CMakeBuild, rm, tar, wget):
           '-DCMAKE_BUILD_TYPE=Release'
         ])
         if not self.__shared:
-          self.__cmake_args.append('-DBUILD_SHARED_LIBS=OFF')
+            self.__cmake_args.append('-DBUILD_SHARED_LIBS=OFF')
+        if self.__toolchain.CC == 'mpicc':
+            self.__cmake_args.extend([
+                '-DModule_vtkIOParallelXML=ON',
+                '-DModule_vtkParallelMPI=ON'])
 
         # Download source from web
         self.__commands.append(self.download_step(url=url,
@@ -105,12 +112,14 @@ class vtk(CMakeBuild, rm, tar, wget):
         self.__commands.append(self.untar_step(
             tarball=os.path.join(self.__wd, tarball), directory=self.__wd))
 
+        # Configure and build
         self.__commands.extend([
             self.configure_step(
-            directory='{0}/VTK-{1}'.format(self.__wd, self.__version),
-            build_directory='{}/build'.format(self.__wd),
-            opts=self.__cmake_args),
-        self.build_step(target='install', parallel=self.__parallel)
+              directory='{0}/VTK-{1}'.format(self.__wd, self.__version),
+              build_directory='{}/build'.format(self.__wd),
+              opts=self.__cmake_args,
+              toolchain=self.__toolchain),
+            self.build_step(target='install', parallel=self.__parallel)
         ])
 
         # Set library path
