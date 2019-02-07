@@ -144,6 +144,8 @@ if ogs_version != 'off':
                   cmake_args=cmake_args, parallel=math.ceil(multiprocessing.cpu_count()/2),
                   app='ogs', skip_lfs=True, remove_dev=True)
 
+# Is added to gnu.py upstream, wait for release
+Stage0 += shell(commands=['update-alternatives --install /usr/bin/gcov gcov $(which gcov-{}) 30'.format(gcc_version)])
 if jenkins:
     Stage0 += jenkins_node()
 

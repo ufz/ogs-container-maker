@@ -14,7 +14,7 @@ pipeline {
            description: 'Package manager to install third-party libs, e.g.: system conan')
     string(name: 'cmake', defaultValue: '',
            description: 'CMake args, use : instead of = , e.g. "-DFOO:BAR"')
-    booleanParam(name: 'upload', defaultValue: true,
+    booleanParam(name: 'upload', defaultValue: false,
            description: 'Upload docker image to registry?')
     booleanParam(name: 'convert', defaultValue: true,
            description: 'Convert docker image to Singularity?')
