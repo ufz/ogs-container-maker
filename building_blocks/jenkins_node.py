@@ -57,8 +57,7 @@ class jenkins_node(rm, tar, wget):
       user(user='jenkins'),
       workdir(directory='/home/jenkins'),
       shell(commands=[
-        "mkdir -p {0}".format(ccache_dir),
-        'conan user'
+        "mkdir -p {0}".format(ccache_dir)
       ]),
       environment(variables={
         'CCACHE_DIR': ccache_dir,
