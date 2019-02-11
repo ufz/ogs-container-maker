@@ -16,6 +16,8 @@ import logging
 import math
 import multiprocessing
 
+from building_blocks.cppcheck import cppcheck
+from building_blocks.cvode import cvode
 from building_blocks.eigen import eigen
 from building_blocks.jenkins_node import jenkins_node
 from building_blocks.ogs import ogs
@@ -60,6 +62,9 @@ branch = USERARG.get('branch', 'master')
 cmake_args = USERARG.get('cmake_args', '')
 cmake_args = cmake_args.replace(":", "=")
 cmake_args = cmake_args.split(' ')
+
+_cvode = str2bool(USERARG.get('cvode', 'False'))
+_cppcheck = str2bool(USERARG.get('cppcheck', 'False'))
 
 if pm == 'spack' and not ompi:
     logging.error('spack needs mpi!')
@@ -137,6 +142,10 @@ elif pm == package_manager.SYSTEM:
     Stage0 += vtk(cmake_args=vtk_cmake_args, toolchain=toolchain)
     if ompi:
         Stage0 += petsc()
+    if _cvode:
+        Stage0 += cvode()
+    if _cppcheck:
+        Stage0 += cppcheck()
 
 if ogs_version != 'off':
     Stage0 += raw(docker='ARG OGS_COMMIT_HASH=0')
