@@ -25,8 +25,6 @@ from building_blocks.ogs_base import ogs_base
 from building_blocks.osu_benchmarks import osu_benchmarks
 from building_blocks.petsc import petsc
 from building_blocks.pm_conan import pm_conan
-from building_blocks.pm_easybuild import pm_easybuild
-from building_blocks.pm_spack import pm_spack
 from building_blocks.vtk import vtk
 from base.config import package_manager
 from hpccm.common import linux_distro, container_type
@@ -37,6 +35,8 @@ docker = hpccm.config.g_ctype == container_type.DOCKER
 
 # ---- Tools ----
 def str2bool(v):
+    if isinstance(v, (bool)):
+        return v
     return v.lower() in ("yes", "true", "t", "1")
 
 
@@ -99,8 +99,7 @@ else:
         fortran = True
     compiler = gnu(fortran=fortran, extra_repository=True, version=gcc_version)
 toolchain = compiler.toolchain
-if pm != package_manager.EASYBUILD:
-  Stage0 += compiler
+Stage0 += compiler
 if clang:
     Stage0 += packages(
         apt=["clang-tidy-{}".format(clang_version)],

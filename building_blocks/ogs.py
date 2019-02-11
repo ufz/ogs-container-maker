@@ -16,14 +16,13 @@ from hpccm.primitives.comment import comment
 from hpccm.primitives.copy import copy
 from hpccm.primitives.environment import environment
 from hpccm.primitives.label import label
-from hpccm.primitives.runscript import runscript
 from hpccm.primitives.shell import shell
 from hpccm.templates.CMakeBuild import CMakeBuild
 from hpccm.templates.rm import rm
 from hpccm.toolchain import toolchain
 
 
-class ogs(CMakeBuild, rm,):
+class ogs(CMakeBuild, rm, ):
     """OGS building block"""
 
     def __init__(self, **kwargs):
@@ -51,22 +50,21 @@ class ogs(CMakeBuild, rm,):
 
         self.__setup()
 
-
     def __str__(self):
         """String representation of the building block"""
-        instructions = []
-        instructions.append(comment(
-            'OpenGeoSys build from repo {0}, branch {1}'.format(self.__repo,
-                                                                self.__branch)))
-        instructions.append(packages(ospackages=self.__ospackages))
-        instructions.append(shell(commands=self.__commands))
+        instructions = [
+            comment(
+                'OpenGeoSys build from repo {0}, branch {1}'.format(
+                    self.__repo, self.__branch)),
+            packages(ospackages=self.__ospackages),
+            shell(commands=self.__commands)
+        ]
         if self.__environment_variables:
             instructions.append(environment(
                 variables=self.__environment_variables))
         if self.__labels:
             instructions.append(label(metadata=self.__labels))
         return '\n'.join(str(x) for x in instructions)
-
 
     def __setup(self):
         """Construct the series of shell commands, i.e., fill in
@@ -116,19 +114,21 @@ class ogs(CMakeBuild, rm,):
             self.__commands.append(self.build_step(target='clean'))
 
         # Environment
-        self.__environment_variables['PATH'] = '{0}/bin:$PATH'.format(self.__prefix)
+        self.__environment_variables['PATH'] = '{0}/bin:$PATH'.format(
+            self.__prefix)
 
         # Labels
         self.__labels['org.opengeosys.version'] = self.__version
-        self.__labels['org.opengeosys.cmake_args'] = '\'' + ' '.join(self.__cmake_args) + '\''
+        self.__labels['org.opengeosys.cmake_args'] = '\'' + ' '.join(
+            self.__cmake_args) + '\''
 
     def runtime(self, _from='0'):
-        instructions = []
-        instructions.append(comment(
-            'OpenGeoSys build from repo {0}, branch {1}'.format(self.__repo,
-                                                                self.__branch)))
-        instructions.append(copy(_from=_from, src=self.__prefix,
-                                dest=self.__prefix))
+        instructions = [
+            comment('OpenGeoSys build from repo {0}, branch {1}'.format(
+                self.__repo, self.__branch)),
+            copy(_from=_from, src=self.__prefix,
+                 dest=self.__prefix)
+        ]
         if self.__environment_variables:
             instructions.append(environment(
                 variables=self.__environment_variables))
