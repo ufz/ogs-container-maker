@@ -67,8 +67,7 @@ class ogs_base(ConfigureMake, rm, tar, wget):
         return '\n'.join(str(x) for x in instructions)
 
     def __setup(self):
-        self.__ospackages.extend(['git', 'git-lfs', 'make', 'ninja-build',
-                                  'doxygen'])
+        self.__ospackages.extend(['git', 'git-lfs', 'make', 'ninja-build'])
 
         if hpccm.config.g_ctype == hpccm.container_type.SINGULARITY:
             self.__ospackages.append('locales')
@@ -88,7 +87,10 @@ class ogs_base(ConfigureMake, rm, tar, wget):
         p = python(python2=False)
         instructions = [
             comment(__doc__, reformat=False),
-            p.runtime()
+            p.runtime(),
+            shell(commands=[
+                'mkdir -p /apps /scratch /lustre /work /projects'
+            ])
         ]
 
         return '\n'.join(str(x) for x in instructions)

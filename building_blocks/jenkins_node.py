@@ -42,12 +42,10 @@ class jenkins_node(rm, tar, wget):
 
   def __str__(self):
     """String representation of the building block"""
-    ccache_dir = '/home/jenkins/cache/ccache'
     instructions = []
     instructions.extend([
       comment('Jenkins node'),
       # For Doxygen diagrams and bibtex references
-      packages(ospackages=['graphviz', 'texlive-base', 'sudo']),
       shell(commands=[
         'groupadd --gid 1001 jenkins',
         'adduser --uid 500 --gid 1001 --disabled-password --gecos "" jenkins',
@@ -56,14 +54,6 @@ class jenkins_node(rm, tar, wget):
       ]),
       user(user='jenkins'),
       workdir(directory='/home/jenkins'),
-      shell(commands=[
-        "mkdir -p {0}".format(ccache_dir)
-      ]),
-      environment(variables={
-        'CCACHE_DIR': ccache_dir,
-        'CCACHE_MAXSIZE': '15G',
-        'CCACHE_SLOPPINESS': 'pch_defines,time_macros'
-      })
     ])
     logging.warning("Changed user to jenkins!")
 

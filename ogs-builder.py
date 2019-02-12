@@ -15,7 +15,9 @@ import hpccm
 import logging
 import math
 import multiprocessing
+import subprocess
 
+from building_blocks.ccache import ccache
 from building_blocks.cppcheck import cppcheck
 from building_blocks.cvode import cvode
 from building_blocks.eigen import eigen
@@ -65,9 +67,14 @@ cmake_args = cmake_args.split(' ')
 
 _cvode = str2bool(USERARG.get('cvode', 'False'))
 _cppcheck = str2bool(USERARG.get('cppcheck', 'False'))
+gui = str2bool(USERARG.get('gui', False))
 
 if pm == 'spack' and not ompi:
     logging.error('spack needs mpi!')
+
+# Get git info
+local_git_hash = subprocess.check_output([
+    'git', 'rev-parse', '--short', 'HEAD']).decode('ascii').strip()
 
 ######
 # Devel stage
@@ -80,6 +87,7 @@ if centos:
     image = 'centos:7'
 
 Stage0.baseimage(image=image)
+Stage0 += comment("Generated with https://github.com/ufz/ogs-container-maker/commit/{0}".format(local_git_hash), reformat=False)
 if centos:
     Stage0 += user(user='root')
     Stage0 += packages(ospackages=['epel-release'])
@@ -125,6 +133,10 @@ if ompi:
         Stage0 += osu_benchmarks()
 
 Stage0 += ogs_base()
+if gui:
+    Stage0 += packages(ospackages=[
+        'mesa-common-dev', 'libgl1-mesa-dev', 'libxt-dev'
+    ])
 if pm == package_manager.CONAN:
     Stage0 += pm_conan()
     if not jenkins:
@@ -141,20 +153,23 @@ elif pm == package_manager.SYSTEM:
     Stage0 += vtk(cmake_args=vtk_cmake_args, toolchain=toolchain)
     if ompi:
         Stage0 += petsc()
-    if _cvode:
-        Stage0 += cvode()
-    if _cppcheck:
-        Stage0 += cppcheck()
+if _cvode:
+    Stage0 += cvode()
+if _cppcheck:
+    Stage0 += cppcheck()
 
 if ogs_version != 'off':
+    if _cvode:
+        cmake_args.append('-DOGS_USE_CVODE=ON')
     Stage0 += raw(docker='ARG OGS_COMMIT_HASH=0')
     Stage0 += ogs(version=ogs_version, toolchain=toolchain,
                   cmake_args=cmake_args, parallel=math.ceil(multiprocessing.cpu_count()/2),
                   app='ogs', skip_lfs=True, remove_dev=True)
 
-# Is added to gnu.py upstream, wait for release
-Stage0 += shell(commands=['update-alternatives --install /usr/bin/gcov gcov $(which gcov-{}) 30'.format(gcc_version)])
 if jenkins:
+    Stage0 += ccache(cache_size='15G')
+    Stage0 += pip(pip='pip3', packages=['gcovr'])
+    Stage0 += packages(ospackages=['doxygen', 'graphviz', 'texlive-base', 'sudo'])
     Stage0 += jenkins_node()
 
 ######

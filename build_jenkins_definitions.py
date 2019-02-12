@@ -3,6 +3,7 @@
 import argparse
 import hpccm
 import os
+import re
 
 cli = argparse.ArgumentParser()
 cli.add_argument("--out", type=str, default="_out")
@@ -14,6 +15,11 @@ dict = {
         'pm': 'conan',
         'cppcheck': True,
         'cvode': True
+    },
+    'Dockerfile.gcc.gui': {
+        'jenkins': True,
+        'pm': 'conan',
+        'gui': True
     }
 }
 
@@ -22,7 +28,9 @@ for key, value in dict.items():
     print(value)
     recipe = hpccm.recipe('ogs-builder.py', single_stage=True,
                           raise_exceptions=True, userarg=value)
-    print(recipe)
+
+    # Remove stage statement as this crashes Jenkins
+    recipe = re.sub(r' AS stage0', '', recipe)
     with open(os.path.join(args.out, key), 'w') as f:
         print(recipe, file=f)
 

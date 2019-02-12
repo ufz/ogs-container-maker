@@ -7,16 +7,11 @@ from __future__ import absolute_import
 from __future__ import unicode_literals
 from __future__ import print_function
 
-import logging # pylint: disable=unused-import
-import re
 import os
 
-import hpccm.config
 
 from hpccm.building_blocks.packages import packages
-from hpccm.common import linux_distro
 from hpccm.primitives.comment import comment
-from hpccm.primitives.copy import copy
 from hpccm.primitives.environment import environment
 from hpccm.primitives.shell import shell
 from hpccm.templates.CMakeBuild import CMakeBuild
