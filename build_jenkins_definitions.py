@@ -14,12 +14,25 @@ dict = {
         'jenkins': True,
         'pm': 'conan',
         'cppcheck': True,
-        'cvode': True
+        'cvode': True,
+        'docs': True,
+        'gcovr': True
     },
     'Dockerfile.gcc.gui': {
         'jenkins': True,
         'pm': 'conan',
         'gui': True
+    },
+    'Dockerfile.clang.minimal': {
+        'jenkins': True,
+        'pm': 'conan',
+        'clang': True
+    },
+    'Dockerfile.clang.full': {
+        'jenkins': True,
+        'pm': 'conan',
+        'clang': True,
+        'iwyy': True
     }
 }
 

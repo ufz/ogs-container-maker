@@ -1,5 +1,3 @@
-
-
 # pylint: disable=invalid-name, too-few-public-methods
 # pylint: disable=too-many-instance-attributes
 
@@ -11,13 +9,10 @@ from __future__ import print_function
 
 import logging  # pylint: disable=unused-import
 
-from hpccm.building_blocks.packages import packages
 from hpccm.primitives.comment import comment
-from hpccm.primitives.environment import environment
 from hpccm.primitives.shell import shell
 from hpccm.primitives.user import user
 from hpccm.primitives.workdir import workdir
-from hpccm.templates.ConfigureMake import ConfigureMake
 from hpccm.templates.rm import rm
 from hpccm.templates.tar import tar
 from hpccm.templates.wget import wget

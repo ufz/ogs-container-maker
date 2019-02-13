@@ -21,6 +21,7 @@ from building_blocks.ccache import ccache
 from building_blocks.cppcheck import cppcheck
 from building_blocks.cvode import cvode
 from building_blocks.eigen import eigen
+from building_blocks.iwyy import iwyy
 from building_blocks.jenkins_node import jenkins_node
 from building_blocks.ogs import ogs
 from building_blocks.ogs_base import ogs_base
@@ -67,7 +68,10 @@ cmake_args = cmake_args.split(' ')
 
 _cvode = str2bool(USERARG.get('cvode', 'False'))
 _cppcheck = str2bool(USERARG.get('cppcheck', 'False'))
+_iwyy = str2bool(USERARG.get('iwyy', 'False'))
 gui = str2bool(USERARG.get('gui', False))
+docs = str2bool(USERARG.get('docs', False))
+gcovr = str2bool(USERARG.get('gcovr', False))
 
 if pm == 'spack' and not ompi:
     logging.error('spack needs mpi!')
@@ -95,7 +99,7 @@ Stage0 += packages(ospackages=['wget', 'tar', 'curl'])
 
 # base compiler
 gcc_version = '6'
-clang_version = '6.0'
+clang_version = '5.0'
 if hpccm.config.g_linux_distro == linux_distro.CENTOS:
     gcc_version = '6'  # installs devtoolset-6 which is gcc-6.3.1
     clang_version = '7'  # installs llvm-toolset-7-clang which is clang 5.0.1
@@ -157,6 +161,13 @@ if _cvode:
     Stage0 += cvode()
 if _cppcheck:
     Stage0 += cppcheck()
+if _iwyy and clang:
+    Stage0 += iwyy(clang_version = clang_version)
+if docs:
+    Stage0 += packages(
+        ospackages=['doxygen', 'graphviz', 'texlive-base', 'sudo'])
+if gcovr:
+    Stage0 += pip(pip='pip3', packages=['gcovr'])
 
 if ogs_version != 'off':
     if _cvode:
@@ -168,8 +179,6 @@ if ogs_version != 'off':
 
 if jenkins:
     Stage0 += ccache(cache_size='15G')
-    Stage0 += pip(pip='pip3', packages=['gcovr'])
-    Stage0 += packages(ospackages=['doxygen', 'graphviz', 'texlive-base', 'sudo'])
     Stage0 += jenkins_node()
 
 ######
