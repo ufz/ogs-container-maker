@@ -41,7 +41,7 @@ options_g.add_argument('--ogs', nargs='*', type=str,
                        default=['ufz/ogs@master'],
                        help='OGS GitHub repo in the form \'user/repo@branch\' '
                             'or \'off\' to disable OGS building')
-options_g.add_argument('--cmake_args', nargs='*', type=str, default='',
+options_g.add_argument('--cmake_args', nargs='*', type=str, default=[''],
                        help='CMake argument sets have to be quoted and **must**'
                             ' start with a space. e.g. --cmake_args \' -DFIRST='
                             'TRUE -DFOO=BAR\' \' -DSECOND=TRUE\'')

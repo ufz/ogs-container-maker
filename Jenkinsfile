@@ -35,7 +35,7 @@ pipeline {
           if (params.convert)
             convert = '--convert'
           if (params.runtime)
-            convert = '--runtime-only'
+            runtime = '--runtime-only'
           docker.withRegistry('https://registry.opengeosys.org', 'gitlab-bilke-api') {
             sh """
               python3 -m venv ./venv
