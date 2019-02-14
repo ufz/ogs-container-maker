@@ -88,7 +88,7 @@ class ogs(CMakeBuild, rm, ):
             "-DCMAKE_BUILD_TYPE=Release",
         ])
         if self.__skip_lfs:
-            self.__cmake_args.append('-DOGS_BUILD_TESTS=OFF')
+            self.__cmake_args.append('-DBUILD_TESTING=OFF')
         if self.__toolchain.CC == 'mpicc':
             self.__cmake_args.append("-DOGS_USE_PETSC=ON")
             if conan:

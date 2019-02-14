@@ -18,6 +18,8 @@ pipeline {
            description: 'Upload docker image to registry?')
     booleanParam(name: 'convert', defaultValue: true,
            description: 'Convert docker image to Singularity?')
+    booleanParam(name: 'runtime', defaultValue: false,
+           description: 'Create a runtime only image (contains just the built binaries and runtime dependencies)')
     booleanParam(name: 'deploy', defaultValue: false,
            description: 'Deploy Singularity images')
   }
@@ -27,10 +29,13 @@ pipeline {
         script {
           upload = ""
           convert = ""
+          runtime = ""
           if (params.upload)
             upload = '--upload'
           if (params.convert)
             convert = '--convert'
+          if (params.runtime)
+            convert = '--runtime-only'
           docker.withRegistry('https://registry.opengeosys.org', 'gitlab-bilke-api') {
             sh """
               python3 -m venv ./venv
@@ -41,7 +46,7 @@ pipeline {
               python build.py --build --format ${params.format} \
                 --ogs ${params.ogs} --ompi ${params.openmpi_versions} \
                 --pm ${params.pm} --cmake_args ${params.cmake} ${upload} \
-                ${convert}
+                ${convert} ${runtime}
             """.stripIndent()
           }
           if (params.deploy)
