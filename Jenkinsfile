@@ -13,7 +13,7 @@ pipeline {
     string(name: 'pm', defaultValue: 'system',
            description: 'Package manager to install third-party libs, e.g.: system conan')
     string(name: 'cmake', defaultValue: '',
-           description: 'CMake args, use : instead of = , e.g. "-DFOO:BAR"')
+           description: 'CMake args, have to be quoted and must start a space  e.g. "\' -DFOO=BAR\'"')
     booleanParam(name: 'upload', defaultValue: false,
            description: 'Upload docker image to registry?')
     booleanParam(name: 'convert', defaultValue: true,
@@ -35,13 +35,12 @@ pipeline {
             sh """
               python3 -m venv ./venv
               . ./venv/bin/activate
-              pip install --upgrade requests hpccm
-              ml singularity/2.6.0
+              pip install --upgrade -r requirements.txt
               alias singularity=`which singularity`
               export PYTHONPATH="\$PYTHONPATH:./"
-              python build.py --format ${params.format} \
+              python build.py --build --format ${params.format} \
                 --ogs ${params.ogs} --ompi ${params.openmpi_versions} \
-                --pm ${params.pm} --cmake_args '${params.cmake}' ${upload} \
+                --pm ${params.pm} --cmake_args ${params.cmake} ${upload} \
                 ${convert}
             """.stripIndent()
           }
@@ -54,7 +53,7 @@ pipeline {
   }
   post {
     always {
-      archiveArtifacts artifacts: '_out/**/*.simg,_out/**/*.def,_out/**/Dockerfile,_out/**/*.scif'
+      archiveArtifacts artifacts: '_out/**/*.simg,_out/**/*.def,_out/**/Dockerfile'
     }
     cleanup { sh 'rm -rf _out' }
   }

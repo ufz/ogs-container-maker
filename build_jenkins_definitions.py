@@ -39,7 +39,7 @@ dict = {
 for key, value in dict.items():
     print(key)
     print(value)
-    recipe = hpccm.recipe('ogs-builder.py', single_stage=True,
+    recipe = hpccm.recipe('recipes/ogs-builder.py', single_stage=True,
                           raise_exceptions=True, userarg=value)
 
     # Remove stage statement as this crashes Jenkins
