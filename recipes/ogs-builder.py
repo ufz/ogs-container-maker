@@ -114,7 +114,8 @@ toolchain = compiler.toolchain
 Stage0 += compiler
 if clang:
     Stage0 += packages(
-        apt=["clang-tidy-{}".format(clang_version)],
+        apt=["clang-tidy-{}".format(clang_version),
+             "clang-format-{}".format(clang_version)],
         yum=["llvm-toolset-{}-clang-tools-extra".format(clang_version)]
     )
 
@@ -165,7 +166,7 @@ if _iwyy and clang:
     Stage0 += iwyy(clang_version = clang_version)
 if docs:
     Stage0 += packages(
-        ospackages=['doxygen', 'graphviz', 'texlive-base', 'sudo'])
+        ospackages=['doxygen', 'graphviz', 'texlive-base'])
 if gcovr:
     Stage0 += pip(pip='pip3', packages=['gcovr'])
 
@@ -179,6 +180,7 @@ if ogs_version != 'off':
 
 if jenkins:
     Stage0 += ccache(cache_size='15G')
+    Stage0 += packages(ospackages=['sudo'])  # For user switching back to root
     Stage0 += jenkins_node()
 
 ######
