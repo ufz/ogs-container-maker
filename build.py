@@ -50,17 +50,33 @@ build_g.add_argument('--build', '-B', dest='build', action='store_true',
                  help='Build the images from the definition files')
 build_g.add_argument('--upload', '-U', dest='upload', action='store_true',
                  help='Upload Docker image to registry')
+build_g.add_argument('--registry', type=str,
+                     default='registry.opengeosys.org/ogs/ogs',
+                     help='The docker registry the image is tagged and '
+                          'uploaded to.')
 build_g.add_argument('--convert', '-C', dest='convert', action='store_true',
                  help='Convert Docker image to Singularity image')
 build_g.add_argument('--runtime-only', '-R', dest='runtime_only',
                  action='store_true',
                  help='Generate multi-stage Dockerfiles for small runtime '
                       'images')
+switches_g = cli.add_argument_group('Additional options')
+switches_g.add_argument('--base_image', type=str, default='ubuntu:17.10',
+                        help='The base image. \'centos:7\' is supported too.')
+switches_g.add_argument('--clang', dest='clang', action='store_true',
+                        help='Use clang instead of gcc')
+switches_g.add_argument('--gui', dest='gui', action='store_true',
+                        help='Builds the GUI (Data Explorer)')
+switches_g.add_argument('--docs', dest='docs', action='store_true',
+                        help='Setup documentation requirements (Doxygen)')
 cli.set_defaults(build=False)
 cli.set_defaults(convert=False)
 cli.set_defaults(print=False)
 cli.set_defaults(runtime_only=False)
 cli.set_defaults(upload=False)
+cli.set_defaults(clang=False)
+cli.set_defaults(gui=False)
+cli.set_defaults(docs=False)
 args = cli.parse_args()
 
 c = list(itertools.product(args.format, args.ogs, args.pm, args.ompi, args.cmake_args))
@@ -71,7 +87,10 @@ for build in c:
         'ogs': build[1],
         'pm': build[2],
         'ompi': build[3],
-        'cmake_args': build[4].strip()
+        'cmake_args': build[4].strip(),
+        'base_image': args.base_image,
+        'gui': args.gui,
+        'docs': args.docs
     }
     __format = build[0]
 
@@ -95,8 +114,50 @@ for build in c:
         cmake_args_hash = hashlib.md5(opts['cmake_args'].encode('utf-8')).hexdigest()
         cmake_args_hash_short = cmake_args_hash[:8]
 
+
+    commit_hash = '0'
+    ogs_tag = ''
+
+    name_image = args.base_image.replace(':', '_')
+    name_start = 'gcc'
+    if opts['ogs'] != 'off':
+        # Get git commit hash and construct image tag name
+        repo, branch = opts['ogs'].split("@")
+        url = f"https://api.github.com/repos/{repo}/commits?sha={branch}"
+        response = requests.get(url)
+        response_data = json.loads(response.text)
+        commit_hash = response_data[0]['sha']
+        ogs_tag = opts['ogs'].replace('/', '.').replace('@', '.')
+        name_start = f'ogs-{commit_hash[:8]}'
+    elif args.clang:
+        name_start = 'clang'
+
+    name_openmpi = 'serial'
+    if opts['ompi'] != 'off':
+        name_openmpi = f"openmpi-{opts['ompi']}"
+
+    img_file =   f"{name_image}-{name_start}-{name_openmpi}-{opts['pm']}"
+    img_folder = f"{name_image}/{name_start}/{name_openmpi}/{opts['pm']}"
+    if opts['cmake_args'] != '':
+        img_file += f'-cmake-{cmake_args_hash_short}'
+    if args.gui:
+        img_file += '-gui'
+    if args.docs:
+        img_file += '-docs'
+    if opts['ogs'] != 'off' and not args.runtime_only:
+        img_file += '-dev'
+    docker_repo = img_file
+    img_file += '.simg'
+    if __format == 'singularity':
+        run(f"sudo `which singularity` build {images_out_dir}/{img_file} "
+            f"{definition_file}", shell=True)
+        run(f"sudo chown $USER:$USER {images_out_dir}/{img_file}", shell=True)
+        continue
+
+    tag = f"{args.registry}/{docker_repo}"
+
     # paths
-    out_dir = f"{args.out}/{__format}/openmpi-{opts['ompi']}/{opts['pm']}"
+    out_dir = f"{args.out}/{__format}/{img_folder}"
     if opts['cmake_args'] != '':
         out_dir += f'/cmake-{cmake_args_hash_short}'
     images_out_dir = "_out/images"
@@ -107,7 +168,6 @@ for build in c:
     definition_file = 'Dockerfile'
     if __format == 'singularity':
         definition_file = 'Singularity.def'
-
     definition_file = os.path.join(out_dir, definition_file)
 
     # Create definition
@@ -124,32 +184,6 @@ for build in c:
     # Create image
     if not args.build:
         continue
-
-    img_file = f"ogs-openmpi-{opts['ompi']}-{opts['pm']}"
-    if opts['cmake_args'] != '':
-        img_file += f'-cmake-{cmake_args_hash_short}'
-    if not args.runtime_only:
-        img_file += '-dev'
-    img_file += '.simg'
-    if __format == 'singularity':
-        run(f"sudo `which singularity` build {images_out_dir}/{img_file} "
-            f"{definition_file}", shell=True)
-        run(f"sudo chown $USER:$USER {images_out_dir}/{img_file}", shell=True)
-        continue
-
-    tag = f"registry.opengeosys.org/ogs/ogs/openmpi-{opts['ompi']}/{opts['pm']}"
-    commit_hash = '0'
-    # Get git commit hash and construct image tag name
-    if opts['ogs'] != 'off':
-        repo, branch = opts['ogs'].split("@")
-        url = f"https://api.github.com/repos/{repo}/commits?sha={branch}"
-        response = requests.get(url)
-        response_data = json.loads(response.text)
-        commit_hash = response_data[0]['sha']
-        ogs_tag = opts['ogs'].replace('/', '.').replace('@', '.')
-        tag += f":{ogs_tag}"
-        if opts['cmake_args'] != '':
-            tag += f'-cmake-{cmake_args_hash_short}'
 
     build_cmd = (f"docker build --build-arg OGS_COMMIT_HASH={commit_hash} "
                  f"-t {tag} -f {definition_file} {out_dir}")

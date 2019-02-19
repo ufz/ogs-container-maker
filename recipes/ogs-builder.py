@@ -44,7 +44,7 @@ def str2bool(v):
 
 
 # ---- Options ----
-centos = str2bool(USERARG.get('centos', 'False'))
+base_image = USERARG.get('base_image', 'ubuntu:17.10')
 clang = str2bool(USERARG.get('clang', 'False'))
 ogs_version = USERARG.get('ogs', 'ufz/ogs@master')
 infiniband = str2bool(USERARG.get('infiniband', 'True'))
@@ -83,14 +83,8 @@ local_git_hash = subprocess.check_output([
 ######
 # Devel stage
 ######
-
-# Choose between either Ubuntu 17.10 (default) or CentOS 7
-# Add '--userarg centos=true' to the command line to select CentOS
-image = 'ubuntu:17.10'
-if centos:
-    image = 'centos:7'
-
-Stage0.baseimage(image=image)
+centos = hpccm.config.g_linux_distro == linux_distro.CENTOS
+Stage0.baseimage(image=base_image)
 Stage0 += comment("Generated with https://github.com/ufz/ogs-container-maker/commit/{0}".format(local_git_hash), reformat=False)
 if centos:
     Stage0 += user(user='root')
@@ -173,6 +167,8 @@ if gcovr:
 if ogs_version != 'off':
     if _cvode:
         cmake_args.append('-DOGS_USE_CVODE=ON')
+    if gui:
+        cmake_args.append('-DOGS_BUILD_GUI=ON')
     Stage0 += raw(docker='ARG OGS_COMMIT_HASH=0')
     Stage0 += ogs(version=ogs_version, toolchain=toolchain,
                   cmake_args=cmake_args, parallel=math.ceil(multiprocessing.cpu_count()/2),
@@ -186,5 +182,5 @@ if jenkins:
 ######
 # Runtime image
 ######
-Stage1.baseimage(image=image)
+Stage1.baseimage(image=base_image)
 Stage1 += Stage0.runtime()
