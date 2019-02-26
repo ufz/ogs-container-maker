@@ -91,7 +91,8 @@ class cvode(CMakeBuild, rm, tar, wget):
             directory='{0}/cvode-{1}'.format(self.__wd, self.__version),
             build_directory='{}/build'.format(self.__wd),
             opts=['-DCMAKE_INSTALL_PREFIX={0}'.format(self.__prefix),
-                '-DEXAMPLES_INSTALL=OFF', '-DBUILD_SHARED_LIBS=OFF']),
+                  '-DEXAMPLES_INSTALL=OFF', '-DBUILD_SHARED_LIBS=OFF',
+                  '-DCMAKE_POSITION_INDEPENDENT_CODE=ON']),
         self.build_step(target='install', parallel=self.__parallel)
         ])
 
