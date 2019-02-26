@@ -53,12 +53,15 @@ class ogs_base(ConfigureMake, rm, tar, wget):
             cmake(eula=True, version='3.13.4')
         ])
 
+        commands = []
         if hpccm.config.g_linux_distro == linux_distro.CENTOS:
             dist = 'rpm'
-        instructions.append(shell(commands=[
+        if hpccm.config.g_linux_distro == linux_distro.UBUNTU:
+            commands.append("apt-get update")
+        commands.append(
             "curl -s https://packagecloud.io/install/repositories/github/"
-            "git-lfs/script.{0}.sh | bash".format(dist)
-        ]))
+            "git-lfs/script.{0}.sh | bash".format(dist))
+        instructions.append(shell(commands=commands))
         instructions.append(packages(ospackages=self.__ospackages,
                                      apt_ppas=['ppa:git-core/ppa'], epel=True))
 

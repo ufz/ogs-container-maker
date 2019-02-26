@@ -81,9 +81,9 @@ class iwyy(CMakeBuild, rm, tar, wget):
         ])
 
         baseurl = "https://github.com/include-what-you-use/include-what-you-use/archive"
-        tarball = 'clang_{}.tar.gz'.format(self.__clang_version)
+        tarball = 'clang_{}.0.tar.gz'.format(self.__clang_version)
         url = '{0}/{1}'.format(baseurl, tarball)
-        directory = "include-what-you-use-clang_{0}".format(self.__clang_version)
+        directory = "include-what-you-use-clang_{0}.0".format(self.__clang_version)
 
         # Download source from web
         self.__commands.append(self.download_step(url=url,

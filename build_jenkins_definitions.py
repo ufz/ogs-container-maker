@@ -14,7 +14,6 @@ dict = {
         'jenkins': True,
         'pm': 'conan',
         'cppcheck': True,
-        'cvode': True,
         'docs': True,
         'gcovr': True
     },
@@ -24,11 +23,15 @@ dict = {
         'gui': True
     },
     'Dockerfile.clang.minimal': {
+        'base_image': 'ubuntu:18.04',
+        'compiler_version': '7',
         'jenkins': True,
         'pm': 'conan',
         'clang': True
     },
     'Dockerfile.clang.full': {
+        'base_image': 'ubuntu:18.04',
+        'compiler_version': '7',
         'jenkins': True,
         'pm': 'conan',
         'clang': True,

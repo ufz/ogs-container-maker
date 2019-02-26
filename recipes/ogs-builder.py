@@ -45,6 +45,7 @@ def str2bool(v):
 
 # ---- Options ----
 base_image = USERARG.get('base_image', 'ubuntu:17.10')
+compiler_version = USERARG.get('compiler_version', '')
 clang = str2bool(USERARG.get('clang', 'False'))
 ogs_version = USERARG.get('ogs', 'ufz/ogs@master')
 infiniband = str2bool(USERARG.get('infiniband', 'True'))
@@ -92,25 +93,28 @@ if centos:
 Stage0 += packages(ospackages=['wget', 'tar', 'curl'])
 
 # base compiler
-gcc_version = '6'
-clang_version = '5.0'
-if hpccm.config.g_linux_distro == linux_distro.CENTOS:
-    gcc_version = '6'  # installs devtoolset-6 which is gcc-6.3.1
-    clang_version = '7'  # installs llvm-toolset-7-clang which is clang 5.0.1
+if compiler_version == '':
+    if clang:
+        if hpccm.config.g_linux_distro == linux_distro.CENTOS:
+            compiler_version = '7' # installs llvm-toolset-7-clang which is clang 5.0.1
+        else:
+            compiler_version = '5.0'
+    else:
+        compiler_version = '6'
 if clang:
-    compiler = llvm(extra_repository=True, version=clang_version)
+    compiler = llvm(extra_repository=True, version=compiler_version)
 else:
     fortran = False
     if True:
         fortran = True
-    compiler = gnu(fortran=fortran, extra_repository=True, version=gcc_version)
+    compiler = gnu(fortran=fortran, extra_repository=True, version=compiler_version)
 toolchain = compiler.toolchain
 Stage0 += compiler
 if clang:
     Stage0 += packages(
-        apt=["clang-tidy-{}".format(clang_version),
-             "clang-format-{}".format(clang_version)],
-        yum=["llvm-toolset-{}-clang-tools-extra".format(clang_version)]
+        apt=["clang-tidy-{}".format(compiler_version),
+             "clang-format-{}".format(compiler_version)],
+        yum=["llvm-toolset-{}-clang-tools-extra".format(compiler_version)]
     )
 
 if infiniband:
@@ -157,7 +161,7 @@ if _cvode:
 if _cppcheck:
     Stage0 += cppcheck()
 if _iwyy and clang:
-    Stage0 += iwyy(clang_version = clang_version)
+    Stage0 += iwyy(clang_version = compiler_version)
 if docs:
     Stage0 += packages(
         ospackages=['doxygen', 'graphviz', 'texlive-base'])
