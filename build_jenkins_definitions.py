@@ -20,7 +20,8 @@ dict = {
     'Dockerfile.gcc.gui': {
         'jenkins': True,
         'pm': 'conan',
-        'gui': True
+        'gui': True,
+        'cppcheck': True,
     },
     'Dockerfile.clang.minimal': {
         'base_image': 'ubuntu:18.04',
