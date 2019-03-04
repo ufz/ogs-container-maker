@@ -45,7 +45,7 @@ class cppcheck(CMakeBuild, rm, tar, wget):
         self.__ospackages = kwargs.get('ospackages', [])
         self.__parallel = kwargs.get('parallel', '$(nproc)')
         self.__prefix = kwargs.get('prefix', '/usr/local/cppcheck')
-        self.__version = kwargs.get('version', '1.83')
+        self.__version = kwargs.get('version', '1.87')
 
         self.__commands = [] # Filled in by __setup()
         self.__environment_variables = {} # Filled in by __setup()
