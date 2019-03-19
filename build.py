@@ -1,6 +1,6 @@
 # OpenMPI versions:
 #  Taurus: 1.8.8, 1.10.2, 2.1.0, 2.1.1, 3.0.0, 3.1.2
-#  Eve: 1.8.8, 1.10.2, 2.1.1
+#  Eve: 1.8.8, 1.10.2, 2.1.1, 4.0.0
 #  --> 2.1.1
 # https://easybuild.readthedocs.io/en/latest/Common-toolchains.html#common-toolchains-overview
 # easybuild toolchain: 2017b (2.1.1), 2018a (2.1.2), 2018b (3.1.1)

@@ -22,6 +22,11 @@ dict = {
         'pm': 'system',
         'cvode': True,
         'ompi': '3.1.2'
+    },
+    'Dockerfile.ogs.ompi-4.0.0': {
+        'pm': 'system',
+        'cvode': True,
+        'ompi': '4.0.0'
     }
 }
 

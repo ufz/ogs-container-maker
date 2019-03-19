@@ -1,2 +1,2 @@
-https://github.com/NVIDIA/hpc-container-maker/archive/master.zip
+hpccm
 requests
