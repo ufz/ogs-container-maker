@@ -28,4 +28,4 @@ class package_manager(Enum):
     return g_package_manager
 
 # Global variables
-g_package_manager = package_manager.CONAN
+g_package_manager = package_manager.SYSTEM
