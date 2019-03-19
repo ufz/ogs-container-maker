@@ -37,7 +37,7 @@ class petsc(ConfigureMake, rm, tar, wget):
     is `/usr/local/petsc`.
 
     version: The version of PETSc source to download.  The default
-    value is `3.8.3`.
+    value is `3.8.4`.
 
     # Examples
 
@@ -60,7 +60,7 @@ class petsc(ConfigureMake, rm, tar, wget):
         self.prefix = kwargs.get('prefix', '/usr/local/petsc')
         self.__toolchain = toolchain(CC='mpicc', CXX='mpicxx')
         self.configure_opts = kwargs.get('configure_opts', [])
-        self.__version = kwargs.get('version', '3.8.3')
+        self.__version = kwargs.get('version', '3.8.4')
         self.__wd = '/var/tmp' # working directory
         self.__baseurl = kwargs.get('baseurl', 'http://ftp.mcs.anl.gov/pub/petsc/release-snapshots')
 

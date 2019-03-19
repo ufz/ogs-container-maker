@@ -48,7 +48,7 @@ class ogs_base(ConfigureMake, rm, tar, wget):
         instructions = [comment(__doc__, reformat=False)]
         dist = 'deb'
         instructions.extend([
-            python(python2=False, devel=True),
+            python(devel=True),
             pip(pip='pip3', upgrade=True),
             pip(pip='pip3', packages=['virtualenv']),
             cmake(eula=True, version='3.13.4')
