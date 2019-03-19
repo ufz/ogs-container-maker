@@ -8,7 +8,6 @@ $ hpccm.py --recipe ogs-builder.py --userarg ompi=2.1.3 centos=true \
 
 Other options:
 - ogs=false Builds a MPI test container
-- infiniband=false Disables infiniband
 """
 # pylint: disable=invalid-name, undefined-variable, used-before-assignment
 import hpccm
@@ -48,7 +47,6 @@ base_image = USERARG.get('base_image', 'ubuntu:17.10')
 compiler_version = USERARG.get('compiler_version', '')
 clang = str2bool(USERARG.get('clang', 'False'))
 ogs_version = USERARG.get('ogs', 'ufz/ogs@master')
-infiniband = str2bool(USERARG.get('infiniband', 'True'))
 benchmarks = str2bool(USERARG.get('benchmarks', 'True'))
 jenkins = str2bool(USERARG.get('jenkins', 'False'))
 pm = package_manager.set(pm=USERARG.get('pm', 'system'))
@@ -56,7 +54,6 @@ ompi_version = USERARG.get('ompi', 'off')
 ompi = True
 if ompi_version == "off":
     ompi = False
-    infiniband = False
 if jenkins:
     ogs_version = 'off'
 
@@ -73,6 +70,7 @@ _iwyy = str2bool(USERARG.get('iwyy', 'False'))
 gui = str2bool(USERARG.get('gui', False))
 docs = str2bool(USERARG.get('docs', False))
 gcovr = str2bool(USERARG.get('gcovr', False))
+dev = str2bool(USERARG.get('dev', False))
 
 if pm == 'spack' and not ompi:
     logging.error('spack needs mpi!')
@@ -117,19 +115,24 @@ if clang:
         yum=["llvm-toolset-{}-clang-tools-extra".format(compiler_version)]
     )
 
-if infiniband:
-    Stage0 += mlnx_ofed(version='3.4-1.0.0.0')
-
 if ompi:
-    mpicc = openmpi(version=ompi_version, cuda=False, infiniband=infiniband,
+    Stage0 += mlnx_ofed() # version='3.4-1.0.0.0'
+    Stage0 += knem()
+    Stage0 += ucx(cuda=False, knem='/usr/local/knem')
+
+    mpicc = openmpi(version=ompi_version, cuda=False, ucx='/usr/local/ucx',
+                    configure_opts=[
+                        '--with-slurm',
+                        '--enable-mca-no-build=btl-openib,plm-slurm'
+                    ],
+                    # ospackages=['libslurm-dev'],
                     toolchain=toolchain)
     toolchain = mpicc.toolchain
     Stage0 += mpicc
 
     Stage0 += label(metadata={
         'org.opengeosys.mpi': 'openmpi',
-        'org.opengeosys.mpi.version': ompi_version,
-        'org.opengeosys.infiniband': infiniband
+        'org.opengeosys.mpi.version': ompi_version
     })
 
     if benchmarks:
@@ -167,6 +170,11 @@ if docs:
         ospackages=['doxygen', 'graphviz', 'texlive-base'])
 if gcovr:
     Stage0 += pip(pip='pip3', packages=['gcovr'])
+
+if dev:
+    Stage += packages(
+        ospackages=['vim', 'gdb']
+    )
 
 if ogs_version != 'off':
     if _cvode:
