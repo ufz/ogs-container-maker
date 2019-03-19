@@ -30,12 +30,15 @@ pipeline {
           upload = ""
           convert = ""
           runtime = ""
+          cmake_args = ""
           //if (params.upload)
           //  upload = '--upload'
           if (params.convert)
             convert = '--convert'
           if (params.runtime)
             runtime = '--runtime-only'
+          if (params.cmake != '')
+            cmake_args = "--cmake_args ${params.cmake}"
           // BUG: credential not found
           //docker.withRegistry('https://registry.opengeosys.org', 'gitlab-bilke-api') {
             sh """
@@ -46,7 +49,7 @@ pipeline {
               export PYTHONPATH="\$PYTHONPATH:./"
               python build.py --build --format ${params.format} \
                 --ogs ${params.ogs} --ompi ${params.openmpi_versions} \
-                --pm ${params.pm} --cmake_args ${params.cmake} ${upload} \
+                --pm ${params.pm} ${cmake_args} ${upload} \
                 ${convert} ${runtime}
             """.stripIndent()
           //}
