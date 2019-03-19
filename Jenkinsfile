@@ -38,7 +38,7 @@ pipeline {
             runtime = '--runtime-only'
           docker.withRegistry('https://registry.opengeosys.org', 'gitlab-bilke-api') {
             sh """
-              python3 -m venv ./venv
+              python3 -m virtualenv ./venv
               . ./venv/bin/activate
               pip install --upgrade -r requirements.txt
               alias singularity=`which singularity`
