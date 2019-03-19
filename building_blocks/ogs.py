@@ -21,6 +21,8 @@ from hpccm.templates.CMakeBuild import CMakeBuild
 from hpccm.templates.rm import rm
 from hpccm.toolchain import toolchain
 
+from base.config import package_manager
+
 
 class ogs(CMakeBuild, rm, ):
     """OGS building block"""
@@ -91,8 +93,10 @@ class ogs(CMakeBuild, rm, ):
             self.__cmake_args.append('-DBUILD_TESTING=OFF')
         if self.__toolchain.CC == 'mpicc':
             self.__cmake_args.append("-DOGS_USE_PETSC=ON")
-            if conan:
+            if conan == True:
                 self.__cmake_args.append("-DOGS_CONAN_USE_SYSTEM_OPENMPI=ON")
+        if conan == False:
+            self.__cmake_args.append('-DOGS_USE_CONAN=OFF')
 
         # Configure and build
         self.__commands.append(self.configure_step(
