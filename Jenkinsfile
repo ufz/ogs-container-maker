@@ -14,8 +14,8 @@ pipeline {
            description: 'Package manager to install third-party libs, e.g.: system conan')
     string(name: 'cmake', defaultValue: '',
            description: 'CMake args, have to be quoted and must start a space  e.g. "\' -DFOO=BAR\'"')
-    booleanParam(name: 'upload', defaultValue: false,
-           description: 'Upload docker image to registry?')
+    //booleanParam(name: 'upload', defaultValue: false,
+    //       description: 'Upload docker image to registry?')
     booleanParam(name: 'convert', defaultValue: true,
            description: 'Convert docker image to Singularity?')
     booleanParam(name: 'runtime', defaultValue: false,
@@ -30,13 +30,14 @@ pipeline {
           upload = ""
           convert = ""
           runtime = ""
-          if (params.upload)
-            upload = '--upload'
+          //if (params.upload)
+          //  upload = '--upload'
           if (params.convert)
             convert = '--convert'
           if (params.runtime)
             runtime = '--runtime-only'
-          docker.withRegistry('https://registry.opengeosys.org', 'gitlab-bilke-api') {
+          // BUG: credential not found
+          //docker.withRegistry('https://registry.opengeosys.org', 'gitlab-bilke-api') {
             sh """
               python3 -m virtualenv ./venv
               . ./venv/bin/activate
@@ -48,7 +49,7 @@ pipeline {
                 --pm ${params.pm} --cmake_args ${params.cmake} ${upload} \
                 ${convert} ${runtime}
             """.stripIndent()
-          }
+          //}
           if (params.deploy)
             sh """shopt -s globstar
                   cp -f _out/**/*.simg /var/images""".stripIndent()
