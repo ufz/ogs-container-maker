@@ -25,7 +25,7 @@ hpccm --recipe recipes/ogs-builder.py --format singularity \
 
 ```
 docker build -t ogs-ompi-2.1.3 -f Dockerfile .
-sudo singularity build ogs-ompi-2.1.3.simg Singularity
+sudo singularity build ogs-ompi-2.1.3.sif Singularity
 ```
 
 Convert Docker image to Singularity image:
@@ -46,11 +46,11 @@ ogs --version
 ```
 
 ```
-singularity shell ogs-ompi-2.1.3.simg
+singularity shell ogs-ompi-2.1.3.sif
 # in container:
 ogs --version
 # OR directly run from host
-singularity exec ogs-ompi-2.1.3.simg ogs local/path/to/square_1e0.prj
+singularity exec ogs-ompi-2.1.3.sif ogs local/path/to/square_1e0.prj
 ```
 
 ## Using the combinatorial builder

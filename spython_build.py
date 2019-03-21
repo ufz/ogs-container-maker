@@ -37,13 +37,13 @@ for build in c:
   dockerfile = f"ogs_{pm}_openmpi-{ompi}.docker.def"
   singularityfile = f"ogs_{pm}_openmpi-{ompi}.singularity.def"
   docker_singularityfile = f"ogs_{pm}_openmpi-{ompi}.docker_singularity.def"
-  img_file = singularityfile.replace(".def", ".simg")
+  img_file = singularityfile.replace(".def", ".sif")
   for format in ['docker', 'singularity']:
     def_file = f"ogs_{pm}_openmpi-{ompi}.{format}.def"
     if format == 'singularity':
-      img_file = def_file.replace(".def", ".simg")
+      img_file = def_file.replace(".def", ".sif")
     else:
-      img_file = def_file.replace(".def", ".simg")
+      img_file = def_file.replace(".def", ".sif")
     hpccm_args = f"--format {format} --userarg ogs={ogs} pm={pm} ompi={ompi} cmake_args='{args.cmake_args}'"
 
     run(f"hpccm --recipe {args.recipe} {hpccm_args} > {args.output}/{def_file}", shell=True)

@@ -147,7 +147,7 @@ for build in c:
     if opts['ogs'] != 'off' and not args.runtime_only:
         img_file += '-dev'
     docker_repo = img_file
-    img_file += '.simg'
+    img_file += '.sif'
     if __format == 'singularity':
         run(f"sudo `which singularity` build {images_out_dir}/{img_file} "
             f"{definition_file}", shell=True)
@@ -200,7 +200,7 @@ for build in c:
                 f"-v /home/bilke/tmp:/output --privileged -t --rm "
                 f"singularityware/docker2singularity --name {img_file} {tag}",
                 shell=True)
-            run(f"mv tmp/*.simg $PWD/{images_out_dir}/", shell=True)
+            run(f"mv tmp/*.sif $PWD/{images_out_dir}/", shell=True)
             if platform.system() == 'Darwin':
                 run(f"umount tmp", shell=True)
             else:
