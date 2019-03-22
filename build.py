@@ -192,27 +192,10 @@ for build in c:
     if args.upload:
         run(f"docker push {tag}", shell=True)
     if args.convert:
-        if 'DOCKER_MACHINE_NAME' in os.environ:
-            run("mkdir -p tmp", shell=True)
-            run(f"docker-machine mount singularity1:/home/bilke/tmp tmp",
-                shell=True)
-            run(f"docker run -v /var/run/docker.sock:/var/run/docker.sock "
-                f"-v /home/bilke/tmp:/output --privileged -t --rm "
-                f"singularityware/docker2singularity --name {img_file} {tag}",
-                shell=True)
-            run(f"mv tmp/*.sif $PWD/{images_out_dir}/", shell=True)
-            if platform.system() == 'Darwin':
-                run(f"umount tmp", shell=True)
-            else:
-                run(
-                    f"docker-machine mount -u singularity1:/home/bilke/tmp tmp",
-                    shell=True)
-            run("rm -rf tmp", shell=True)
-        else:
-            run(f"docker run -d -p 5000:5000 --rm  --name registry registry:2 && "
-		f"docker tag {tag} localhost:5000/{tag} && "
-                f"docker push localhost:5000/{tag} && "
-                f"SINGULARITY_NOHTTPS=true singularity build --force {images_out_dir}/{img_file} docker://localhost:5000/{tag} && "
-                f"docker rmi localhost:5000/{tag} && "
-                f"docker stop registry",
-                shell=True)
+        run(f"docker run -d -p 5000:5000 --rm  --name registry registry:2 && "
+            f"docker tag {tag} localhost:5000/{tag} && "
+            f"docker push localhost:5000/{tag} && "
+            f"SINGULARITY_NOHTTPS=true singularity build --force {images_out_dir}/{img_file} docker://localhost:5000/{tag} && "
+            f"docker rmi localhost:5000/{tag} && "
+            f"docker stop registry",
+            shell=True)
