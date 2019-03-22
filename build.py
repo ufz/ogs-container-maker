@@ -209,7 +209,10 @@ for build in c:
                     shell=True)
             run("rm -rf tmp", shell=True)
         else:
-            run(f"docker run -v /var/run/docker.sock:/var/run/docker.sock "
-                f"-v $PWD/{images_out_dir}:/output --privileged -t --rm "
-                f"singularityware/docker2singularity --name {img_file} {tag}",
+            run(f"docker run -d -p 5000:5000 --rm  --name registry registry:2 && "
+		f"docker tag {tag} localhost:5000/{tag} && "
+                f"docker push localhost:5000/{tag} && "
+                f"SINGULARITY_NOHTTPS=true singularity build --force {images_out_dir}/{img_file} docker://localhost:5000/{tag} && "
+                f"docker rmi localhost:5000/{tag} && "
+                f"docker stop registry",
                 shell=True)

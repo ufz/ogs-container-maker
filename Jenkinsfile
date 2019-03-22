@@ -55,14 +55,14 @@ pipeline {
           //}
           if (params.deploy)
             sh """shopt -s globstar
-                  cp -f _out/**/*.simg /var/images""".stripIndent()
+                  cp -f _out/**/*.sif /var/images""".stripIndent()
         }
       }
     }
   }
   post {
     always {
-      archiveArtifacts artifacts: '_out/**/*.simg,_out/**/*.def,_out/**/Dockerfile'
+      archiveArtifacts artifacts: '_out/**/*.sif,_out/**/*.def,_out/**/Dockerfile'
     }
     cleanup { sh 'rm -rf _out' }
   }
