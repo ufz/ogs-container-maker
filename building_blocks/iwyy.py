@@ -8,17 +8,16 @@ from __future__ import unicode_literals
 from __future__ import print_function
 
 import os
+import hpccm.templates.wget
 
+from hpccm.building_blocks.base import bb_base
 from hpccm.building_blocks.packages import packages
 from hpccm.primitives.comment import comment
 from hpccm.primitives.environment import environment
 from hpccm.primitives.shell import shell
-from hpccm.templates.CMakeBuild import CMakeBuild
-from hpccm.templates.rm import rm
-from hpccm.templates.tar import tar
-from hpccm.templates.wget import wget
 
-class iwyy(CMakeBuild, rm, tar, wget):
+class iwyy(bb_base, hpccm.templates.CMakeBuild, hpccm.templates.rm,
+           hpccm.templates.tar, hpccm.templates.wget):
     """
     # Parameters
 
@@ -34,14 +33,9 @@ class iwyy(CMakeBuild, rm, tar, wget):
     ```
 
     """
-
     def __init__(self, **kwargs):
         """Initialize building block"""
-
-        CMakeBuild.__init__(self, **kwargs)
-        rm.__init__(self, **kwargs)
-        tar.__init__(self, **kwargs)
-        wget.__init__(self, **kwargs)
+        super(iwyy, self).__init__()
 
         self.__ospackages = kwargs.get('ospackages', [])
         self.__parallel = kwargs.get('parallel', '$(nproc)')
@@ -55,19 +49,19 @@ class iwyy(CMakeBuild, rm, tar, wget):
         # Construct the series of steps to execute
         self.__setup()
 
-    def __str__(self):
+        self.__instructions()
+
+    def __instructions(self):
         """String representation of the building block"""
 
-        instructions = []
-        instructions.append(comment(
-            'Include-what-you-use for clang version {}'.format(
-                self.__clang_version)))
-        instructions.append(packages(ospackages=self.__ospackages))
-        instructions.append(shell(commands=self.__commands))
+
+        self += comment('Include-what-you-use for clang version {}'.format(
+                        self.__clang_version))
+        self += packages(ospackages=self.__ospackages)
+        self += shell(commands=self.__commands)
         if self.__environment_variables:
-            instructions.append(environment(
-                variables=self.__environment_variables))
-        return '\n'.join(str(x) for x in instructions)
+            self += environment(variables=self.__environment_variables)
+
 
     def __setup(self):
         """Construct the series of shell commands, i.e., fill in

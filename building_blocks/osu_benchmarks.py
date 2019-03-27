@@ -10,30 +10,24 @@ from __future__ import unicode_literals
 from __future__ import print_function
 
 import os
+import hpccm.templates.wget
 
+from hpccm.building_blocks.base import bb_base
 from hpccm.building_blocks.packages import packages
 from hpccm.primitives.comment import comment
 from hpccm.primitives.copy import copy
 from hpccm.primitives.environment import environment
 from hpccm.primitives.label import label
 from hpccm.primitives.shell import shell
-from hpccm.templates.ConfigureMake import ConfigureMake
-from hpccm.templates.rm import rm
-from hpccm.templates.tar import tar
-from hpccm.templates.wget import wget
 from hpccm.toolchain import toolchain
 
 
-class osu_benchmarks(ConfigureMake, rm, tar, wget):
+class osu_benchmarks(bb_base, hpccm.templates.ConfigureMake, hpccm.templates.rm,
+                     hpccm.templates.tar, hpccm.templates.wget):
     """OSU benchmarks building block"""
 
     def __init__(self, **kwargs):
-        """Initialize building block"""
-
-        ConfigureMake.__init__(self, **kwargs)
-        rm.__init__(self, **kwargs)
-        tar.__init__(self, **kwargs)
-        wget.__init__(self, **kwargs)
+        super(osu_benchmarks, self).__init__()
 
         self.__ospackages = kwargs.get('ospackages', ['wget', 'tar'])
         self.prefix = kwargs.get('prefix', '/usr/local/osu-benchmarks')
@@ -49,20 +43,16 @@ class osu_benchmarks(ConfigureMake, rm, tar, wget):
 
         self.__setup()
 
+        self.__instructions()
 
-    def __str__(self):
-        """String representation of the building block"""
-        instructions = []
-        instructions.append(comment('OSU benchmarks version {}'.format(self.__version)))
-        instructions.append(packages(ospackages=self.__ospackages))
-        instructions.append(shell(commands=self.__commands))
+    def __instructions(self):
+        self += comment('OSU benchmarks version {}'.format(self.__version))
+        self += packages(ospackages=self.__ospackages)
+        self += shell(commands=self.__commands)
         if self.__environment_variables:
-            instructions.append(environment(
-                variables=self.__environment_variables))
+            self += environment(variables=self.__environment_variables)
         if self.__labels:
-            instructions.append(label(metadata=self.__labels))
-
-        return '\n'.join(str(x) for x in instructions)
+            self += label(metadata=self.__labels)
 
 
     def __setup(self):

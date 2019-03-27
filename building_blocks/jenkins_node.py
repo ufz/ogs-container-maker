@@ -8,51 +8,40 @@ from __future__ import unicode_literals
 from __future__ import print_function
 
 import logging  # pylint: disable=unused-import
+import hpccm.templates.wget
 
+from hpccm.building_blocks.base import bb_base
 from hpccm.primitives.comment import comment
 from hpccm.primitives.shell import shell
 from hpccm.primitives.user import user
 from hpccm.primitives.workdir import workdir
-from hpccm.templates.rm import rm
-from hpccm.templates.tar import tar
-from hpccm.templates.wget import wget
 
 
-class jenkins_node(rm, tar, wget):
+class jenkins_node(bb_base, hpccm.templates.rm, hpccm.templates.tar,
+                   hpccm.templates.wget):
   """Jenkins Node building block"""
 
   def __init__(self, **kwargs):
     """Initialize building block"""
-
-    # Trouble getting MRO with kwargs working correctly, so just call
-    # the parent class constructors manually for now.
-    # super(python, self).__init__(**kwargs)
-    rm.__init__(self, **kwargs)
-    tar.__init__(self, **kwargs)
-    wget.__init__(self, **kwargs)
+    super(jenkins_node, self).__init__()
 
     self.__commands = []  # Filled in by __setup()
     self.__wd = '/var/tmp'  # working directory
 
+    self.__instructions()
 
-  def __str__(self):
-    """String representation of the building block"""
-    instructions = []
-    instructions.extend([
-      comment('Jenkins node'),
-      # For Doxygen diagrams and bibtex references
-      shell(commands=[
+  def __instructions(self):
+    self += comment('Jenkins node')
+    self += shell(commands=[
         'groupadd --gid 1001 jenkins',
         'adduser --uid 500 --gid 1001 --disabled-password --gecos "" jenkins',
         'echo "jenkins ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers',
         'echo "jenkins:jenkins" | chpasswd'
-      ]),
-      user(user='jenkins'),
-      workdir(directory='/home/jenkins'),
     ])
-    logging.warning("Changed user to jenkins!")
+    self += user(user='jenkins')
+    self += workdir(directory='/home/jenkins')
 
-    return '\n'.join(str(x) for x in instructions)
+    logging.warning("Changed user to jenkins!")
 
 
   def runtime(self, _from='0'):

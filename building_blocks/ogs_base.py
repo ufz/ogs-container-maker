@@ -9,6 +9,7 @@ from __future__ import print_function
 
 import hpccm.config
 
+from hpccm.building_blocks.base import bb_base
 from hpccm.building_blocks.cmake import cmake
 from hpccm.building_blocks.packages import packages
 from hpccm.building_blocks.pip import pip
@@ -16,25 +17,14 @@ from hpccm.building_blocks.python import python
 from hpccm.common import linux_distro
 from hpccm.primitives.comment import comment
 from hpccm.primitives.shell import shell
-from hpccm.templates.ConfigureMake import ConfigureMake
-from hpccm.templates.rm import rm
-from hpccm.templates.tar import tar
-from hpccm.templates.wget import wget
 
 
-class ogs_base(ConfigureMake, rm, tar, wget):
+class ogs_base(bb_base):
     """OGS base building block"""
 
     def __init__(self, **kwargs):
         """Initialize building block"""
-
-        # Trouble getting MRO with kwargs working correctly, so just call
-        # the parent class constructors manually for now.
-        # super(python, self).__init__(**kwargs)
-        ConfigureMake.__init__(self, **kwargs)
-        rm.__init__(self, **kwargs)
-        tar.__init__(self, **kwargs)
-        wget.__init__(self, **kwargs)
+        super(ogs_base, self).__init__()
 
         self.__ospackages = kwargs.get('ospackages', [])
 
@@ -43,35 +33,31 @@ class ogs_base(ConfigureMake, rm, tar, wget):
 
         self.__setup()
 
-    def __str__(self):
+        self.__instructions()
+
+    def __instructions(self):
         """String representation of the building block"""
-        instructions = [comment(__doc__, reformat=False)]
-        dist = 'deb'
-        instructions.extend([
-            python(devel=True),
-            pip(pip='pip3', upgrade=True),
-            pip(pip='pip3', packages=['virtualenv']),
-            cmake(eula=True, version='3.13.4')
-        ])
+        self += comment(__doc__, reformat=False)
+        self += python(devel=True)
+        self += pip(pip='pip3', upgrade=True)
+        self += pip(pip='pip3', packages=['virtualenv'])
+        self += cmake(eula=True, version='3.13.4')
+        self += packages(ospackages=self.__ospackages,
+                         apt_ppas=['ppa:git-core/ppa'], epel=True)
+        self += shell(commands=self.__commands)
 
-        commands = []
-        if hpccm.config.g_linux_distro == linux_distro.CENTOS:
-            dist = 'rpm'
-        if hpccm.config.g_linux_distro == linux_distro.UBUNTU:
-            commands.append("apt-get update")
-        commands.append(
-            "curl -s https://packagecloud.io/install/repositories/github/"
-            "git-lfs/script.{0}.sh | bash".format(dist))
-        instructions.append(shell(commands=commands))
-        instructions.append(packages(ospackages=self.__ospackages,
-                                     apt_ppas=['ppa:git-core/ppa'], epel=True))
-
-        instructions.append(shell(commands=self.__commands))
-
-        return '\n'.join(str(x) for x in instructions)
 
     def __setup(self):
         self.__ospackages.extend(['git', 'git-lfs', 'make', 'ninja-build'])
+
+        dist = 'deb'
+        if hpccm.config.g_linux_distro == linux_distro.CENTOS:
+            dist = 'rpm'
+        if hpccm.config.g_linux_distro == linux_distro.UBUNTU:
+            self.__commands.append("apt-get update")
+        self.__commands.append(
+            "curl -s https://packagecloud.io/install/repositories/github/"
+            "git-lfs/script.{0}.sh | bash".format(dist))
 
         if hpccm.config.g_ctype == hpccm.container_type.SINGULARITY:
             self.__ospackages.append('locales')
