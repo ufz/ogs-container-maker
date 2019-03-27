@@ -12,6 +12,7 @@ class package_manager(Enum):
 
   @staticmethod
   def set(pm):
+    global g_package_manager
     if pm == 'conan':
       g_package_manager = package_manager.CONAN
     elif pm == 'spack':
@@ -26,6 +27,10 @@ class package_manager(Enum):
       raise ValueError('Invalid package manager!')
 
     return g_package_manager
+
+  @staticmethod
+  def get():
+      return g_package_manager
 
 # Global variables
 g_package_manager = package_manager.SYSTEM

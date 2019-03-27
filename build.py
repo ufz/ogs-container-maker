@@ -168,25 +168,29 @@ for build in c:
     definition_file = 'Dockerfile'
     if __format == 'singularity':
         definition_file = 'Singularity.def'
-    definition_file = os.path.join(out_dir, definition_file)
+    # definition_file = os.path.join(out_dir, definition_file)
 
     # Create definition
+    base_cwd = os.getcwd()
+    recipe_file = os.path.join(base_cwd, args.recipe)
+    os.chdir(out_dir)
+
     hpccm.config.set_container_format(__format)
-    recipe = hpccm.recipe(args.recipe, single_stage=not args.runtime_only,
+    recipe = hpccm.recipe(recipe_file, single_stage=not args.runtime_only,
                           raise_exceptions=True, userarg=opts)
     with open(definition_file, 'w') as f:
         print(recipe, file=f)
     if args.print:
         print(recipe)
     else:
-        print(f'Created definition {definition_file}')
+        print(f'Created definition {out_dir}/{definition_file}')
 
     # Create image
     if not args.build:
         continue
 
     build_cmd = (f"docker build --build-arg OGS_COMMIT_HASH={commit_hash} "
-                 f"-t {tag} -f {definition_file} {out_dir}")
+                 f"-t {tag} .")
     print(f"Running: {build_cmd}")
     run(build_cmd, shell=True)
     if args.upload:

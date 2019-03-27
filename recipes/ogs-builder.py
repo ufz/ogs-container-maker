@@ -181,10 +181,15 @@ if ogs_version != 'off':
         cmake_args.append('-DOGS_USE_CVODE=ON')
     if gui:
         cmake_args.append('-DOGS_BUILD_GUI=ON')
+
+    Stage0 += pip(packages=['scif']) # SCI-F
     Stage0 += raw(docker='ARG OGS_COMMIT_HASH=0')
-    Stage0 += ogs(version=ogs_version, toolchain=toolchain,
-                  cmake_args=cmake_args, parallel=math.ceil(multiprocessing.cpu_count()/2),
-                  app='ogs', skip_lfs=True, remove_dev=True)
+    ogs_app = scif(name='ogs')
+    ogs_app += ogs(version=ogs_version, toolchain=toolchain,
+                   prefix='/scif/apps/ogs',
+                   cmake_args=cmake_args, parallel=math.ceil(multiprocessing.cpu_count()/2),
+                   skip_lfs=True, remove_dev=True)
+    Stage0 += ogs_app
 
 if jenkins:
     Stage0 += ccache(cache_size='15G')

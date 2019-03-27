@@ -11,27 +11,28 @@ import base
 import os
 import re
 
+import hpccm.templates.CMakeBuild
+import hpccm.templates.rm
+
+from hpccm.building_blocks.base import bb_base
 from hpccm.building_blocks.packages import packages
 from hpccm.primitives.comment import comment
 from hpccm.primitives.copy import copy
 from hpccm.primitives.environment import environment
 from hpccm.primitives.label import label
+from hpccm.primitives.runscript import runscript
 from hpccm.primitives.shell import shell
-from hpccm.templates.CMakeBuild import CMakeBuild
-from hpccm.templates.rm import rm
 from hpccm.toolchain import toolchain
 
 from base.config import package_manager
 
 
-class ogs(CMakeBuild, rm, ):
+class ogs(bb_base, hpccm.templates.CMakeBuild, hpccm.templates.rm):
     """OGS building block"""
 
     def __init__(self, **kwargs):
         """Initialize building block"""
-
-        CMakeBuild.__init__(self, **kwargs)
-        rm.__init__(self, **kwargs)
+        super(ogs, self).__init__(**kwargs)
 
         self.__cmake_args = kwargs.get('cmake_args', [])
         self.__ospackages = []
@@ -52,26 +53,26 @@ class ogs(CMakeBuild, rm, ):
 
         self.__setup()
 
-    def __str__(self):
-        """String representation of the building block"""
-        instructions = [
-            comment(
-                'OpenGeoSys build from repo {0}, branch {1}'.format(
-                    self.__repo, self.__branch)),
-            packages(ospackages=self.__ospackages),
-            shell(commands=self.__commands)
-        ]
+        # Fill in container instructions
+        self.__instructions()
+
+    def __instructions(self):
+        self += comment('OpenGeoSys build from repo {0}, branch {1}'.format(
+                        self.__repo, self.__branch))
+        self += packages(ospackages=self.__ospackages)
+        self += shell(commands=self.__commands)
+        self += runscript(commands=['ogs "$@"'])
+
         if self.__environment_variables:
-            instructions.append(environment(
-                variables=self.__environment_variables))
+            self += environment(variables=self.__environment_variables)
         if self.__labels:
-            instructions.append(label(metadata=self.__labels))
-        return '\n'.join(str(x) for x in instructions)
+            self += label(metadata=self.__labels)
+
 
     def __setup(self):
         """Construct the series of shell commands, i.e., fill in
            self.__commands"""
-        conan = base.config.g_package_manager == base.config.package_manager.CONAN
+        conan = package_manager.get() == base.config.package_manager.CONAN
 
         # Get the source
         self.__commands.extend([
@@ -122,9 +123,8 @@ class ogs(CMakeBuild, rm, ):
             self.__prefix)
 
         # Labels
-        self.__labels['org.opengeosys.version'] = self.__version
-        self.__labels['org.opengeosys.cmake_args'] = '\'' + ' '.join(
-            self.__cmake_args) + '\''
+        self.__labels['version'] = self.__version
+        self.__labels['cmake_args'] = '\'' + ' '.join(self.__cmake_args) + '\''
 
     def runtime(self, _from='0'):
         instructions = [
