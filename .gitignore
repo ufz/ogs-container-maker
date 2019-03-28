@@ -2,3 +2,6 @@
 _out/
 *.scif
 Dockerfile
+
+build/
+dist/

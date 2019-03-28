@@ -7,7 +7,7 @@ from __future__ import absolute_import
 from __future__ import unicode_literals
 from __future__ import print_function
 
-from building_blocks.lmod import lmod
+from ogscm.building_blocks import lmod
 from hpccm.building_blocks.packages import packages
 from hpccm.primitives.comment import comment
 from hpccm.primitives.environment import environment

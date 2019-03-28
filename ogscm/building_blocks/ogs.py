@@ -7,11 +7,9 @@ from __future__ import absolute_import
 from __future__ import unicode_literals
 from __future__ import print_function
 
-import base
 import os
 import re
 
-import hpccm.templates.CMakeBuild
 import hpccm.templates.rm
 
 from hpccm.building_blocks.base import bb_base
@@ -24,7 +22,8 @@ from hpccm.primitives.runscript import runscript
 from hpccm.primitives.shell import shell
 from hpccm.toolchain import toolchain
 
-from base.config import package_manager
+import ogscm
+from ogscm.config import package_manager
 
 
 class ogs(bb_base, hpccm.templates.CMakeBuild, hpccm.templates.rm):
@@ -75,7 +74,7 @@ class ogs(bb_base, hpccm.templates.CMakeBuild, hpccm.templates.rm):
     def __setup(self):
         """Construct the series of shell commands, i.e., fill in
            self.__commands"""
-        conan = package_manager.get() == base.config.package_manager.CONAN
+        conan = ogscm.config.g_package_manager == package_manager.CONAN
 
         # Get the source
         self.__commands.extend([
