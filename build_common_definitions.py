@@ -1,41 +1,17 @@
 #!/usr/bin/env python
+import subprocess
 
-import argparse
-import hpccm
-import os
+subprocess.run(f"python build.py --pm system --cvode "
+               "--ompi off 2.1.2 3.1.2 4.0.0",
+               shell=True)
 
-cli = argparse.ArgumentParser()
-cli.add_argument("--out", type=str, default="_out")
-args = cli.parse_args()
-
-dict = {
-    'Dockerfile.ogs.serial': {
-        'pm': 'system',
-        'cvode': True
-    },
-    'Dockerfile.ogs.ompi-2.1.2': {
-        'pm': 'system',
-        'cvode': True,
-        'ompi': '2.1.2'
-    },
-    'Dockerfile.ogs.ompi-3.1.2': {
-        'pm': 'system',
-        'cvode': True,
-        'ompi': '3.1.2'
-    },
-    'Dockerfile.ogs.ompi-4.0.0': {
-        'pm': 'system',
-        'cvode': True,
-        'ompi': '4.0.0'
-    }
-}
-
-for key, value in dict.items():
-    print(key)
-    print(value)
-    recipe = hpccm.recipe('recipes/ogs-builder.py', single_stage=False,
-                          raise_exceptions=True, userarg=value)
-
-    with open(os.path.join(args.out, key), 'w') as f:
-        print(recipe, file=f)
-
+subprocess.run(f"python build.py --file Dockerfile.gcc.full --jenkins "
+               "--cppcheck --docs --gcovr",
+               shell=True)
+subprocess.run(f"python build.py --file Dockerfile.gcc.gui --jenkins "
+               "--cppcheck --gui --gcovr",
+               shell=True)
+subprocess.run(f"python build.py --file Dockerfile.clang.full "
+               "--base_image ubuntu:18.04 --compiler 7 --clang --jenkins "
+               "--iwyy",
+               shell=True)
