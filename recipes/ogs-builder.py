@@ -188,7 +188,7 @@ if ogs_version != 'off':
     ogs_app += ogs(version=ogs_version, toolchain=toolchain,
                    prefix='/scif/apps/ogs',
                    cmake_args=cmake_args, parallel=math.ceil(multiprocessing.cpu_count()/2),
-                   skip_lfs=True, remove_dev=True)
+                   skip_lfs=True, remove_build=True, remove_source=True) # TODO: maybe only in runtime image?
     Stage0 += ogs_app
 
 if jenkins:
@@ -201,3 +201,4 @@ if jenkins:
 ######
 Stage1.baseimage(image=base_image)
 Stage1 += Stage0.runtime()
+Stage1 += pip(packages=['scif']) # Install scif in runtime too

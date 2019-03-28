@@ -39,6 +39,9 @@ class ogs(bb_base, hpccm.templates.CMakeBuild, hpccm.templates.rm):
         self.__parallel = kwargs.get('parallel', 4)
         self.__prefix = kwargs.get('prefix', '/usr/local/ogs')
         self.__remove_dev = kwargs.get('remove_dev', False)
+        self.__remove_build = kwargs.get('remove_build', False)
+        self.__remove_source = kwargs.get('remove_source', False)
+        self.__shared = kwargs.get('shared', True)
         self.__skip_lfs = kwargs.get('skip_lfs', False)
         self.__toolchain = kwargs.get('toolchain', toolchain())
         self.__version = kwargs.get('version', 'ufz/ogs@master')
@@ -61,7 +64,7 @@ class ogs(bb_base, hpccm.templates.CMakeBuild, hpccm.templates.rm):
                         self.__repo, self.__branch))
         self += packages(ospackages=self.__ospackages)
         self += shell(commands=self.__commands)
-        self += runscript(commands=['ogs "$@"'])
+        self += runscript(commands=['ogs'])
 
         if self.__environment_variables:
             self += environment(variables=self.__environment_variables)
@@ -90,6 +93,10 @@ class ogs(bb_base, hpccm.templates.CMakeBuild, hpccm.templates.rm):
             "-DCMAKE_INSTALL_PREFIX={}".format(self.__prefix),
             "-DCMAKE_BUILD_TYPE=Release",
         ])
+
+        self.__cmake_args.append('-DBUILD_SHARED_LIBS={}'.format(
+            'ON' if self.__shared else 'OFF'
+        ))
         if self.__skip_lfs:
             self.__cmake_args.append('-DBUILD_TESTING=OFF')
         if self.__toolchain.CC == 'mpicc':
@@ -109,14 +116,19 @@ class ogs(bb_base, hpccm.templates.CMakeBuild, hpccm.templates.rm):
             target='install', parallel=self.__parallel))
 
         # Cleanup
-        if self.__remove_dev:
+        if self.__remove_build:
             # Remove whole src and build directories
             self.__commands.append(self.cleanup_step(
-                items=[os.path.join(self.__prefix, 'src'),
-                       os.path.join(self.__prefix, 'build')]))
+                items=[os.path.join(self.__prefix, 'build')]
+            ))
         else:
             # Just run the clean-target
             self.__commands.append(self.build_step(target='clean'))
+        if self.__remove_source:
+            # Remove whole src and build directories
+            self.__commands.append(self.cleanup_step(
+                items=[os.path.join(self.__prefix, 'src')]
+            ))
 
         # Environment
         self.__environment_variables['PATH'] = '{0}/bin:$PATH'.format(
