@@ -293,7 +293,7 @@ def main(): # pragma: no cover
             Stage0 += pm_conan()
             if not args.jenkins:
                 Stage0 += environment(variables={'CONAN_SYSREQUIRES_SUDO': 0})
-        elif package_manager.get() == package_manager.SYSTEM:
+        elif ogscm.config.g_package_manager == package_manager.SYSTEM:
             Stage0 += boost()  # header only?
             Stage0 += environment(variables={'BOOST_ROOT': '/usr/local/boost'})
             Stage0 += eigen()

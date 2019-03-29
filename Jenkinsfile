@@ -44,10 +44,10 @@ pipeline {
             sh """
               python3 -m virtualenv ./venv
               . ./venv/bin/activate
-              pip install --upgrade -r requirements.txt
+              cat requirements.txt | xargs -n 1 -L 1 pip install
               alias singularity=`which singularity`
               export PYTHONPATH="\$PYTHONPATH:./"
-              python build.py --build --format ${params.format} \
+              python ogscm/cli.py --build --format ${params.format} \
                 --ogs ${params.ogs} --ompi ${params.openmpi_versions} \
                 --pm ${params.pm} ${cmake_args} ${upload} \
                 ${convert} ${runtime}
