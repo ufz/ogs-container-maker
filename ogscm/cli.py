@@ -189,11 +189,6 @@ def main(): # pragma: no cover
             img_file += '-dev'
         docker_repo = img_file
         img_file += '.sif'
-        if __format == 'singularity':
-            subprocess.run(f"sudo `which singularity` build {images_out_dir}/{img_file} "
-                f"{definition_file}", shell=True)
-            subprocess.run(f"sudo chown $USER:$USER {images_out_dir}/{img_file}", shell=True)
-            continue
 
         tag = f"{args.registry}/{docker_repo}"
 
@@ -368,6 +363,12 @@ def main(): # pragma: no cover
 
         # Create image
         if not args.build:
+            continue
+
+        if __format == 'singularity':
+            subprocess.run(f"sudo `which singularity` build {images_out_dir}/{img_file} "
+                f"{definition_file}", shell=True)
+            subprocess.run(f"sudo chown $USER:$USER {images_out_dir}/{img_file}", shell=True)
             continue
 
         build_cmd = (f"docker build --build-arg OGS_COMMIT_HASH={commit_hash} "
