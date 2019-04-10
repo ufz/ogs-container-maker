@@ -54,7 +54,7 @@ class eigen(bb_base, hpccm.templates.CMakeBuild, hpccm.templates.rm,
         # Construct the series of steps to execute
         self.__setup()
 
-        self.__instructions
+        self.__instructions()
 
     def __instructions(self):
         """String representation of the building block"""

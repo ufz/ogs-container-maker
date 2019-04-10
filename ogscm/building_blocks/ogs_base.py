@@ -39,7 +39,6 @@ class ogs_base(bb_base):
         """String representation of the building block"""
         self += comment(__doc__, reformat=False)
         self += python(devel=True)
-        self += pip(pip='pip3', upgrade=True)
         self += pip(pip='pip3', packages=['virtualenv'])
         self += cmake(eula=True, version='3.13.4')
         self += packages(ospackages=self.__ospackages,

@@ -290,7 +290,10 @@ def main(): # pragma: no cover
                 'mesa-common-dev', 'libgl1-mesa-dev', 'libxt-dev'
             ])
         if ogscm.config.g_package_manager == package_manager.CONAN:
-            Stage0 += pm_conan()
+            conan_user_home = '/opt/conan'
+            if args.dev:
+                conan_user_home = ''
+            Stage0 += pm_conan(user_home=conan_user_home)
             if not args.jenkins:
                 Stage0 += environment(variables={'CONAN_SYSREQUIRES_SUDO': 0})
         elif ogscm.config.g_package_manager == package_manager.SYSTEM:
@@ -318,7 +321,8 @@ def main(): # pragma: no cover
             Stage0 += pip(pip='pip3', packages=['gcovr'])
 
         if args.dev:
-            Stage0 += packages(ospackages=['vim', 'gdb'])
+            Stage0 += packages(ospackages=['neovim', 'gdb', 'silversearcher-ag',
+                                           'ssh-client', 'less'])
 
         if ogs_version != 'off':
             if args.cvode:
