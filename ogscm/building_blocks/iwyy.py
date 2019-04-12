@@ -39,7 +39,7 @@ class iwyy(bb_base, hpccm.templates.CMakeBuild, hpccm.templates.rm,
 
         self.__ospackages = kwargs.get('ospackages', [])
         self.__parallel = kwargs.get('parallel', '$(nproc)')
-        self.__prefix = kwargs.get('prefix', '/usr/local/iwyy')
+        self.prefix = kwargs.get('prefix', '/usr/local/iwyy')
         self.__clang_version = kwargs.get('clang_version')
 
         self.__commands = []  # Filled in by __setup()
@@ -89,14 +89,12 @@ class iwyy(bb_base, hpccm.templates.CMakeBuild, hpccm.templates.rm,
             self.configure_step(
                 directory='{0}/{1}'.format(self.__wd, directory),
                 build_directory='{}/build'.format(self.__wd),
-                opts=[
-                    '-DCMAKE_INSTALL_PREFIX={}'.format(self.__prefix),
-                    '-DIWYU_LLVM_ROOT_PATH=/usr/lib/llvm-{}'.format(
-                        self.__clang_version)]),
+                opts=['-DIWYU_LLVM_ROOT_PATH=/usr/lib/llvm-{}'.format(
+                    self.__clang_version)]),
             self.build_step(target='install', parallel=self.__parallel)
         ])
 
-        self.__environment_variables['PATH'] = '{}/bin:$PATH'.format(self.__prefix)
+        self.__environment_variables['PATH'] = '{}/bin:$PATH'.format(self.prefix)
 
         # Cleanup tarball and directories
         self.__commands.append(self.cleanup_step(

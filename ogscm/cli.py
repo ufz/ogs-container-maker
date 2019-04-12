@@ -211,9 +211,6 @@ def main(): # pragma: no cover
             # definition_file = os.path.join(out_dir, definition_file)
 
         # Create definition
-        base_cwd = os.getcwd()
-        os.chdir(out_dir)
-
         hpccm.config.set_container_format(__format)
 
         # ------------------------------ recipe ------------------------------------
@@ -385,7 +382,13 @@ def main(): # pragma: no cover
             subprocess.run(f"docker run -d -p 5000:5000 --rm  --name registry registry:2 && "
                 f"docker tag {tag} localhost:5000/{tag} && "
                 f"docker push localhost:5000/{tag} && "
-                f"SINGULARITY_NOHTTPS=true sudo -E singularity build --force {images_out_dir}/{img_file} docker://localhost:5000/{tag} && "
+                # Requires following entries in visudo:
+                #   Defaults env_keep += "SINGULARITY_NOHTTPS"
+                #   jenkins ALL = NOPASSWD: /usr/bin/singularity
+                # Echo empty password because of
+                #   sudo: no tty present and no askpass program specified
+                #   See https://stackoverflow.com/a/29685946/80480
+                f"echo '' | sudo -S SINGULARITY_NOHTTPS=true singularity build --force {images_out_dir}/{img_file} docker://localhost:5000/{tag} && "
                 f"docker rmi localhost:5000/{tag} && "
                 f"docker stop registry",
                 shell=True)

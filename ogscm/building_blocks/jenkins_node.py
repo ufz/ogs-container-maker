@@ -34,7 +34,7 @@ class jenkins_node(bb_base, hpccm.templates.rm, hpccm.templates.tar,
     self += comment('Jenkins node')
     self += shell(commands=[
         'groupadd --gid 1001 jenkins',
-        'adduser --uid 500 --gid 1001 --disabled-password --gecos "" jenkins',
+        'adduser --uid 1001 --gid 1001 --disabled-password --gecos "" jenkins',
         'echo "jenkins ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers',
         'echo "jenkins:jenkins" | chpasswd'
     ])
