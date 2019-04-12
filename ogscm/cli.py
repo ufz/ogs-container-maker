@@ -385,7 +385,7 @@ def main(): # pragma: no cover
             subprocess.run(f"docker run -d -p 5000:5000 --rm  --name registry registry:2 && "
                 f"docker tag {tag} localhost:5000/{tag} && "
                 f"docker push localhost:5000/{tag} && "
-                f"SINGULARITY_NOHTTPS=true singularity build --force {images_out_dir}/{img_file} docker://localhost:5000/{tag} && "
+                f"SINGULARITY_NOHTTPS=true sudo -E singularity build --force {images_out_dir}/{img_file} docker://localhost:5000/{tag} && "
                 f"docker rmi localhost:5000/{tag} && "
                 f"docker stop registry",
                 shell=True)
