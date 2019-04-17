@@ -125,3 +125,11 @@ Additional options:
   --compiler_version COMPILER_VERSION
                         Compiler version. (default: )
 ```
+
+## Building recipes with hpccm
+
+There are some additional hpccm recipes in the `recipes`-folder.
+
+```bash
+hpccm --recipe recipes/salome.py | docker build -
+```
