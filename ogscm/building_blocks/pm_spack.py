@@ -7,58 +7,78 @@ from __future__ import absolute_import
 from __future__ import unicode_literals
 from __future__ import print_function
 
+from hpccm.building_blocks.base import bb_base
 from hpccm.building_blocks.packages import packages
+from hpccm.primitives import copy
 from hpccm.primitives.comment import comment
 from hpccm.primitives.environment import environment
 from hpccm.primitives.label import label
 from hpccm.primitives.shell import shell
-from hpccm.templates.git import git
+import hpccm.templates.wget
 
 
-class pm_spack(object):
+class pm_spack(bb_base, hpccm.templates.git):
     """Package manager spack building block"""
 
     def __init__(self, **kwargs):
-        """Initialize building block"""
+        super(pm_spack, self).__init__()
 
-        # Trouble getting MRO with kwargs working correctly, so just call
-        # the parent class constructors manually for now.
-        # super(python, self).__init__(**kwargs)
 
         self.__ospackages = kwargs.get('ospackages', [])
+        self.__packages = kwargs.get('packages', [])
+        self.__repo = kwargs.get('repo', 'https://github.com/spack/spack')
+        self.__branch = kwargs.get('branch', 'devel')
 
         self.__commands = []  # Filled in by __setup()
+        self.__environment_variables = {}
+        self.__labels = {}
+
+
         self.__wd = '/var/tmp'  # working directory
 
         self.__setup()
 
-    def __str__(self):
-        """String representation of the building block"""
-        instructions = [comment(__doc__, reformat=False),
-                        packages(ospackages=self.__ospackages),
-                        packages(yum=['xz'], apt=['xz-utils']),
-                        environment(variables={
-                            'PATH': '/opt/spack/bin:$PATH',
-                            'FORCE_UNSAFE_CONFIGURE': '1'
-                        }), shell(commands=self.__commands),
-                        label(metadata={'org.opengeosys.pm': 'spack'})]
-        # Without the FORCE_UNSAFE_CONFIGURE env var some spack package
-        # installations may fail due to running as root.
+        self.__instructions()
 
-        return '\n'.join(str(x) for x in instructions)
+
+    def __instructions(self):
+        self += comment(__doc__, reformat=False)
+        self += packages(ospackages=self.__ospackages)
+        self += packages(yum=['xz'], apt=['xz-utils'])
+        self += shell(commands=self.__commands)
+        if self.__environment_variables:
+            self += environment(variables=self.__environment_variables)
+        if self.__labels:
+            self += label(metadata=self.__labels)
+        if self.__packages:
+            self += copy(src='files/spack/packages.yml', dest='/etc/spack/packages.yaml')
+            install_cmds = []
+            for package in self.__packages:
+                install_cmds.append('/opt/spack/bin/spack install {0}'.format(package))
+            install_cmds.append('/opt/spack/bin/spack clean --all')
+            self += shell(commands=install_cmds)
+
 
     def __setup(self):
-        self.__ospackages.extend(['patch'])
+        self.__ospackages.extend(['patch', 'less', 'curl', 'bzip2'])
         self.__commands.extend([
-            git().clone_step(repository='https://github.com/spack/spack',
-                             branch='develop', path='/opt'),
-            'spack bootstrap',
+            self.clone_step(repository=self.__repo, branch=self.__branch,
+                            path='/opt'),
+            '/opt/spack/bin/spack bootstrap',
             # TODO: There is no init system inside the container -> files are
             #       not sourced!
             'ln -s /opt/spack/share/spack/setup-env.sh /etc/profile.d/spack.sh',
             'ln -s /opt/spack/share/spack/spack-completion.bash /etc/profile.d',
-            'spack clean --all'
+            '/opt/spack/bin/spack clean --all'
         ])
+
+        # Environment
+        self.__environment_variables['PATH'] = '/opt/spack/bin:$PATH'
+        self.__environment_variables['FORCE_UNSAFE_CONFIGURE'] = '1'
+
+        # Labels
+        self.__labels['org.opengeosys.pm'] = 'spack'
+
 
     def runtime(self, _from='0'):
         """Install the runtime from a full build in a previous stage.  In this

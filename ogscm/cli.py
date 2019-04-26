@@ -13,6 +13,8 @@ import json
 import math
 import multiprocessing
 import os
+import shutil
+
 import requests
 import subprocess
 import sys
@@ -20,14 +22,15 @@ import sys
 import hpccm
 from hpccm import linux_distro
 from hpccm.building_blocks import packages, mlnx_ofed, knem, ucx, openmpi, \
-    boost, pip, scif, llvm, gnu
-from hpccm.primitives import comment, user, environment, raw, label
+    boost, pip, scif, llvm, gnu, ofed
+from hpccm.primitives import comment, user, environment, raw, label, shell
 
 import ogscm
 from ogscm.config import package_manager
 from ogscm.version import __version__
 from ogscm.building_blocks import ccache, cppcheck, cvode, eigen, iwyy, \
-    jenkins_node, ogs_base, ogs, osu_benchmarks, petsc, pm_conan, vtk
+    jenkins_node, ogs_base, ogs, osu_benchmarks, petsc, pm_conan, vtk, pm_spack
+
 
 def main(): # pragma: no cover
     cli = argparse.ArgumentParser(
@@ -46,7 +49,7 @@ def main(): # pragma: no cover
                            choices=['docker', 'singularity'],
                            default=['docker'])
     options_g.add_argument('--pm', nargs='*', type=str,
-                           choices=['system', 'conan'], default=['conan'],
+                           choices=['system', 'conan', 'spack'], default=['conan'],
                            help='Package manager to install third-party '
                                 'dependencies')
     options_g.add_argument('--ompi', nargs='*', type=str,
@@ -98,6 +101,10 @@ def main(): # pragma: no cover
                             help='Installs development tools (vim, gdb)')
     switches_g.add_argument('--compiler_version', type=str, default='',
                             help='Compiler version.')
+    maint_g = cli.add_argument_group('Maintenance')
+    maint_g.add_argument('--clean', dest='cleanup', action='store_true',
+                         help='Cleans up generated files in default directories.')
+
     cli.set_defaults(build=False)
     cli.set_defaults(convert=False)
     cli.set_defaults(print=False)
@@ -112,6 +119,7 @@ def main(): # pragma: no cover
     cli.set_defaults(iwyy=False)
     cli.set_defaults(gcovr=False)
     cli.set_defaults(dev=False)
+    cli.set_defaults(cleanup=False)
     args = cli.parse_args()
 
     # if not len(sys.argv) > 1:
@@ -123,7 +131,7 @@ def main(): # pragma: no cover
 
     c = list(itertools.product(args.format, args.ogs, args.pm, args.ompi,
                                args.cmake_args))
-    if not args.print:
+    if not args.print and not args.cleanup:
         print('Creating {} image definition(s)...'.format(len(c)))
     for build in c:
         __format = build[0]
@@ -192,15 +200,28 @@ def main(): # pragma: no cover
 
         tag = f"{args.registry}/{docker_repo}:latest"
 
-        # paths
+        ### Paths ###
+
+        # Change working dir to ogscm
+        old_cwd = os.getcwd()
+        os.chdir(os.path.dirname(__file__))
+        if args.cleanup:
+            shutil.rmtree(os.path.join(old_cwd, '_out'), ignore_errors=True)
+            shutil.rmtree('_out', ignore_errors=True)
+            print('Cleaned up!')
+            exit(0)
+
+        if not os.path.exists("_out"):
+            os.makedirs("_out") # For .scif files
+
         if args.file != '':
             out_dir = args.out
             definition_file = args.file
         else:
-            out_dir = f"{args.out}/{__format}/{img_folder}"
+            out_dir = os.path.join(old_cwd, f"{args.out}/{__format}/{img_folder}")
             if len(cmake_args) > 0:
                 out_dir += f'/cmake-{cmake_args_hash_short}'
-            images_out_dir = "_out/images"
+            images_out_dir = os.path.join(old_cwd, f"{args.out}/images")
             if not os.path.exists(out_dir):
                 os.makedirs(out_dir)
             if not os.path.exists(images_out_dir):
@@ -259,11 +280,13 @@ def main(): # pragma: no cover
             )
 
         if ompi != 'off':
-            Stage0 += mlnx_ofed()  # version='3.4-1.0.0.0'
-            Stage0 += knem()
-            Stage0 += ucx(cuda=False, knem='/usr/local/knem')
+            Stage0 += ofed()
+            # Stage0 += mlnx_ofed()  # version='3.4-1.0.0.0'
+            # Stage0 += knem()
+            # Stage0 += ucx(cuda=False, knem='/usr/local/knem')
 
-            mpicc = openmpi(version=ompi, cuda=False, ucx='/usr/local/ucx',
+            mpicc = openmpi(version=ompi, cuda=False,
+                            # ucx='/usr/local/ucx',
                             configure_opts=[
                                 '--with-slurm',
                                 '--enable-mca-no-build=btl-openib,plm-slurm'
@@ -293,6 +316,22 @@ def main(): # pragma: no cover
             Stage0 += pm_conan(user_home=conan_user_home)
             if not args.jenkins:
                 Stage0 += environment(variables={'CONAN_SYSREQUIRES_SUDO': 0})
+        elif ogscm.config.g_package_manager == package_manager.SPACK:
+            vtk_variants = '+osmesa'
+            if ompi == 'off':
+                vtk_variants += ' -mpi'
+            spack_packages = [
+                # 'vtk@8.1.2' + vtk_variants,
+                'eigen@3.3.4',
+                'boost@1.68.0'
+            ]
+            Stage0 += pm_spack(packages=spack_packages,
+                               # ospackages=['libgl1-mesa-dev'],
+                               repo='https://github.com/bilke/spack',
+                               branch='patch-1')
+            Stage0 += shell(commands=[
+                '/opt/spack/bin/spack install --only dependencies vtk@8.1.2 +osmesa'
+            ])
         elif ogscm.config.g_package_manager == package_manager.SYSTEM:
             Stage0 += boost()  # header only?
             Stage0 += environment(variables={'BOOST_ROOT': '/usr/local/boost'})
@@ -329,7 +368,7 @@ def main(): # pragma: no cover
 
             Stage0 += pip(packages=['scif'])  # SCI-F
             Stage0 += raw(docker='ARG OGS_COMMIT_HASH=0')
-            ogs_app = scif(name='ogs')
+            ogs_app = scif(name='ogs', file="_out/ogs.scif")
             ogs_app += ogs(version=ogs_version, toolchain=toolchain,
                            prefix='/scif/apps/ogs',
                            cmake_args=cmake_args,
@@ -355,12 +394,13 @@ def main(): # pragma: no cover
 
         # ---------------------------- recipe end ----------------------------------
 
-        with open(definition_file, 'w') as f:
+        definition_file_path = os.path.join(out_dir, definition_file)
+        with open(definition_file_path, 'w') as f:
             print(stages_string, file=f)
         if args.print:
             print(stages_string)
         else:
-            print(f'Created definition {out_dir}/{definition_file}')
+            print(f'Created definition {definition_file_path}')
 
         # Create image
         if not args.build:
@@ -373,7 +413,7 @@ def main(): # pragma: no cover
             continue
 
         build_cmd = (f"docker build --build-arg OGS_COMMIT_HASH={commit_hash} "
-                     f"-t {tag} .")
+                     f"-t {tag} -f {definition_file_path} .")
         print(f"Running: {build_cmd}")
         subprocess.run(build_cmd, shell=True)
         if args.upload:

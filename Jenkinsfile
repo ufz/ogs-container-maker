@@ -64,9 +64,6 @@ pipeline {
     always {
       archiveArtifacts artifacts: '_out/**/*.sif,_out/**/*.def,_out/**/Dockerfile'
     }
-    failure {
-      sh 'docker stop registry || true'
-    }
     cleanup { sh 'rm -rf _out' }
   }
 }
