@@ -190,7 +190,7 @@ def main(): # pragma: no cover
         docker_repo = img_file
         img_file += '.sif'
 
-        tag = f"{args.registry}/{docker_repo}"
+        tag = f"{args.registry}/{docker_repo}:latest"
 
         # paths
         if args.file != '':
