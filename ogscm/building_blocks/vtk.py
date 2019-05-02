@@ -20,8 +20,8 @@ from hpccm.primitives.shell import shell
 from hpccm.toolchain import toolchain
 
 
-class vtk(bb_base, hpccm.templates.CMakeBuild, hpccm.templates.rm,
-          hpccm.templates.tar, hpccm.templates.wget):
+class vtk(bb_base, hpccm.templates.CMakeBuild, hpccm.templates.ldconfig,
+          hpccm.templates.rm, hpccm.templates.tar, hpccm.templates.wget):
     """The `VTK` building block downloads and installs the
     [VTK](https://vtk.org/) component.
 
@@ -41,7 +41,7 @@ class vtk(bb_base, hpccm.templates.CMakeBuild, hpccm.templates.rm,
 
     """
     def __init__(self, **kwargs):
-        super(vtk, self).__init__()
+        super(vtk, self).__init__(**kwargs)
 
         self.__cmake_args = kwargs.get('cmake_args', [])
         self.__ospackages = kwargs.get('ospackages', [])
@@ -112,7 +112,10 @@ class vtk(bb_base, hpccm.templates.CMakeBuild, hpccm.templates.rm,
         self.__environment_variables['VTK_ROOT'] = '{}'.format(self.__prefix)
         libpath = os.path.join(self.__prefix, 'lib')
         if self.__shared:
-            self.__environment_variables['LD_LIBRARY_PATH'] = '{}:$LD_LIBRARY_PATH'.format(libpath)
+            if self.ldconfig:
+                self.__commands.append(self.ldcache_step(directory=libpath))
+            else:
+                self.__environment_variables['LD_LIBRARY_PATH'] = '{}:$LD_LIBRARY_PATH'.format(libpath)
 
         # Cleanup tarball and directory
         self.__commands.append(self.cleanup_step(
@@ -128,6 +131,10 @@ class vtk(bb_base, hpccm.templates.CMakeBuild, hpccm.templates.rm,
         instructions.append(comment('VTK {}'.format(self.__version)))
         instructions.append(copy(_from=_from, src=self.__prefix,
                                  dest=self.__prefix))
+        if self.ldconfig:
+            libpath = os.path.join(self.__prefix, 'lib')
+            instructions.append(shell(
+                commands=[self.ldcache_step(directory=libpath)]))
 
         if self.__environment_variables:
             instructions.append(environment(

@@ -343,7 +343,8 @@ def main(): # pragma: no cover
                 '-DVTK_Group_Rendering=OFF',
                 '-DModule_vtkIOXML=ON'
             ]
-            Stage0 += vtk(cmake_args=vtk_cmake_args, toolchain=toolchain)
+            Stage0 += vtk(cmake_args=vtk_cmake_args, toolchain=toolchain,
+                          ldconfig=True)
             if ompi != 'off':
                 Stage0 += petsc()
         if args.cvode:
