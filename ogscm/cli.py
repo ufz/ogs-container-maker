@@ -283,10 +283,10 @@ def main(): # pragma: no cover
             # Stage0 += ofed()
             Stage0 += mlnx_ofed()  # used on taurus
             # Stage0 += knem()
-            # Stage0 += ucx(cuda=False, knem='/usr/local/knem')
+            Stage0 += ucx(cuda=False) #  knem='/usr/local/knem'
 
             mpicc = openmpi(version=ompi, cuda=False,
-                            # ucx='/usr/local/ucx',
+                            ucx='/usr/local/ucx',
                             configure_opts=[
                                 '--disable-getpwuid',
                                 '--with-slurm', # used on taurus
