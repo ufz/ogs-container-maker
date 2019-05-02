@@ -21,5 +21,7 @@ def set_package_manager(pm):
     this.g_package_manager = package_manager.GUIX
   elif pm == 'system':
     this.g_package_manager = package_manager.SYSTEM
+  elif pm == 'off':
+    this.g_package_manager = package_manager.OFF
   else:
     RuntimeError('Invalid package manager!')

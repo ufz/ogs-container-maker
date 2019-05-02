@@ -49,7 +49,7 @@ def main(): # pragma: no cover
                            choices=['docker', 'singularity'],
                            default=['docker'])
     options_g.add_argument('--pm', nargs='*', type=str,
-                           choices=['system', 'conan', 'spack'], default=['conan'],
+                           choices=['system', 'conan', 'spack', 'off'], default=['conan'],
                            help='Package manager to install third-party '
                                 'dependencies')
     options_g.add_argument('--ompi', nargs='*', type=str,
@@ -304,7 +304,8 @@ def main(): # pragma: no cover
             if True:  # TODO configurable?
                 Stage0 += osu_benchmarks()
 
-        Stage0 += ogs_base()
+        if ogs_version != 'off':
+            Stage0 += ogs_base()
         if args.gui:
             Stage0 += packages(ospackages=[
                 'mesa-common-dev', 'libgl1-mesa-dev', 'libxt-dev'
