@@ -22,6 +22,8 @@ pipeline {
            description: 'Create a runtime only image (contains just the built binaries and runtime dependencies)')
     booleanParam(name: 'deploy', defaultValue: false,
            description: 'Deploy Singularity images')
+    string(name: 'other', defaultValue: '',
+           description: 'Other parameter to the ogscm command, e.g. --base_image centos:7')
   }
   stages {
     stage('Build') {
@@ -50,7 +52,7 @@ pipeline {
               python ogscm/cli.py --build --format ${params.format} \
                 --ogs ${params.ogs} --ompi ${params.openmpi_versions} \
                 --pm ${params.pm} ${cmake_args} ${upload} \
-                ${convert} ${runtime}
+                ${convert} ${runtime} ${params.other}
             """.stripIndent()
           //}
           if (params.deploy)
