@@ -346,7 +346,7 @@ def main(): # pragma: no cover
             Stage0 += vtk(cmake_args=vtk_cmake_args, toolchain=toolchain,
                           ldconfig=True)
             if ompi != 'off':
-                Stage0 += petsc()
+                Stage0 += petsc(ldconfig=True)
         if args.cvode:
             Stage0 += cvode()
         if args.cppcheck:

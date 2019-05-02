@@ -20,8 +20,8 @@ from hpccm.primitives.shell import shell
 from hpccm.toolchain import toolchain
 
 
-class petsc(bb_base, hpccm.templates.ConfigureMake, hpccm.templates.rm,
-            hpccm.templates.tar, hpccm.templates.wget):
+class petsc(bb_base, hpccm.templates.ConfigureMake, hpccm.templates.ldconfig,
+            hpccm.templates.rm, hpccm.templates.tar, hpccm.templates.wget):
     """The `PETSc` building block downloads and installs the
     [VTK](https://vtk.org/) component.
 
@@ -41,7 +41,7 @@ class petsc(bb_base, hpccm.templates.ConfigureMake, hpccm.templates.rm,
 
     """
     def __init__(self, **kwargs):
-        super(petsc, self).__init__()
+        super(petsc, self).__init__(**kwargs)
 
         self.__ospackages = kwargs.get('ospackages', [])
         self.parallel = 1
@@ -111,7 +111,11 @@ class petsc(bb_base, hpccm.templates.ConfigureMake, hpccm.templates.rm,
         # Environment
         self.__environment_variables['PETSC_DIR'] = '{}'.format(self.prefix)
         libpath = os.path.join(self.prefix, 'lib')
-        self.__environment_variables['LD_LIBRARY_PATH'] = '{}:$LD_LIBRARY_PATH'.format(libpath)
+        if self.ldconfig:
+            self.__commands.append(self.ldcache_step(directory=libpath))
+        else:
+            self.__environment_variables[
+                'LD_LIBRARY_PATH'] = '{}:$LD_LIBRARY_PATH'.format(libpath)
 
         # Labels
         self.__labels['petsc.version'] = self.__version
@@ -121,6 +125,11 @@ class petsc(bb_base, hpccm.templates.ConfigureMake, hpccm.templates.rm,
         instructions.append(comment('PETSc {}'.format(self.__version)))
         instructions.append(copy(_from=_from, src=self.prefix,
                                  dest=self.prefix))
+
+        if self.ldconfig:
+            libpath = os.path.join(self.prefix, 'lib')
+            instructions.append(shell(
+                commands=[self.ldcache_step(directory=libpath)]))
 
         if self.__environment_variables:
             instructions.append(environment(
