@@ -280,18 +280,19 @@ def main(): # pragma: no cover
             )
 
         if ompi != 'off':
-            Stage0 += ofed()
-            # Stage0 += mlnx_ofed()  # version='3.4-1.0.0.0'
+            # Stage0 += ofed()
+            Stage0 += mlnx_ofed()  # used on taurus
             # Stage0 += knem()
             # Stage0 += ucx(cuda=False, knem='/usr/local/knem')
 
             mpicc = openmpi(version=ompi, cuda=False,
                             # ucx='/usr/local/ucx',
                             configure_opts=[
-                                '--with-slurm',
-                                '--enable-mca-no-build=btl-openib,plm-slurm'
+                                '--disable-getpwuid',
+                                '--with-slurm', # used on taurus
+                                # '--enable-mca-no-build=btl-openib,plm-slurm'
                             ],
-                            # ospackages=['libslurm-dev'],
+                            # ospackages=['file', 'hwloc', 'libslurm-dev'], # append for slurm?
                             toolchain=toolchain)
             toolchain = mpicc.toolchain
             Stage0 += mpicc
