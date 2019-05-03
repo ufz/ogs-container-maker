@@ -283,21 +283,28 @@ def main(): # pragma: no cover
             # Stage0 += ofed()
             Stage0 += mlnx_ofed()  # used on taurus
             # Stage0 += knem()
-            Stage0 += ucx(cuda=False) #  knem='/usr/local/knem'
+            Stage0 += ucx(version='1.5.1', cuda=False) #  knem='/usr/local/knem'
 
-            mpicc = openmpi(version=ompi, cuda=False,
-                            ucx='/usr/local/ucx',
+            mpicc = openmpi(version=ompi, cuda=False, toolchain=toolchain,
+                            ldconfig=True, ucx='/usr/local/ucx',
                             configure_opts=[
-                                '--disable-getpwuid',
+                                # '--disable-getpwuid',
+                                '--sysconfdir=/mnt/0'
                                 '--with-slurm',  # used on taurus
                                 '--with-pmi',
                                 '--with-pmi-libdir=/usr/lib/x86_64-linux-gnu',
+                                '--with-pmix',
+                                '--with-psm2',
+                                '--disable-pty-support',
                                 '--enable-mca-no-build=btl-openib,plm-slurm'
-                            ],
-                            # ospackages=['file', 'hwloc', 'libslurm-dev'], # append for slurm?
-                            toolchain=toolchain)
+                            ])
             toolchain = mpicc.toolchain
             Stage0 += mpicc
+            # OpenMPI expects this program to exist, even if it's not used. Default is
+            # "ssh : rsh", but that's not installed.
+            Stage0 += shell(commands=[
+                "echo 'plm_rsh_agent = false' >> /mnt/0/openmpi-mca-params.conf"
+            ])
 
             Stage0 += label(metadata={
                 'org.opengeosys.mpi': 'openmpi',
