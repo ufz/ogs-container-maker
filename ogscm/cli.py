@@ -289,8 +289,10 @@ def main(): # pragma: no cover
                             ucx='/usr/local/ucx',
                             configure_opts=[
                                 '--disable-getpwuid',
-                                '--with-slurm', # used on taurus
-                                # '--enable-mca-no-build=btl-openib,plm-slurm'
+                                '--with-slurm',  # used on taurus
+                                '--with-pmi',
+                                '--with-pmi-libdir=/usr/lib/x86_64-linux-gnu',
+                                '--enable-mca-no-build=btl-openib,plm-slurm'
                             ],
                             # ospackages=['file', 'hwloc', 'libslurm-dev'], # append for slurm?
                             toolchain=toolchain)
