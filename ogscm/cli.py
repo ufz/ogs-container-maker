@@ -79,7 +79,7 @@ def main(): # pragma: no cover
                          help='Generate multi-stage Dockerfiles for small runtime '
                               'images')
     switches_g = cli.add_argument_group('Additional options')
-    switches_g.add_argument('--base_image', type=str, default='ubuntu:17.10',
+    switches_g.add_argument('--base_image', type=str, default='ubuntu:18.04',
                             help='The base image. \'centos:7\' is supported too.')
     switches_g.add_argument('--clang', dest='clang', action='store_true',
                             help='Use clang instead of gcc')
@@ -314,7 +314,7 @@ def main(): # pragma: no cover
             if True:  # TODO configurable?
                 Stage0 += osu_benchmarks()
 
-        if ogs_version != 'off':
+        if ogs_version != 'off' or args.jenkins:
             Stage0 += ogs_base()
         if args.gui:
             Stage0 += packages(ospackages=[
@@ -344,6 +344,9 @@ def main(): # pragma: no cover
                 '/opt/spack/bin/spack install --only dependencies vtk@8.1.2 +osmesa'
             ])
         elif ogscm.config.g_package_manager == package_manager.SYSTEM:
+            # Use ldconfig to set library search path (instead of
+            # LD_LIBRARY_PATH) as host var overwrites container var. See
+            # https://github.com/sylabs/singularity/pull/2669
             Stage0 += boost()  # header only?
             Stage0 += environment(variables={'BOOST_ROOT': '/usr/local/boost'})
             Stage0 += eigen()

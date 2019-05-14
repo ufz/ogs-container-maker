@@ -53,7 +53,12 @@ class ogs_base(bb_base):
         if hpccm.config.g_linux_distro == linux_distro.CENTOS:
             dist = 'rpm'
         if hpccm.config.g_linux_distro == linux_distro.UBUNTU:
-            self.__commands.append("apt-get update")
+            self.__commands.extend([
+                "apt-get update",
+                # Workaround for https://github.com/git-lfs/git-lfs/issues/3474
+                "apt-get install -y dirmngr --install-recommends",
+                "apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 6B05F25D762E3157"
+            ])
         self.__commands.append(
             "curl -s https://packagecloud.io/install/repositories/github/"
             "git-lfs/script.{0}.sh | bash".format(dist))
