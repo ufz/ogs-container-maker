@@ -75,7 +75,7 @@ class ogs_base(bb_base):
 
         # Common directories
         self.__commands.append(
-            'mkdir -p /apps /scratch /lustre /work /projects')
+            'mkdir -p /apps /scratch /lustre /work /projects /data')
 
     def runtime(self, _from='0'):
         p = python(python2=False)
