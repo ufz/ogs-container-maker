@@ -264,7 +264,7 @@ def main(): # pragma: no cover
                 else:
                     args.compiler_version = '5.0'
             else:
-                args.compiler_version = '6'
+                args.compiler_version = None # Use default
         if args.clang:
             compiler = llvm(extra_repository=True, version=args.compiler_version)
         else:
