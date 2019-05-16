@@ -142,6 +142,8 @@ def main(): # pragma: no cover
         ompi = build[3]
         cmake_args = build[4].strip().split(' ')
 
+        scif_installed = False
+
         # args checking
         if len(c) > 1 and args.file != '':
             print('--file can only be used when generating a single image definition')
@@ -282,29 +284,80 @@ def main(): # pragma: no cover
             )
 
         if ompi != 'off':
-            # Stage0 += ofed()
-            Stage0 += mlnx_ofed()  # used on taurus
+            # Stage0 += ofed() OR mlnx_ofed(); is installed later on from debian archive
             # Stage0 += knem()
             Stage0 += ucx(version='1.5.1', cuda=False) #  knem='/usr/local/knem'
+            Stage0 += packages(ospackages=['libpmi2-0-dev']) # req. for --with-pmi
+            # req. for --with-psm2
+            Stage0 += packages(ospackages=['libnuma1'])
+            psm_deb_url = 'http://snapshot.debian.org/archive/debian/20181231T220010Z/pool/main'
+            psm2_version = '11.2.68-4'
+            Stage0 += shell(commands=[
+                'cd /tmp',
+                f'wget -nv {psm_deb_url}/libp/libpsm2/libpsm2-2_{psm2_version}_amd64.deb',
+                f'wget -nv {psm_deb_url}/libp/libpsm2/libpsm2-dev_{psm2_version}_amd64.deb',
+                'dpkg --install *.deb'
+            ])
+
+            # libibverbs
+            # Available versions: http://snapshot.debian.org/binary/ibacm/
+            # ibverbs_version = '21.0-1'
+            # works on eve, eve has 17.2-3 installed nut this version is not available in snapshot.debian
+            ib_deb_url = 'http://snapshot.debian.org/archive/debian/20180430T215634Z/pool/main'
+            ibverbs_version = '17.1-2'
+            ibverbs_packages = [
+                'ibacm',
+                'ibverbs-providers',
+                'ibverbs-utils',
+                'libibumad-dev',
+                'libibumad3',
+                'libibverbs-dev',
+                'libibverbs1',
+                'librdmacm-dev',
+                'librdmacm1',
+                'rdma-core',
+                'rdmacm-utils'
+            ]
+            ibverbs_cmds = ['cd /tmp']
+            for package in ibverbs_packages:
+                ibverbs_cmds.extend([
+                    f'wget -nv {ib_deb_url}/r/rdma-core/{package}_{ibverbs_version}_amd64.deb'
+                ])
+            ibverbs_cmds.append('dpkg --install *.deb')
+            Stage0 += packages(ospackages=[
+                'libnl-3-200',
+                'libnl-route-3-200',
+                'libnl-route-3-dev',
+                'udev',
+                'perl'
+            ])
+            Stage0 += shell(commands=ibverbs_cmds)
 
             mpicc = openmpi(version=ompi, cuda=False, toolchain=toolchain,
-                            ldconfig=True, ucx='/usr/local/ucx',
+                            ldconfig=True,
+                            ucx='/usr/local/ucx',
                             configure_opts=[
-                                # '--disable-getpwuid',
+                                '--disable-getpwuid',
                                 '--sysconfdir=/mnt/0'
                                 '--with-slurm',  # used on taurus
-                                '--with-pmi',
+                                '--with-pmi=/usr/include/slurm-wlm',
+                                'CPPFLAGS=\'-I /usr/include/slurm-wlm\'',
                                 '--with-pmi-libdir=/usr/lib/x86_64-linux-gnu',
-                                '--with-pmix',
+                                # '--with-pmix',
                                 '--with-psm2',
                                 '--disable-pty-support',
-                                '--enable-mca-no-build=btl-openib,plm-slurm'
+                                '--enable-mca-no-build=btl-openib,plm-slurm',
+                                # eve:
+                                '--with-sge',
+                                '--enable-mpirun-prefix-by-default',
+                                '--enable-orterun-prefix-by-default',
                             ])
             toolchain = mpicc.toolchain
             Stage0 += mpicc
             # OpenMPI expects this program to exist, even if it's not used. Default is
             # "ssh : rsh", but that's not installed.
             Stage0 += shell(commands=[
+                'mkdir /mnt/0',
                 "echo 'plm_rsh_agent = false' >> /mnt/0/openmpi-mca-params.conf"
             ])
 
@@ -315,6 +368,8 @@ def main(): # pragma: no cover
 
             if args.mpi_benchmarks:
                 Stage0 += pip(packages=['scif'])  # SCI-F
+                scif_installed = True
+
                 osu_app = scif(name='osu', file="_out/osu.scif")
                 osu_app += osu_benchmarks(toolchain=toolchain, prefix='/scif/apps/osu')
                 Stage0 += osu_app
@@ -324,6 +379,8 @@ def main(): # pragma: no cover
                     'mpicc -o /usr/local/bin/mpi-ring /usr/local/mpi-examples/ring.c',
                     'mpicc -o /usr/local/bin/mpi-bw /usr/local/mpi-examples/bw.c',
                 ])
+
+        if ogs_version != 'off' or args.jenkins:
             Stage0 += ogs_base()
         if args.gui:
             Stage0 += packages(ospackages=[
@@ -390,7 +447,9 @@ def main(): # pragma: no cover
             if args.gui:
                 cmake_args.append('-DOGS_BUILD_GUI=ON')
 
-            Stage0 += pip(packages=['scif'])  # SCI-F
+            if not scif_installed:
+                Stage0 += pip(packages=['scif'])  # SCI-F
+                scif_installed = True
             Stage0 += raw(docker='ARG OGS_COMMIT_HASH=0')
             ogs_app = scif(name='ogs', file="_out/ogs.scif")
             ogs_app += ogs(version=ogs_version, toolchain=toolchain,
@@ -413,7 +472,8 @@ def main(): # pragma: no cover
             Stage1 = hpccm.Stage()
             Stage1.baseimage(image=args.base_image)
             Stage1 += Stage0.runtime()
-            Stage1 += pip(packages=['scif'])  # Install scif in runtime too
+            if scif_installed:
+                Stage1 += pip(packages=['scif'])  # Install scif in runtime too
             stages_string += "\n\n" + str(Stage1)
 
         # ---------------------------- recipe end ----------------------------------
@@ -431,8 +491,8 @@ def main(): # pragma: no cover
             continue
 
         if __format == 'singularity':
-            subprocess.run(f"sudo `which singularity` build {images_out_dir}/{img_file} "
-                f"{definition_file}", shell=True)
+            subprocess.run(f"sudo `which singularity` build --force {images_out_dir}/{img_file} "
+                f"{definition_file_path}", shell=True)
             subprocess.run(f"sudo chown $USER:$USER {images_out_dir}/{img_file}", shell=True)
             continue
 
