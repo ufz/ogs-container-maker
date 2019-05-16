@@ -72,7 +72,11 @@ class osu_benchmarks(bb_base, hpccm.templates.ConfigureMake, hpccm.templates.rm,
         # Configure, build, install
         self.__commands.append(self.configure_step(
             directory=os.path.join(self.__wd, directory),
-            toolchain=self.__toolchain))
+            opts=[
+                'CC={}'.format(self.__toolchain.CC),
+                'CXX={}'.format(self.__toolchain.CXX)
+            ]
+        ))
         self.__commands.append(self.build_step())
         self.__commands.append(self.install_step())
 
@@ -82,7 +86,8 @@ class osu_benchmarks(bb_base, hpccm.templates.ConfigureMake, hpccm.templates.rm,
                    os.path.join(self.__wd, directory)]))
 
         # Environment
-        self.__environment_variables['PATH'] = '{0}/bin:$PATH'.format(self.prefix)
+        libexec_path = '{0}/libexec/osu-micro-benchmarks/mpi'.format(self.prefix)
+        self.__environment_variables['PATH'] = '{0}/collective:{0}/one-sided:{0}/pt2pt:{0}/startup::$PATH'.format(libexec_path)
 
         # Labels
         self.__labels['osu.version'] = self.__version

@@ -23,7 +23,8 @@ import hpccm
 from hpccm import linux_distro
 from hpccm.building_blocks import packages, mlnx_ofed, knem, ucx, openmpi, \
     boost, pip, scif, llvm, gnu, ofed
-from hpccm.primitives import comment, user, environment, raw, label, shell
+from hpccm.primitives import comment, user, environment, raw, label, shell, \
+    copy
 
 import ogscm
 from ogscm.config import package_manager
@@ -97,6 +98,10 @@ def main(): # pragma: no cover
                             help='Install include-what-you-use')
     switches_g.add_argument('--gcovr', dest='gcovr', action='store_true',
                             help='Install gcovr')
+    switches_g.add_argument('--mpi_benchmarks', dest='mpi_benchmarks',
+                            action='store_true', help='Installs OSU MPI '
+                            'benchmarks as scif app and mpi_bw, mpi_ring,'
+                            'mpi_hello')
     switches_g.add_argument('--dev', dest='dev', action='store_true',
                             help='Installs development tools (vim, gdb)')
     switches_g.add_argument('--compiler_version', type=str, default='',
@@ -118,13 +123,10 @@ def main(): # pragma: no cover
     cli.set_defaults(cppcheck=False)
     cli.set_defaults(iwyy=False)
     cli.set_defaults(gcovr=False)
+    cli.set_defaults(mpi_benchmarks=False)
     cli.set_defaults(dev=False)
     cli.set_defaults(cleanup=False)
     args = cli.parse_args()
-
-    # if not len(sys.argv) > 1:
-    #     cli.print_help()
-    #     exit(0)
 
     if args.jenkins:
         args.ogs = ['off']
@@ -311,10 +313,17 @@ def main(): # pragma: no cover
                 'org.opengeosys.mpi.version': ompi
             })
 
-            if True:  # TODO configurable?
-                Stage0 += osu_benchmarks()
-
-        if ogs_version != 'off' or args.jenkins:
+            if args.mpi_benchmarks:
+                Stage0 += pip(packages=['scif'])  # SCI-F
+                osu_app = scif(name='osu', file="_out/osu.scif")
+                osu_app += osu_benchmarks(toolchain=toolchain, prefix='/scif/apps/osu')
+                Stage0 += osu_app
+                Stage0 += copy(src='files/openmpi', dest='/usr/local/mpi-examples')
+                Stage0 += shell(commands=[
+                    'mpicc -o /usr/local/bin/mpi-hello /usr/local/mpi-examples/hello.c',
+                    'mpicc -o /usr/local/bin/mpi-ring /usr/local/mpi-examples/ring.c',
+                    'mpicc -o /usr/local/bin/mpi-bw /usr/local/mpi-examples/bw.c',
+                ])
             Stage0 += ogs_base()
         if args.gui:
             Stage0 += packages(ospackages=[
