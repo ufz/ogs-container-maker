@@ -33,7 +33,7 @@ class pm_conan(bb_base):
 
     def __instructions(self):
         self += comment(__doc__, reformat=False)
-        conan_version = "1.12.2"
+        conan_version = "1.16.0"
         if hpccm.config.g_linux_distro == linux_distro.CENTOS:
             # Conan 1.7 requires newer Python than 3.4
             conan_version = "1.6.1"
