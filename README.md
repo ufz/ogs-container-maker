@@ -57,23 +57,24 @@ python build.py --ogs ufz/ogs@master --ompi 2.1.2 3.1.2 --build --convert
 
 Check help for more options:
 
-```bash
+```
 $ ogscm --help
-usage: ogscm [-h] [--recipe RECIPE] [--out OUT] [--file FILE] [--print]
-             [--format [{docker,singularity} [{docker,singularity} ...]]]
-             [--pm [{system,conan} [{system,conan} ...]]]
-             [--ompi [OMPI [OMPI ...]]] [--ogs [OGS [OGS ...]]]
-             [--cmake_args [CMAKE_ARGS [CMAKE_ARGS ...]]] [--build] [--upload]
-             [--registry REGISTRY] [--convert] [--runtime-only]
-             [--base_image BASE_IMAGE] [--clang] [--gui] [--docs] [--jenkins]
-             [--cvode] [--cppcheck] [--iwyy] [--gcovr] [--dev]
-             [--compiler_version COMPILER_VERSION]
+usage: ogscm [-h] [--version] [--out OUT] [--file FILE] [--print]
+              [--format [{docker,singularity} [{docker,singularity} ...]]]
+              [--pm [{system,conan,spack,off} [{system,conan,spack,off} ...]]]
+              [--ompi [OMPI [OMPI ...]]] [--ogs [OGS [OGS ...]]]
+              [--cmake_args [CMAKE_ARGS [CMAKE_ARGS ...]]] [--build]
+              [--upload] [--registry REGISTRY] [--convert] [--runtime-only]
+              [--base_image BASE_IMAGE] [--compiler COMPILER]
+              [--compiler_version COMPILER_VERSION] [--gui] [--docs]
+              [--jenkins] [--cvode] [--cppcheck] [--iwyy] [--gcovr]
+              [--mpi_benchmarks] [--dev] [--clean]
 
 Generate container image definitions.
 
 optional arguments:
   -h, --help            show this help message and exit
-  --recipe RECIPE       HPCCM recipe (default: recipes/ogs-builder.py)
+  --version             show program's version number and exit
   --out OUT             Output directory (default: _out)
   --file FILE           Overwrite output recipe file name (default: )
   --print, -P           Print the definition to stdout (default: False)
@@ -82,7 +83,7 @@ Combinatorial options:
   All combinations of the given options will be generated
 
   --format [{docker,singularity} [{docker,singularity} ...]]
-  --pm [{system,conan} [{system,conan} ...]]
+  --pm [{system,conan,spack,off} [{system,conan,spack,off} ...]]
                         Package manager to install third-party dependencies
                         (default: ['conan'])
   --ompi [OMPI [OMPI ...]]
@@ -111,8 +112,11 @@ Image build options:
 Additional options:
   --base_image BASE_IMAGE
                         The base image. 'centos:7' is supported too. (default:
-                        ubuntu:17.10)
-  --clang               Use clang instead of gcc (default: False)
+                        ubuntu:18.04)
+  --compiler COMPILER   The compiler to use. Possible options: off, gcc, clang
+                        (default: gcc)
+  --compiler_version COMPILER_VERSION
+                        Compiler version. (default: )
   --gui                 Builds the GUI (Data Explorer) (default: False)
   --docs                Setup documentation requirements (Doxygen) (default:
                         False)
@@ -121,7 +125,11 @@ Additional options:
   --cppcheck            Install cppcheck (default: False)
   --iwyy                Install include-what-you-use (default: False)
   --gcovr               Install gcovr (default: False)
+  --mpi_benchmarks      Installs OSU MPI benchmarks as scif app and mpi_bw,
+                        mpi_ring,mpi_hello (default: False)
   --dev                 Installs development tools (vim, gdb) (default: False)
-  --compiler_version COMPILER_VERSION
-                        Compiler version. (default: )
+
+Maintenance:
+  --clean               Cleans up generated files in default directories.
+                        (default: False)
 ```

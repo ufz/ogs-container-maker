@@ -13,6 +13,6 @@ subprocess.run(f"python ogscm/cli.py --out {args.out} --file Dockerfile.gcc.gui 
                "--jenkins --cppcheck --gui --gcovr",
                shell=True)
 subprocess.run(f"python ogscm/cli.py --out {args.out} --file Dockerfile.clang.full "
-               "--base_image ubuntu:18.04 --compiler 7 --clang --jenkins "
+               "--base_image ubuntu:18.04 --compiler clang --jenkins "
                "--iwyy",
                shell=True)

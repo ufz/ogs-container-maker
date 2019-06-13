@@ -82,8 +82,10 @@ def main(): # pragma: no cover
     switches_g = cli.add_argument_group('Additional options')
     switches_g.add_argument('--base_image', type=str, default='ubuntu:18.04',
                             help='The base image. \'centos:7\' is supported too.')
-    switches_g.add_argument('--clang', dest='clang', action='store_true',
-                            help='Use clang instead of gcc')
+    switches_g.add_argument('--compiler', type=str, default='gcc',
+                            help='The compiler to use. Possible options: off, gcc, clang')
+    switches_g.add_argument('--compiler_version', type=str, default='',
+                            help='Compiler version.')
     switches_g.add_argument('--gui', dest='gui', action='store_true',
                             help='Builds the GUI (Data Explorer)')
     switches_g.add_argument('--docs', dest='docs', action='store_true',
@@ -104,8 +106,6 @@ def main(): # pragma: no cover
                             'mpi_hello')
     switches_g.add_argument('--dev', dest='dev', action='store_true',
                             help='Installs development tools (vim, gdb)')
-    switches_g.add_argument('--compiler_version', type=str, default='',
-                            help='Compiler version.')
     maint_g = cli.add_argument_group('Maintenance')
     maint_g.add_argument('--clean', dest='cleanup', action='store_true',
                          help='Cleans up generated files in default directories.')
@@ -115,7 +115,6 @@ def main(): # pragma: no cover
     cli.set_defaults(print=False)
     cli.set_defaults(runtime_only=False)
     cli.set_defaults(upload=False)
-    cli.set_defaults(clang=False)
     cli.set_defaults(gui=False)
     cli.set_defaults(docs=False)
     cli.set_defaults(jenkins=False)
@@ -260,28 +259,25 @@ def main(): # pragma: no cover
         Stage0 += packages(ospackages=['wget', 'tar', 'curl'])
 
         # base compiler
-        if args.compiler_version == '':
-            if args.clang:
-                if hpccm.config.g_linux_distro == linux_distro.CENTOS:
-                    # installs llvm-toolset-7-clang which is clang 5.0.1
+        if args.compiler != 'off':
+            if args.compiler_version == '':
+                if args.compiler == 'clang':
                     args.compiler_version = '7'
                 else:
-                    args.compiler_version = '5.0'
+                    args.compiler_version = None # Use default
+            if args.compiler == 'clang':
+                compiler = llvm(extra_repository=True, version=args.compiler_version)
             else:
-                args.compiler_version = None # Use default
-        if args.clang:
-            compiler = llvm(extra_repository=True, version=args.compiler_version)
-        else:
-            compiler = gnu(fortran=False, extra_repository=True,
-                           version=args.compiler_version)
-        toolchain = compiler.toolchain
-        Stage0 += compiler
-        if args.clang:
-            Stage0 += packages(
-                apt=["clang-tidy-{}".format(args.compiler_version),
-                     "clang-format-{}".format(args.compiler_version)],
-                yum=["llvm-toolset-{}-clang-tools-extra".format(args.compiler_version)]
-            )
+                compiler = gnu(fortran=False, extra_repository=True,
+                               version=args.compiler_version)
+            toolchain = compiler.toolchain
+            Stage0 += compiler
+            if args.compiler == 'clang':
+                Stage0 += packages(
+                    apt=["clang-tidy-{}".format(args.compiler_version),
+                         "clang-format-{}".format(args.compiler_version)],
+                    yum=["llvm-toolset-{}-clang-tools-extra".format(args.compiler_version)]
+                )
 
         if ompi != 'off':
             # Stage0 += ofed() OR mlnx_ofed(); is installed later on from debian archive
@@ -429,7 +425,7 @@ def main(): # pragma: no cover
             Stage0 += cvode()
         if args.cppcheck:
             Stage0 += cppcheck()
-        if args.iwyy and args.clang:
+        if args.iwyy and args.compiler == 'clang':
             Stage0 += iwyy(clang_version=args.compiler_version)
         if args.docs:
             Stage0 += packages(
