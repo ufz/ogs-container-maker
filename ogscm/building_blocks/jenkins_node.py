@@ -11,6 +11,7 @@ import logging  # pylint: disable=unused-import
 import hpccm.templates.wget
 
 from hpccm.building_blocks.base import bb_base
+from hpccm.building_blocks.packages import packages
 from hpccm.primitives.comment import comment
 from hpccm.primitives.shell import shell
 from hpccm.primitives.user import user
@@ -32,6 +33,7 @@ class jenkins_node(bb_base, hpccm.templates.rm, hpccm.templates.tar,
 
   def __instructions(self):
     self += comment('Jenkins node')
+    self += packages(ospackages=['rsync'])
     self += shell(commands=[
         'groupadd --gid 1001 jenkins || true',
         'adduser --uid 500 --gid 1001 --disabled-password --gecos "" jenkins',

@@ -181,7 +181,7 @@ def main(): # pragma: no cover
             commit_hash = response_data[0]['sha']
             ogs_tag = ogs_version.replace('/', '.').replace('@', '.')
             name_start = f'ogs-{commit_hash[:8]}'
-        elif args.clang:
+        if args.compiler == 'clang':
             name_start = 'clang'
 
         name_openmpi = 'serial'
