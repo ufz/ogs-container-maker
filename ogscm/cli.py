@@ -380,7 +380,7 @@ def main(): # pragma: no cover
             Stage0 += ogs_base()
         if args.gui:
             Stage0 += packages(ospackages=[
-                'mesa-common-dev', 'libgl1-mesa-dev', 'libxt-dev'
+                'mesa-common-dev', 'libgl1-mesa-dev', 'libglu1-mesa-dev', 'libxt-dev'
             ])
         if ogscm.config.g_package_manager == package_manager.CONAN:
             conan_user_home = '/opt/conan'
