@@ -15,6 +15,8 @@ for image in ['clang7', 'gcc7', 'gcc8', 'gcc9']:
     Stage0 = hpccm.Stage()
     Stage0 += hpccm.primitives.baseimage(image='conanio/{0}'.format(image))
     Stage0 += hpccm.primitives.user(user='root')
+    Stage0 += hpccm.building_blocks.pip(packages=['bincrafters-package-tools'],
+                                        pip='pip3')
     Stage0 += jenkins_node()
 
     definition_file = 'Dockerfile.{0}'.format(image)
@@ -26,4 +28,4 @@ for image in ['clang7', 'gcc7', 'gcc8', 'gcc9']:
     print(f"Running: {build_cmd}")
     subprocess.run(build_cmd, shell=True)
 
-    subprocess.run("docker push {tag}", shell=True)
+    subprocess.run(f"docker push {tag}", shell=True)
