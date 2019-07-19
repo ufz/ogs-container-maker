@@ -9,6 +9,7 @@ from __future__ import print_function
 import hpccm.config
 
 from hpccm.building_blocks.base import bb_base
+from hpccm.building_blocks.packages import packages
 from hpccm.building_blocks.pip import pip
 from hpccm.common import linux_distro
 from hpccm.primitives.comment import comment
@@ -33,6 +34,8 @@ class pm_conan(bb_base):
 
     def __instructions(self):
         self += comment(__doc__, reformat=False)
+        # https://github.com/bincrafters/community/issues/880
+        self += packages(ospackages=['pkg-config'])
         conan_version = "1.17.0"
         if hpccm.config.g_linux_distro == linux_distro.CENTOS:
             # Conan 1.7 requires newer Python than 3.4
