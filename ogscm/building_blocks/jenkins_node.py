@@ -33,7 +33,7 @@ class jenkins_node(bb_base, hpccm.templates.rm, hpccm.templates.tar,
 
   def __instructions(self):
     self += comment('Jenkins node')
-    self += packages(ospackages=['rsync', 'openssh-client'])
+    self += packages(ospackages=['rsync', 'openssh-client', 'sudo'])
     self += shell(commands=[
         'groupadd --gid 1001 jenkins || true',
         'adduser --uid 500 --gid 1001 --disabled-password --gecos "" jenkins',

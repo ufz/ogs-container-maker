@@ -458,8 +458,6 @@ def main(): # pragma: no cover
 
         if args.jenkins:
             Stage0 += ccache(cache_size='15G')
-            Stage0 += packages(
-                ospackages=['sudo'])  # For user switching back to root
             Stage0 += jenkins_node()
 
         stages_string = str(Stage0)
