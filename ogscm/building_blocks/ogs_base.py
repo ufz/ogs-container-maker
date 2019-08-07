@@ -40,7 +40,7 @@ class ogs_base(bb_base):
         self += comment(__doc__, reformat=False)
         self += python(devel=True)
         self += pip(pip='pip3', packages=['virtualenv', 'pre-commit'])
-        self += cmake(eula=True, version='3.13.4')
+        self += cmake(eula=True, version='3.12.4')
         self += packages(ospackages=self.__ospackages,
                          apt_ppas=['ppa:git-core/ppa'], epel=True)
         self += shell(commands=self.__commands)
