@@ -36,6 +36,8 @@ class pm_conan(bb_base):
         self += comment(__doc__, reformat=False)
         # https://github.com/bincrafters/community/issues/880
         self += packages(ospackages=['pkg-config'])
+        # For building curl:
+        self += packages(ospackages=['autoconf-archive', 'libtool'])
         conan_version = "1.17.0"
         if hpccm.config.g_linux_distro == linux_distro.CENTOS:
             # Conan 1.7 requires newer Python than 3.4
