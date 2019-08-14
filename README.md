@@ -15,7 +15,7 @@ pip install ogscm
 ```bash
 $ ogscm
 Creating 1 image definition(s)...
-Created definition _out/docker/ubuntu_17.10/ogs-4c7de6a4/serial/conan/cmake-d41d8cd9/Dockerfile 
+Created definition _out/docker/ubuntu_17.10/ogs-4c7de6a4/serial/conan/cmake-d41d8cd9/Dockerfile
 
 # With user options
 $ ogscm --format singularity --ompi 2.1.3 --cmake_args ' -DOGS_BUILD_PROCESSES=GroundwaterFlow'
@@ -49,7 +49,7 @@ singularity exec ogs-ompi-2.1.3.sif ogs local/path/to/square_1e0.prj
 
 ## Using the combinatorial builder
 
-Creates Docker definition files with different OpenMPI implementations and OpenGeoSys parallel configuration (from the current master), builds the docker images and converts them to Singularity images: 
+Creates Docker definition files with different OpenMPI implementations and OpenGeoSys parallel configuration (from the current master), builds the docker images and converts them to Singularity images:
 
 ```bash
 python build.py --ogs ufz/ogs@master --ompi 2.1.2 3.1.2 --build --convert

@@ -5,7 +5,7 @@
 *   number of MPI tasks.
 * AUTHOR: Blaise Barney
 * LAST REVISED: 04/13/05
-****************************************************************************/ 
+****************************************************************************/
 #include "mpi.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -54,9 +54,9 @@ MPI_Gather(&host, MPI_MAX_PROCESSOR_NAME, MPI_CHAR, &hostmap,
   MPI_MAX_PROCESSOR_NAME, MPI_CHAR, 0, MPI_COMM_WORLD);
 
 /* Determine who my send/receive partner is and tell task 0 */
-if (rank < numtasks/2) 
+if (rank < numtasks/2)
   dest = src = numtasks/2 + rank;
-if (rank >= numtasks/2) 
+if (rank >= numtasks/2)
   dest = src = rank - numtasks/2;
 MPI_Gather(&dest, 1, MPI_INT, &taskpairs, 1, MPI_INT, 0, MPI_COMM_WORLD);
 
@@ -69,14 +69,14 @@ if (rank == 0) {
   printf("Roundtrips per iteration= %d\n",rndtrps);
   printf("MPI_Wtick resolution = %e\n",resolution);
   printf("************************************************************\n");
-  for (i=0; i<numtasks; i++) 
+  for (i=0; i<numtasks; i++)
     printf("task %4d is on %s partner=%4d\n",i,hostmap[i],taskpairs[i]);
   printf("************************************************************\n");
   }
 
 
 /*************************** first half of tasks *****************************/
-/* These tasks send/receive messages with their partner task, and then do a  */ 
+/* These tasks send/receive messages with their partner task, and then do a  */
 /* few bandwidth calculations based upon message size and timings.           */
 
 if (rank < numtasks/2) {
@@ -100,13 +100,13 @@ if (rank < numtasks/2) {
     bestbw = bestbw/1000000.0;
     avgbw = (totalbw/1000000.0)/(double)rndtrps;
     worstbw = worstbw/1000000.0;
-   
+
     /* Task 0 collects timings from all relevant tasks */
     if (rank == 0) {
       /* Keep track of my own timings first */
-      timings[0][0] = bestbw;    
-      timings[0][1] = avgbw;    
-      timings[0][2] = worstbw;    
+      timings[0][0] = bestbw;
+      timings[0][1] = avgbw;
+      timings[0][2] = worstbw;
       /* Initialize overall averages */
       bestall = 0.0;
       avgall = 0.0;
@@ -117,7 +117,7 @@ if (rank < numtasks/2) {
       for (j=1; j<numtasks/2; j++)
         MPI_Recv(&timings[j], 3, MPI_DOUBLE, j, tag, MPI_COMM_WORLD, &status);
       printf("***Message size: %8d *** best  /  avg  / worst (MB/sec)\n",n);
-      for (j=0; j<numtasks/2; j++) { 
+      for (j=0; j<numtasks/2; j++) {
         printf("   task pair: %4d - %4d:    %4.2f / %4.2f / %4.2f \n",
               j, taskpairs[j], timings[j][0], timings[j][1], timings[j][2]);
         bestall += timings[j][0];
@@ -129,9 +129,9 @@ if (rank < numtasks/2) {
       }
     else {
       /* Other tasks send their timings to task 0 */
-      tmptimes[0] = bestbw;    
-      tmptimes[1] = avgbw;    
-      tmptimes[2] = worstbw;    
+      tmptimes[0] = bestbw;
+      tmptimes[1] = avgbw;
+      tmptimes[2] = worstbw;
       MPI_Send(tmptimes, 3, MPI_DOUBLE, 0, tag, MPI_COMM_WORLD);
       }
     }
