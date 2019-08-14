@@ -207,7 +207,7 @@ def main(): # pragma: no cover
 
         # Change working dir to ogscm
         old_cwd = os.getcwd()
-        os.chdir(os.path.dirname(__file__))
+        os.chdir(os.path.dirname(os.path.abspath(__file__)))
         if args.cleanup:
             shutil.rmtree(os.path.join(old_cwd, '_out'), ignore_errors=True)
             shutil.rmtree('_out', ignore_errors=True)
