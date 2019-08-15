@@ -39,12 +39,11 @@ class ogs_base(bb_base):
         """String representation of the building block"""
         self += comment(__doc__, reformat=False)
         self += python(devel=True)
-        self += pip(pip='pip3', packages=['virtualenv', 'pre-commit'])
+        self += pip(pip='pip3', packages=['virtualenv', 'pre-commit', 'cmake-format'])
         self += cmake(eula=True, version='3.12.4')
         self += packages(ospackages=self.__ospackages,
                          apt_ppas=['ppa:git-core/ppa'], epel=True)
         self += shell(commands=self.__commands)
-
 
     def __setup(self):
         self.__ospackages.extend(['git', 'git-lfs', 'make', 'ninja-build'])
