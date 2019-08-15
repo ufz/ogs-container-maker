@@ -409,7 +409,7 @@ def main(): # pragma: no cover
             # Use ldconfig to set library search path (instead of
             # LD_LIBRARY_PATH) as host var overwrites container var. See
             # https://github.com/sylabs/singularity/pull/2669
-            Stage0 += boost()  # header only?
+            Stage0 += boost(version='1.66.0')  # header only?
             Stage0 += environment(variables={'BOOST_ROOT': '/usr/local/boost'})
             Stage0 += eigen()
             vtk_cmake_args = [
