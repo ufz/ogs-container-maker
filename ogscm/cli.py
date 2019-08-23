@@ -130,6 +130,10 @@ def main(): # pragma: no cover
     if args.jenkins:
         args.ogs = ['off']
 
+    # Change working dir to ogscm
+    old_cwd = os.getcwd()
+    os.chdir(os.path.dirname(os.path.abspath(__file__)))
+
     c = list(itertools.product(args.format, args.ogs, args.pm, args.ompi,
                                args.cmake_args))
     if not args.print and not args.cleanup:
@@ -205,9 +209,6 @@ def main(): # pragma: no cover
 
         ### Paths ###
 
-        # Change working dir to ogscm
-        old_cwd = os.getcwd()
-        os.chdir(os.path.dirname(os.path.abspath(__file__)))
         if args.cleanup:
             shutil.rmtree(os.path.join(old_cwd, '_out'), ignore_errors=True)
             shutil.rmtree('_out', ignore_errors=True)
