@@ -23,8 +23,8 @@ import hpccm
 from hpccm import linux_distro
 from hpccm.building_blocks import packages, mlnx_ofed, knem, ucx, openmpi, \
     boost, pip, scif, llvm, gnu, ofed
-from hpccm.primitives import comment, user, environment, raw, label, shell, \
-    copy
+from hpccm.primitives import baseimage, comment, user, environment, raw, \
+    label, shell, copy
 
 import ogscm
 from ogscm.config import package_manager
@@ -176,15 +176,21 @@ def main(): # pragma: no cover
 
         name_image = args.base_image.replace(':', '_')
         name_start = 'gcc'
+
         if ogs_version != 'off':
-            # Get git commit hash and construct image tag name
-            repo, branch = ogs_version.split("@")
-            url = f"https://api.github.com/repos/{repo}/commits?sha={branch}"
-            response = requests.get(url)
-            response_data = json.loads(response.text)
-            commit_hash = response_data[0]['sha']
-            ogs_tag = ogs_version.replace('/', '.').replace('@', '.')
+            if os.path.isdir(ogs_version):
+                commit_hash = subprocess.run(['cd {} && git rev-parse HEAD'.format(ogs_version)], capture_output=True, text=True, shell=True).stdout.rstrip()
+            else:
+                # Get git commit hash and construct image tag name
+                repo, branch = ogs_version.split("@")
+                url = f"https://api.github.com/repos/{repo}/commits?sha={branch}"
+                response = requests.get(url)
+                response_data = json.loads(response.text)
+                commit_hash = response_data[0]['sha']
+                # ogs_tag = ogs_version.replace('/', '.').replace('@', '.')
+
             name_start = f'ogs-{commit_hash[:8]}'
+
         if args.compiler == 'clang':
             name_start = 'clang'
 
@@ -207,22 +213,24 @@ def main(): # pragma: no cover
 
         tag = f"{args.registry}/{docker_repo}:latest"
 
-        ### Paths ###
+        if os.path.isdir(ogs_version):
+            buildkit = True
 
+        ### Paths ###
         if args.cleanup:
             shutil.rmtree(os.path.join(old_cwd, '_out'), ignore_errors=True)
             shutil.rmtree('_out', ignore_errors=True)
             print('Cleaned up!')
             exit(0)
 
-        if not os.path.exists("_out"):
-            os.makedirs("_out") # For .scif files
-
         if args.file != '':
             out_dir = args.out
             definition_file = args.file
         else:
-            out_dir = os.path.join(old_cwd, f"{args.out}/{__format}/{img_folder}")
+            if buildkit:
+                out_dir = os.path.join(ogs_version, f"{args.out}/{__format}/{img_folder}")
+            else:
+                out_dir = os.path.join(old_cwd, f"{args.out}/{__format}/{img_folder}")
             if len(cmake_args) > 0:
                 out_dir += f'/cmake-{cmake_args_hash_short}'
             images_out_dir = os.path.join(old_cwd, f"{args.out}/images")
@@ -235,14 +243,20 @@ def main(): # pragma: no cover
                 definition_file = 'Singularity.def'
             # definition_file = os.path.join(out_dir, definition_file)
 
+        if not os.path.exists(out_dir):
+            os.makedirs(out_dir)  # For .scif files
+
         # Create definition
         hpccm.config.set_container_format(__format)
 
         # ------------------------------ recipe ------------------------------------
         Stage0 = hpccm.Stage()
+        if buildkit:
+            Stage0 += raw(docker='# syntax=docker/dockerfile:experimental')
+
         if args.runtime_only:
             Stage0.name = 'stage0'
-        Stage0.baseimage(image=args.base_image)
+        Stage0 += baseimage(image=args.base_image)
         centos = hpccm.config.g_linux_distro == linux_distro.CENTOS
 
         # Get git info
@@ -448,7 +462,15 @@ def main(): # pragma: no cover
                 Stage0 += pip(packages=['scif'])  # SCI-F
                 scif_installed = True
             Stage0 += raw(docker='ARG OGS_COMMIT_HASH=0')
-            ogs_app = scif(name='ogs', file="_out/ogs.scif")
+            if buildkit:
+                context_path_size = len(ogs_version)
+                os.chdir(ogs_version)
+                ogs_app = scif(
+                    _arguments='--mount=type=bind,target=/scif/apps/ogs/src',
+                    name='ogs',
+                    file=f"{out_dir[context_path_size+1:]}/ogs.scif")
+            else:
+                ogs_app = scif(name='ogs', file=f"{out_dir}/ogs.scif")
             ogs_app += ogs(version=ogs_version, toolchain=toolchain,
                            prefix='/scif/apps/ogs',
                            cmake_args=cmake_args,
@@ -493,6 +515,8 @@ def main(): # pragma: no cover
 
         build_cmd = (f"docker build --build-arg OGS_COMMIT_HASH={commit_hash} "
                      f"-t {tag} -f {definition_file_path} .")
+        if buildkit:
+            build_cmd = "(cd {0} && DOCKER_BUILDKIT=1 {1})".format(ogs_version, build_cmd)
         print(f"Running: {build_cmd}")
         subprocess.run(build_cmd, shell=True)
         if args.upload:

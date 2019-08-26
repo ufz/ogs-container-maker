@@ -9,6 +9,7 @@ from __future__ import print_function
 
 import os
 import re
+import subprocess
 
 import hpccm.templates.rm
 
@@ -44,9 +45,17 @@ class ogs(bb_base, hpccm.templates.CMakeBuild, hpccm.templates.rm):
         self.__skip_lfs = kwargs.get('skip_lfs', False)
         self.__toolchain = kwargs.get('toolchain', toolchain())
         self.__version = kwargs.get('version', 'ufz/ogs@master')
-        m = re.search('(.+/.*)@(.*)', self.__version)
-        self.__repo = m.group(1)
-        self.__branch = m.group(2)
+
+        if os.path.isdir(self.__version):
+            self.__repo = 'local'
+            self.__branch = subprocess.run(['cd {} && git branch | grep \* | cut -d \' \' -f2'.format(self.__version)], capture_output=True, text=True, shell=True).stdout
+            self.__skip_clone = True
+            self.__remove_source = False
+            self.__git_version = subprocess.run(['cd {} && git describe --tags'.format(self.__version)], capture_output=True, text=True, shell=True).stdout[0]
+        else:
+            m = re.search('(.+/.*)@(.*)', self.__version)
+            self.__repo = m.group(1)
+            self.__branch = m.group(2)
 
         # Filled in by __setup():
         self.__commands = []
@@ -62,7 +71,8 @@ class ogs(bb_base, hpccm.templates.CMakeBuild, hpccm.templates.rm):
         self += comment('OpenGeoSys build from repo {0}, branch {1}'.format(
                         self.__repo, self.__branch))
         self += packages(ospackages=self.__ospackages)
-        self += shell(commands=self.__commands)
+        self += shell(commands=self.__commands,
+                      _arguments='--mount=type=bind,target=/scif/apps/ogs/src')
         self += runscript(commands=['ogs'])
 
         if self.__environment_variables:
@@ -77,14 +87,18 @@ class ogs(bb_base, hpccm.templates.CMakeBuild, hpccm.templates.rm):
         conan = ogscm.config.g_package_manager == package_manager.CONAN
 
         # Get the source
-        self.__commands.extend([
-            'mkdir -p {0} && cd {0}'.format(self.__prefix),
-            # TODO: --depth=1 --> ogs --version does not work
-            '{}git clone --branch {} https://github.com/{} src'.format(
-                'GIT_LFS_SKIP_SMUDGE=1 ' if self.__skip_lfs else '',
-                self.__branch, self.__repo),
-            "(cd src && git fetch --tags)"
-        ])
+        if self.__skip_clone:
+            self.__cmake_args.append(
+                '-DOGS_VERSION={}'.format(self.__git_version))
+        else:
+            self.__commands.extend([
+                'mkdir -p {0} && cd {0}'.format(self.__prefix),
+                # TODO: --depth=1 --> ogs --version does not work
+                '{}git clone --branch {} https://github.com/{} src'.format(
+                    'GIT_LFS_SKIP_SMUDGE=1 ' if self.__skip_lfs else '',
+                    self.__branch, self.__repo),
+                "(cd src && git fetch --tags)"
+            ])
 
         # Default CMake arguments
         self.__cmake_args.extend([
@@ -116,7 +130,6 @@ class ogs(bb_base, hpccm.templates.CMakeBuild, hpccm.templates.rm):
 
         # Cleanup
         if self.__remove_build:
-            # Remove whole src and build directories
             self.__commands.append(self.cleanup_step(
                 items=[os.path.join(self.__prefix, 'build')]
             ))
@@ -124,7 +137,6 @@ class ogs(bb_base, hpccm.templates.CMakeBuild, hpccm.templates.rm):
             # Just run the clean-target
             self.__commands.append(self.build_step(target='clean'))
         if self.__remove_source:
-            # Remove whole src and build directories
             self.__commands.append(self.cleanup_step(
                 items=[os.path.join(self.__prefix, 'src')]
             ))
