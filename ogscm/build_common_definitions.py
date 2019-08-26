@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 import subprocess
 
-subprocess.run(f"python build.py --pm system --cvode "
-               "--ompi off 2.1.2 3.1.2 4.0.0",
+subprocess.run(f"python cli.py --pm system --cvode "
+               "--ompi off 2.1.6 3.1.4 4.0.1",
                shell=True)
 
 subprocess.run(f"python cli.py --file Dockerfile.gcc.full --jenkins "
