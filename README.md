@@ -133,3 +133,11 @@ Maintenance:
   --clean               Cleans up generated files in default directories.
                         (default: False)
 ```
+
+## Advanced usage
+
+### Build OGS from local git repo
+
+```
+python ogscm/cli.py --pm system --cvode --ogs ~/code/ogs/ogs -B
+```

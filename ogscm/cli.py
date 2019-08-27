@@ -7,13 +7,11 @@
 # https://easybuild.readthedocs.io/en/latest/Common-toolchains.html#common-toolchains-overview
 # easybuild toolchain: 2017b (2.1.1), 2018a (2.1.2), 2018b (3.1.1)
 import argparse
-import hashlib
 import itertools
 import json
 import math
 import multiprocessing
 import os
-import shutil
 
 import requests
 import subprocess
@@ -29,6 +27,7 @@ from hpccm.primitives import baseimage, comment, user, environment, raw, \
 import ogscm
 from ogscm.cli_args import Cli_Args
 from ogscm.config import package_manager
+from ogscm.container_info import container_info
 from ogscm.version import __version__
 from ogscm.building_blocks import ccache, cppcheck, cvode, eigen, iwyy, \
     jenkins_node, ogs_base, ogs, osu_benchmarks, petsc, pm_conan, vtk, pm_spack
@@ -77,92 +76,18 @@ def main():  # pragma: no cover
                 print('--convert cannot be used with --format singularity! '
                       'Ignoring!')
 
-        if len(cmake_args) > 0:
-            cmake_args_hash = hashlib.md5(
-                ' '.join(cmake_args).encode('utf-8')).hexdigest()
-            cmake_args_hash_short = cmake_args_hash[:8]
-
         commit_hash = '0'
         ogs_tag = ''
 
-        name_image = args.base_image.replace(':', '_')
-        name_start = 'gcc'
-
-        if ogs_version != 'off':
-            if os.path.isdir(ogs_version):
-                commit_hash = subprocess.run(['cd {} && git rev-parse HEAD'.format(ogs_version)], capture_output=True, text=True, shell=True).stdout.rstrip()
-            else:
-                # Get git commit hash and construct image tag name
-                repo, branch = ogs_version.split("@")
-                url = f"https://api.github.com/repos/{repo}/commits?sha={branch}"
-                response = requests.get(url)
-                response_data = json.loads(response.text)
-                commit_hash = response_data[0]['sha']
-                # ogs_tag = ogs_version.replace('/', '.').replace('@', '.')
-
-            name_start = f'ogs-{commit_hash[:8]}'
-
-        if args.compiler == 'clang':
-            name_start = 'clang'
-
-        name_openmpi = 'serial'
-        if ompi != 'off':
-            name_openmpi = f"openmpi-{ompi}"
-
-        img_file = f"{name_image}-{name_start}-{name_openmpi}-{ogscm.config.g_package_manager.name.lower()}"
-        img_folder = f"{name_image}/{name_start}/{name_openmpi}/{ogscm.config.g_package_manager.name.lower()}"
-        if len(cmake_args) > 0:
-            img_file += f'-cmake-{cmake_args_hash_short}'
-        if args.gui:
-            img_file += '-gui'
-        if args.docs:
-            img_file += '-docs'
-        if ogs_version != 'off' and not args.runtime_only:
-            img_file += '-dev'
-        docker_repo = img_file
-        img_file += '.sif'
-
-        tag = f"{args.registry}/{docker_repo}:latest"
-
-        if os.path.isdir(ogs_version):
-            buildkit = True
-
-        # Paths
-        if args.cleanup:
-            shutil.rmtree(os.path.join(old_cwd, '_out'), ignore_errors=True)
-            shutil.rmtree('_out', ignore_errors=True)
-            print('Cleaned up!')
-            exit(0)
-
-        if args.file != '':
-            out_dir = args.out
-            definition_file = args.file
-        else:
-            if buildkit:
-                out_dir = os.path.join(ogs_version, f"{args.out}/{__format}/{img_folder}")
-            else:
-                out_dir = os.path.join(old_cwd, f"{args.out}/{__format}/{img_folder}")
-            if len(cmake_args) > 0:
-                out_dir += f'/cmake-{cmake_args_hash_short}'
-            images_out_dir = os.path.join(old_cwd, f"{args.out}/images")
-            if not os.path.exists(out_dir):
-                os.makedirs(out_dir)
-            if not os.path.exists(images_out_dir):
-                os.makedirs(images_out_dir)
-            definition_file = 'Dockerfile'
-            if __format == 'singularity':
-                definition_file = 'Singularity.def'
-            # definition_file = os.path.join(out_dir, definition_file)
-
-        if not os.path.exists(out_dir):
-            os.makedirs(out_dir)  # For .scif files
+        info = container_info(build, args, old_cwd)
+        info.make_dirs()
 
         # Create definition
         hpccm.config.set_container_format(__format)
 
         # ------------------------------ recipe -------------------------------
         Stage0 = hpccm.Stage()
-        if buildkit:
+        if info.buildkit:
             Stage0 += raw(docker='# syntax=docker/dockerfile:experimental')
 
         if args.runtime_only:
@@ -341,7 +266,7 @@ def main():  # pragma: no cover
             Stage0 += vtk(cmake_args=vtk_cmake_args, toolchain=toolchain,
                           ldconfig=True)
             if ompi != 'off':
-                Stage0 += petsc(ldconfig=True)
+                Stage0 += petsc(version='3.11.3', ldconfig=True)
         if args.cvode:
             Stage0 += cvode()
         if args.cppcheck:
@@ -368,15 +293,15 @@ def main():  # pragma: no cover
                 Stage0 += pip(packages=['scif'])  # SCI-F
                 scif_installed = True
             Stage0 += raw(docker='ARG OGS_COMMIT_HASH=0')
-            if buildkit:
+            if info.buildkit:
                 context_path_size = len(ogs_version)
                 os.chdir(ogs_version)
                 ogs_app = scif(
                     _arguments='--mount=type=bind,target=/scif/apps/ogs/src',
                     name='ogs',
-                    file=f"{out_dir[context_path_size+1:]}/ogs.scif")
+                    file=f"{info.out_dir[context_path_size+1:]}/ogs.scif")
             else:
-                ogs_app = scif(name='ogs', file=f"{out_dir}/ogs.scif")
+                ogs_app = scif(name='ogs', file=f"{info.out_dir}/ogs.scif")
             ogs_app += ogs(version=ogs_version, toolchain=toolchain,
                            prefix='/scif/apps/ogs',
                            cmake_args=cmake_args,
@@ -401,7 +326,7 @@ def main():  # pragma: no cover
 
         # ---------------------------- recipe end -----------------------------
 
-        definition_file_path = os.path.join(out_dir, definition_file)
+        definition_file_path = os.path.join(info.out_dir, info.definition_file)
         with open(definition_file_path, 'w') as f:
             print(stages_string, file=f)
         if args.print:
@@ -420,13 +345,13 @@ def main():  # pragma: no cover
             continue
 
         build_cmd = (f"docker build --build-arg OGS_COMMIT_HASH={commit_hash} "
-                     f"-t {tag} -f {definition_file_path} .")
-        if buildkit:
+                     f"-t {info.tag} -f {definition_file_path} .")
+        if info.buildkit:
             build_cmd = "(cd {0} && DOCKER_BUILDKIT=1 {1})".format(ogs_version, build_cmd)
         print(f"Running: {build_cmd}")
         subprocess.run(build_cmd, shell=True)
         if args.upload:
-            subprocess.run(f"docker push {tag}", shell=True)
+            subprocess.run(f"docker push {info.tag}", shell=True)
         if args.convert:
             subprocess.run(
                 # Requires following entries in visudo:
