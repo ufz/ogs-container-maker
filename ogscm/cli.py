@@ -216,7 +216,7 @@ def main(): # pragma: no cover
         if os.path.isdir(ogs_version):
             buildkit = True
 
-        ### Paths ###
+        # Paths
         if args.cleanup:
             shutil.rmtree(os.path.join(old_cwd, '_out'), ignore_errors=True)
             shutil.rmtree('_out', ignore_errors=True)
@@ -249,7 +249,7 @@ def main(): # pragma: no cover
         # Create definition
         hpccm.config.set_container_format(__format)
 
-        # ------------------------------ recipe ------------------------------------
+        # ------------------------------ recipe -------------------------------
         Stage0 = hpccm.Stage()
         if buildkit:
             Stage0 += raw(docker='# syntax=docker/dockerfile:experimental')
@@ -259,12 +259,7 @@ def main(): # pragma: no cover
         Stage0 += baseimage(image=args.base_image)
         centos = hpccm.config.g_linux_distro == linux_distro.CENTOS
 
-        # Get git info
-        # local_git_hash = subprocess.check_output([
-        #     'git', 'rev-parse', '--short', 'HEAD']).decode('ascii').strip()
         Stage0 += comment(
-            # "Generated with https://github.com/ufz/ogs-container-maker/commit/{0}".format(
-            #     local_git_hash),
             f"Generated with ogs-container-maker {__version__}",
             reformat=False)
 
@@ -365,8 +360,8 @@ def main(): # pragma: no cover
                             ])
             toolchain = mpicc.toolchain
             Stage0 += mpicc
-            # OpenMPI expects this program to exist, even if it's not used. Default is
-            # "ssh : rsh", but that's not installed.
+            # OpenMPI expects this program to exist, even if it's not used.
+            # Default is "ssh : rsh", but that's not installed.
             Stage0 += shell(commands=[
                 'mkdir /mnt/0',
                 "echo 'plm_rsh_agent = false' >> /mnt/0/openmpi-mca-params.conf"
@@ -378,7 +373,7 @@ def main(): # pragma: no cover
             })
 
             if args.mpi_benchmarks:
-                Stage0 += pip(packages=['scif'])  # SCI-F
+                Stage0 += pip(packages=['scif'])
                 scif_installed = True
 
                 osu_app = scif(name='osu', file="_out/osu.scif")
@@ -493,7 +488,7 @@ def main(): # pragma: no cover
                 Stage1 += pip(packages=['scif'])  # Install scif in runtime too
             stages_string += "\n\n" + str(Stage1)
 
-        # ---------------------------- recipe end ----------------------------------
+        # ---------------------------- recipe end -----------------------------
 
         definition_file_path = os.path.join(out_dir, definition_file)
         with open(definition_file_path, 'w') as f:
