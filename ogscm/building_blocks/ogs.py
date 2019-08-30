@@ -72,7 +72,7 @@ class ogs(bb_base, hpccm.templates.CMakeBuild, hpccm.templates.rm):
                         self.__repo, self.__branch))
         self += packages(ospackages=self.__ospackages)
         self += shell(commands=self.__commands,
-                      _arguments='--mount=type=bind,target=/scif/apps/ogs/src')
+                      _arguments='--mount=type=bind,target=/scif/apps/ogs/src,rw')
         self += runscript(commands=['ogs'])
 
         if self.__environment_variables:

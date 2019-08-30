@@ -293,7 +293,7 @@ def main():  # pragma: no cover
                 context_path_size = len(ogs_version)
                 os.chdir(ogs_version)
                 ogs_app = scif(
-                    _arguments='--mount=type=bind,target=/scif/apps/ogs/src',
+                    _arguments='--mount=type=bind,target=/scif/apps/ogs/src,rw',
                     name='ogs',
                     file=f"{info.out_dir[context_path_size+1:]}/ogs.scif")
             else:
