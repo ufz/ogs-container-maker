@@ -40,10 +40,6 @@ def main():  # pragma: no cover
     if args.jenkins:
         args.ogs = ['off']
 
-    # Change working dir to ogscm
-    old_cwd = os.getcwd()
-    os.chdir(os.path.dirname(os.path.abspath(__file__)))
-
     c = list(itertools.product(args.format, args.ogs, args.pm, args.ompi,
                                args.cmake_args))
     if not args.print and not args.cleanup:
@@ -79,7 +75,7 @@ def main():  # pragma: no cover
         commit_hash = '0'
         ogs_tag = ''
 
-        info = container_info(build, args, old_cwd)
+        info = container_info(build, args, os.getcwd())
         info.make_dirs()
 
         # Create definition
@@ -292,7 +288,7 @@ def main():  # pragma: no cover
             if not scif_installed:
                 Stage0 += pip(packages=['scif'])  # SCI-F
                 scif_installed = True
-            Stage0 += raw(docker='ARG OGS_COMMIT_HASH=0')
+            Stage0 += raw(docker=f"ARG OGS_COMMIT_HASH={info.commit_hash}")
             if info.buildkit:
                 context_path_size = len(ogs_version)
                 os.chdir(ogs_version)
