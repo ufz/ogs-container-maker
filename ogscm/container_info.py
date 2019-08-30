@@ -22,6 +22,7 @@ class container_info():
         self.outdir = ''
         self.definition_file = ''
         self.images_out_dir = ''
+        self.commit_hash = ''
 
         container_format = args_iter[0]
         ogs_version = args_iter[1]
@@ -31,7 +32,7 @@ class container_info():
 
         if ogs_version != 'off':
             if os.path.isdir(ogs_version):
-                commit_hash = subprocess.run(
+                self.commit_hash = subprocess.run(
                     ['cd {} && git rev-parse HEAD'.format(ogs_version)],
                     capture_output=True,
                     text=True,
@@ -42,10 +43,10 @@ class container_info():
                 url = f"https://api.github.com/repos/{repo}/commits?sha={branch}"
                 response = requests.get(url)
                 response_data = json.loads(response.text)
-                commit_hash = response_data[0]['sha']
+                self.commit_hash = response_data[0]['sha']
                 # ogs_tag = ogs_version.replace('/', '.').replace('@', '.')
 
-            name_start = f'ogs-{commit_hash[:8]}'
+            name_start = f'ogs-{self.commit_hash[:8]}'
         else:
             if args.compiler == 'clang':
                 name_start = 'clang'
