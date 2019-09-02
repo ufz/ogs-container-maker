@@ -138,6 +138,14 @@ Maintenance:
 
 ### Build OGS from local git repo
 
+You can use the ogs-container-maker to build multiple container images from your current source code at once. The following commands will build (`-B`-parameter) 4 docker container (using one serial and 3 MPI-enabled configurations), convert them to Singularity image files (`-C`) and strip everything out but the runtime-requirements (`-R`). You can find the images in `_out/images`.
+
 ```
-python ogscm/cli.py --pm system --cvode --ogs ~/code/ogs/ogs -B
+cd ogs
+git submodule update --init ThirdParty/container-maker
+virtualenv .venv
+source .venv/bin/activate
+pip install -r ThirdParty/container-maker/requirements.txt
+export PYTHONPATH="${PYTHONPATH}:${PWD}/ThirdParty/container-maker"
+python ThirdParty/container-maker/ogscm/cli.py -B -C -R --ogs . --pm system --cvode --ompi off 2.1.6 3.1.4 4.0.1
 ```
