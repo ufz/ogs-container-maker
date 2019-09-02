@@ -20,7 +20,7 @@ import sys
 import hpccm
 from hpccm import linux_distro
 from hpccm.building_blocks import packages, mlnx_ofed, knem, ucx, openmpi, \
-    boost, pip, scif, llvm, gnu, ofed
+    boost, pip, scif, llvm, gnu, ofed, cmake
 from hpccm.primitives import baseimage, comment, user, environment, raw, \
     label, shell, copy
 
@@ -98,7 +98,7 @@ def main():  # pragma: no cover
         if centos:
             Stage0 += user(user='root')
             Stage0 += packages(ospackages=['epel-release'])
-        Stage0 += packages(ospackages=['wget', 'tar', 'curl'])
+        Stage0 += packages(ospackages=['wget', 'tar', 'curl', 'make'])
 
         # base compiler
         if args.compiler != 'off':
@@ -218,6 +218,7 @@ def main():  # pragma: no cover
                     'mpicc -o /usr/local/bin/mpi-bw /usr/local/mpi-examples/bw.c',
                 ])
 
+        Stage0 += cmake(eula=True, version='3.12.4')
         if ogs_version != 'off' or args.jenkins:
             Stage0 += ogs_base()
         if args.gui:

@@ -10,7 +10,6 @@ from __future__ import print_function
 import hpccm.config
 
 from hpccm.building_blocks.base import bb_base
-from hpccm.building_blocks.cmake import cmake
 from hpccm.building_blocks.packages import packages
 from hpccm.building_blocks.pip import pip
 from hpccm.building_blocks.python import python
@@ -40,13 +39,12 @@ class ogs_base(bb_base):
         self += comment(__doc__, reformat=False)
         self += python(devel=True)
         self += pip(pip='pip3', packages=['virtualenv', 'pre-commit', 'cmake-format'])
-        self += cmake(eula=True, version='3.12.4')
         self += packages(ospackages=self.__ospackages,
                          apt_ppas=['ppa:git-core/ppa'], epel=True)
         self += shell(commands=self.__commands)
 
     def __setup(self):
-        self.__ospackages.extend(['git', 'git-lfs', 'make', 'ninja-build'])
+        self.__ospackages.extend(['git', 'git-lfs', 'ninja-build'])
 
         dist = 'deb'
         if hpccm.config.g_linux_distro == linux_distro.CENTOS:
