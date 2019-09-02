@@ -350,13 +350,16 @@ def main():  # pragma: no cover
         if args.upload:
             subprocess.run(f"docker push {info.tag}", shell=True)
         if args.convert:
+            # Requires following entries in visudo:
+            #   jenkins ALL = NOPASSWD: /usr/bin/singularity
+            # Echo empty password because of
+            #   sudo: no tty present and no askpass program specified
+            #   See https://stackoverflow.com/a/29685946/80480
+            sudo_cmd = ''
+            if os.environ.get('JENKINS_URL'):
+                sudo_cmd = 'echo \'\' | sudo -S '
             subprocess.run(
-                # Requires following entries in visudo:
-                #   jenkins ALL = NOPASSWD: /usr/bin/singularity
-                # Echo empty password because of
-                #   sudo: no tty present and no askpass program specified
-                #   See https://stackoverflow.com/a/29685946/80480
-                f"echo '' | sudo -S singularity build --force {info.images_out_dir}/{info.img_file} docker-daemon:{info.tag}",
+                f"{sudo_cmd}singularity build --force {info.images_out_dir}/{info.img_file} docker-daemon:{info.tag}",
                 shell=True)
 
 if __name__ == "__main__": # pragma: no cover
