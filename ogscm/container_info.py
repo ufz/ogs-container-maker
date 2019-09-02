@@ -22,6 +22,7 @@ class container_info():
         self.outdir = ''
         self.definition_file = ''
         self.images_out_dir = ''
+        self.img_file = ''
         self.commit_hash = ''
 
         container_format = args_iter[0]
@@ -62,17 +63,17 @@ class container_info():
 
         name_image = args.base_image.replace(':', '_')
         img_folder = f"{name_image}/{name_start}/{name_openmpi}/{config.g_package_manager.name.lower()}"
-        img_file = img_folder.replace("/", "-")
+        self.img_file = img_folder.replace("/", "-")
         if len(cmake_args) > 0:
-            img_file += f'-cmake-{cmake_args_hash_short}'
+            self.img_file += f'-cmake-{cmake_args_hash_short}'
         if args.gui:
-            img_file += '-gui'
+            self.img_file += '-gui'
         if args.docs:
-            img_file += '-docs'
+            self.img_file += '-docs'
         if ogs_version != 'off' and not args.runtime_only:
-            img_file += '-dev'
-        docker_repo = img_file
-        img_file += '.sif'
+            self.img_file += '-dev'
+        docker_repo = self.img_file
+        self.img_file += '.sif'
 
         self.tag = f"{args.registry}/{docker_repo}:latest"
 

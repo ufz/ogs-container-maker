@@ -335,9 +335,9 @@ def main():  # pragma: no cover
             continue
 
         if __format == 'singularity':
-            subprocess.run(f"sudo `which singularity` build --force {images_out_dir}/{img_file} "
+            subprocess.run(f"sudo `which singularity` build --force {info.images_out_dir}/{info.img_file} "
                 f"{definition_file_path}", shell=True)
-            subprocess.run(f"sudo chown $USER:$USER {images_out_dir}/{img_file}", shell=True)
+            subprocess.run(f"sudo chown $USER:$USER {info.images_out_dir}/{info.img_file}", shell=True)
             continue
 
         build_cmd = (f"docker build --build-arg OGS_COMMIT_HASH={commit_hash} "
@@ -355,7 +355,7 @@ def main():  # pragma: no cover
                 # Echo empty password because of
                 #   sudo: no tty present and no askpass program specified
                 #   See https://stackoverflow.com/a/29685946/80480
-                f"echo '' | sudo -S singularity build --force {images_out_dir}/{img_file} docker-daemon:{tag}",
+                f"echo '' | sudo -S singularity build --force {info.images_out_dir}/{info.img_file} docker-daemon:{info.tag}",
                 shell=True)
 
 if __name__ == "__main__": # pragma: no cover
