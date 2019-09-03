@@ -20,7 +20,7 @@ import sys
 import hpccm
 from hpccm import linux_distro
 from hpccm.building_blocks import packages, mlnx_ofed, knem, ucx, openmpi, \
-    boost, pip, scif, llvm, gnu, ofed, cmake
+    boost, pip, scif, llvm, gnu, ofed, cmake, python
 from hpccm.primitives import baseimage, comment, user, environment, raw, \
     label, shell, copy
 
@@ -98,7 +98,7 @@ def main():  # pragma: no cover
         if centos:
             Stage0 += user(user='root')
             Stage0 += packages(ospackages=['epel-release'])
-        Stage0 += packages(ospackages=['wget', 'tar', 'curl', 'make'])
+        Stage0 += packages(ospackages=['wget', 'tar', 'curl', 'make', 'git', 'ca-certificates'])
 
         # base compiler
         if args.compiler != 'off':
@@ -219,6 +219,7 @@ def main():  # pragma: no cover
                 ])
 
         Stage0 += cmake(eula=True, version='3.12.4')
+        Stage0 += python(devel=True)
         if ogs_version != 'off' or args.jenkins:
             Stage0 += ogs_base()
         if args.gui:
@@ -243,8 +244,7 @@ def main():  # pragma: no cover
             ]
             Stage0 += pm_spack(packages=spack_packages,
                                # ospackages=['libgl1-mesa-dev'],
-                               repo='https://github.com/bilke/spack',
-                               branch='patch-1')
+                               )
             Stage0 += shell(commands=[
                 '/opt/spack/bin/spack install --only dependencies vtk@8.1.2 +osmesa'
             ])

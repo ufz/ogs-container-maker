@@ -27,7 +27,7 @@ class pm_spack(bb_base, hpccm.templates.git):
         self.__ospackages = kwargs.get('ospackages', [])
         self.__packages = kwargs.get('packages', [])
         self.__repo = kwargs.get('repo', 'https://github.com/spack/spack')
-        self.__branch = kwargs.get('branch', 'devel')
+        self.__branch = kwargs.get('branch', 'develop')
 
         self.__commands = []  # Filled in by __setup()
         self.__environment_variables = {}
