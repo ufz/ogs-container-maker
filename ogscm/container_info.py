@@ -7,6 +7,7 @@ from __future__ import unicode_literals
 from __future__ import print_function
 
 import hashlib
+import json
 import os
 import requests
 import shutil

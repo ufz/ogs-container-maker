@@ -45,6 +45,7 @@ class ogs(bb_base, hpccm.templates.CMakeBuild, hpccm.templates.rm):
         self.__skip_lfs = kwargs.get('skip_lfs', False)
         self.__toolchain = kwargs.get('toolchain', toolchain())
         self.__version = kwargs.get('version', 'ufz/ogs@master')
+        self.__skip_clone = False
 
         if os.path.isdir(self.__version):
             self.__repo = 'local'
