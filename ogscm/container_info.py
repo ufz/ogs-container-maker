@@ -100,7 +100,7 @@ class container_info():
     def make_dirs(self):
         if not os.path.exists(self.out_dir):
             os.makedirs(self.out_dir)  # For .scif files
-        if not os.path.exists(self.images_out_dir):
+        if self.images_out_dir and not os.path.exists(self.images_out_dir):
                 os.makedirs(self.images_out_dir)
 
     def cleanup(self):

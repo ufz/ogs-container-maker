@@ -104,7 +104,7 @@ def main():  # pragma: no cover
         if args.compiler != 'off':
             if args.compiler_version == '':
                 if args.compiler == 'clang':
-                    args.compiler_version = '7'
+                    args.compiler_version = '8'
                 else:
                     args.compiler_version = None # Use default
             if args.compiler == 'clang':
