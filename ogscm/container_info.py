@@ -17,7 +17,7 @@ import json
 
 
 class container_info():
-    def __init__(self, args_iter, args, old_cwd):
+    def __init__(self, args_iter, args):
         """Initialize container info"""
         self.buildkit = False
         self.outdir = ''
@@ -89,11 +89,10 @@ class container_info():
                 self.out_dir = os.path.join(
                     ogs_version, f"{args.out}/{container_format}/{img_folder}")
             else:
-                self.out_dir = os.path.join(
-                    old_cwd, f"{args.out}/{container_format}/{img_folder}")
+                self.out_dir = f"{args.out}/{container_format}/{img_folder}"
             if len(cmake_args) > 0:
                 self.out_dir += f'/cmake-{cmake_args_hash_short}'
-            self.images_out_dir = os.path.join(old_cwd, f"{args.out}/images")
+            self.images_out_dir = f"{args.out}/images"
             self.definition_file = 'Dockerfile'
             if container_format == 'singularity':
                 self.definition_file = 'Singularity.def'

@@ -75,7 +75,7 @@ def main():  # pragma: no cover
         commit_hash = '0'
         ogs_tag = ''
 
-        info = container_info(build, args, os.getcwd())
+        info = container_info(build, args)
         info.make_dirs()
 
         # Create definition
