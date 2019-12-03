@@ -1,6 +1,5 @@
 # pylint: disable=invalid-name, too-few-public-methods
 # pylint: disable=too-many-instance-attributes
-
 """PETSc building block"""
 
 from __future__ import absolute_import
@@ -18,6 +17,7 @@ from hpccm.primitives.environment import environment
 from hpccm.primitives.label import label
 from hpccm.primitives.shell import shell
 from hpccm.toolchain import toolchain
+from hpccm.building_blocks.generic_autotools import generic_autotools
 
 
 class petsc(bb_base, hpccm.templates.ConfigureMake, hpccm.templates.ldconfig,
@@ -45,95 +45,58 @@ class petsc(bb_base, hpccm.templates.ConfigureMake, hpccm.templates.ldconfig,
 
         self.__ospackages = kwargs.get('ospackages', [])
         self.parallel = 1
-        self.prefix = kwargs.get('prefix', '/usr/local/petsc')
+        self.__prefix = kwargs.get('prefix', '/usr/local/petsc')
         self.__toolchain = toolchain(CC='mpicc', CXX='mpicxx')
         self.configure_opts = kwargs.get('configure_opts', [])
         self.__version = kwargs.get('version', '3.8.4')
-        self.__wd = '/var/tmp' # working directory
-        self.__baseurl = kwargs.get('baseurl', 'http://ftp.mcs.anl.gov/pub/petsc/release-snapshots')
-
-        # Filled in by __setup():
-        self.__commands = []
+        self.__wd = '/var/tmp'  # working directory
+        self.__baseurl = kwargs.get(
+            'baseurl', 'http://ftp.mcs.anl.gov/pub/petsc/release-snapshots')
         self.__environment_variables = {}
-        self.__labels = {}
-
-        self.__setup()
 
         self.__instructions()
 
     def __instructions(self):
         self += comment('PETSc {}'.format(self.__version))
         self += packages(ospackages=self.__ospackages)
-        self += shell(commands=self.__commands)
-        if self.__environment_variables:
-            self += environment(variables=self.__environment_variables)
-        if self.__labels:
-            self += label(metadata=self.__labels)
-
-
-    def __setup(self):
-        """Construct the series of shell commands, i.e., fill in
-           self.__commands"""
-
-        # Get the source
-        directory = 'petsc-{}'.format(self.__version)
-        tarball = 'petsc-lite-{}.tar.gz'.format(self.__version)
-        url = '{0}/{1}'.format(self.__baseurl, tarball)
-
-        self.__commands.append(self.download_step(url=url,
-                                                  directory=self.__wd))
-        self.__commands.append(self.untar_step(
-            tarball=os.path.join(self.__wd, tarball), directory=self.__wd))
-
-        # Default configure opts
-        self.configure_opts.extend([
-            'CC={}'.format(self.__toolchain.CC),
-            'CXX={}'.format(self.__toolchain.CXX),
-            '--CFLAGS=\'-O3\'',
-            '--CXXFLAGS=\'-O3\'',
-            '--FFLAGS=\'-O3\'',
-            '--with-debugging=no',
-            '--with-fc=0',
-            '--download-f2cblaslapack=1'
-        ])
-
-        # Configure, build, install
-        self.__commands.append(self.configure_step(
-            directory=os.path.join(self.__wd, directory)))
-        self.__commands.append(self.build_step())
-        self.__commands.append(self.install_step())
-
-        # Cleanup tarball and directory
-        self.__commands.append(self.cleanup_step(
-            items=[os.path.join(self.__wd, tarball),
-                   os.path.join(self.__wd, directory)]))
-
-        # Environment
-        self.__environment_variables['PETSC_DIR'] = '{}'.format(self.prefix)
-        libpath = os.path.join(self.prefix, 'lib')
+        self += generic_autotools(
+            directory='petsc-{}'.format(self.__version),
+            prefix=self.__prefix,
+            toolchain=self.__toolchain,
+            url='{0}/petsc-lite-{1}.tar.gz'.format(self.__baseurl,
+                                                   self.__version),
+            configure_opts=[
+                'CC={}'.format(self.__toolchain.CC),
+                'CXX={}'.format(self.__toolchain.CXX), '--CFLAGS=\'-O3\'',
+                '--CXXFLAGS=\'-O3\'', '--FFLAGS=\'-O3\'',
+                '--with-debugging=no', '--with-fc=0',
+                '--download-f2cblaslapack=1'
+            ])
+        self.__environment_variables['PETSC_DIR'] = self.__prefix
+        # Set library path
+        libpath = os.path.join(self.__prefix, 'lib')
         if self.ldconfig:
-            self.__commands.append(self.ldcache_step(directory=libpath))
+            self += shell(commands=[self.ldcache_step(directory=libpath)])
         else:
             self.__environment_variables[
                 'LD_LIBRARY_PATH'] = '{}:$LD_LIBRARY_PATH'.format(libpath)
 
-        # Labels
-        self.__labels['petsc.version'] = self.__version
+        self += environment(variables=self.__environment_variables)
+        self += label(metadata={'petsc.version': self.__version})
 
     def runtime(self, _from='0'):
         instructions = []
         instructions.append(comment('PETSc {}'.format(self.__version)))
-        instructions.append(copy(_from=_from, src=self.prefix,
-                                 dest=self.prefix))
+        instructions.append(
+            copy(_from=_from, src=self.__prefix, dest=self.__prefix))
 
         if self.ldconfig:
-            libpath = os.path.join(self.prefix, 'lib')
-            instructions.append(shell(
-                commands=[self.ldcache_step(directory=libpath)]))
+            libpath = os.path.join(self.__prefix, 'lib')
+            instructions.append(
+                shell(commands=[self.ldcache_step(directory=libpath)]))
 
-        if self.__environment_variables:
-            instructions.append(environment(
-                variables=self.__environment_variables))
-        if self.__labels:
-            instructions.append(label(metadata=self.__labels))
+        instructions.append(
+            environment(variables=self.__environment_variables))
+        instructions.append(label(metadata=self.__labels))
         return '\n'.join(str(x) for x in instructions)
+

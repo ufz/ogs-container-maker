@@ -42,6 +42,7 @@ class ogs(bb_base, hpccm.templates.CMakeBuild, hpccm.templates.rm):
         self.__remove_build = kwargs.get('remove_build', False)
         self.__remove_source = kwargs.get('remove_source', False)
         self.__shared = kwargs.get('shared', True)
+        self.__skip_clone = kwargs.get('skip_clone', False)
         self.__skip_lfs = kwargs.get('skip_lfs', False)
         self.__toolchain = kwargs.get('toolchain', toolchain())
         self.__version = kwargs.get('version', 'ufz/ogs@master')
