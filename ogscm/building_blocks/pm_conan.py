@@ -38,10 +38,7 @@ class pm_conan(bb_base):
         self += packages(ospackages=['pkg-config'])
         # For building curl:
         self += packages(ospackages=['autoconf-archive', 'libtool'])
-        conan_version = "1.19.2"
-        if hpccm.config.g_linux_distro == linux_distro.CENTOS:
-            # Conan 1.7 requires newer Python than 3.4
-            conan_version = "1.6.1"
+        conan_version = "1.20.5"
 
         self += pip(pip='pip3', packages=['conan=={}'.format(conan_version)])
         self += shell(commands=self.__commands)
