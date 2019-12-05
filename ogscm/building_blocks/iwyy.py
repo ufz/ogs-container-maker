@@ -39,7 +39,8 @@ class iwyy(bb_base, hpccm.templates.CMakeBuild, hpccm.templates.rm,
 
         self.__baseurl = kwargs.get(
             'baseurl',
-            'https://github.com/include-what-you-use/include-what-you-use/archive'
+            'https://github.com/include-what-you-use/include-what-you-use/'
+            'archive'
         )
         self.__ospackages = kwargs.get('ospackages', [])
         self.__parallel = kwargs.get('parallel', '$(nproc)')

@@ -42,7 +42,9 @@ class container_info():
             else:
                 # Get git commit hash and construct image tag name
                 repo, branch = ogs_version.split("@")
-                url = f"https://api.github.com/repos/{repo}/commits?sha={branch}"
+                url = (
+                    f"https://api.github.com/repos/{repo}/commits?sha={branch}"
+                )
                 response = requests.get(url)
                 response_data = json.loads(response.text)
                 self.commit_hash = response_data[0]['sha']
@@ -63,7 +65,10 @@ class container_info():
             cmake_args_hash_short = cmake_args_hash[:8]
 
         name_image = args.base_image.replace(':', '_')
-        img_folder = f"{name_image}/{name_start}/{name_openmpi}/{config.g_package_manager.name.lower()}"
+        img_folder = (
+            f"{name_image}/{name_start}/{name_openmpi}/"
+            f"{config.g_package_manager.name.lower()}"
+        )
         self.img_file = img_folder.replace("/", "-")
         if len(cmake_args) > 0:
             self.img_file += f'-cmake-{cmake_args_hash_short}'
@@ -101,7 +106,7 @@ class container_info():
         if not os.path.exists(self.out_dir):
             os.makedirs(self.out_dir)  # For .scif files
         if self.images_out_dir and not os.path.exists(self.images_out_dir):
-                os.makedirs(self.images_out_dir)
+            os.makedirs(self.images_out_dir)
 
     def cleanup(self):
         shutil.rmtree(self.out_dir, ignore_errors=True)

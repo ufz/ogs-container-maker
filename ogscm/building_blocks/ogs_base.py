@@ -1,6 +1,5 @@
 # pylint: disable=invalid-name, too-few-public-methods
 # pylint: disable=too-many-instance-attributes
-
 """OGS base building block"""
 
 from __future__ import absolute_import
@@ -20,7 +19,6 @@ from hpccm.primitives.shell import shell
 
 class ogs_base(bb_base):
     """OGS base building block"""
-
     def __init__(self, **kwargs):
         """Initialize building block"""
         super(ogs_base, self).__init__()
@@ -38,9 +36,11 @@ class ogs_base(bb_base):
         """String representation of the building block"""
         self += comment(__doc__, reformat=False)
         self += python(devel=True)
-        self += pip(pip='pip3', packages=['virtualenv', 'pre-commit', 'cmake-format'])
+        self += pip(pip='pip3',
+                    packages=['virtualenv', 'pre-commit', 'cmake-format'])
         self += packages(ospackages=self.__ospackages,
-                         apt_ppas=['ppa:git-core/ppa'], epel=True)
+                         apt_ppas=['ppa:git-core/ppa'],
+                         epel=True)
         self += shell(commands=self.__commands)
 
     def __setup(self):
@@ -54,7 +54,8 @@ class ogs_base(bb_base):
                 "apt-get update",
                 # Workaround for https://github.com/git-lfs/git-lfs/issues/3474
                 "apt-get install -y dirmngr --install-recommends",
-                "apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 6B05F25D762E3157"
+                "apt-key adv --keyserver keyserver.ubuntu.com --recv-keys "
+                "6B05F25D762E3157"
             ])
         self.__commands.append(
             "curl -s https://packagecloud.io/install/repositories/github/"
@@ -62,11 +63,12 @@ class ogs_base(bb_base):
 
         if hpccm.config.g_ctype == hpccm.container_type.SINGULARITY:
             self.__ospackages.append('locales')
-            self.__commands.extend(
-                ['echo "LC_ALL=en_US.UTF-8" >> /etc/environment',
-                 'echo "en_US.UTF-8 UTF-8" >> /etc/locale.gen',
-                 'echo "LANG=en_US.UTF-8" > /etc/locale.conf',
-                 'locale-gen en_US.UTF-8'])
+            self.__commands.extend([
+                'echo "LC_ALL=en_US.UTF-8" >> /etc/environment',
+                'echo "en_US.UTF-8 UTF-8" >> /etc/locale.gen',
+                'echo "LANG=en_US.UTF-8" > /etc/locale.conf',
+                'locale-gen en_US.UTF-8'
+            ])
 
         self.__commands.append('git lfs install')
 
@@ -79,9 +81,7 @@ class ogs_base(bb_base):
         instructions = [
             comment(__doc__, reformat=False),
             p.runtime(),
-            shell(commands=[
-                'mkdir -p /apps /scratch /lustre /work /projects'
-            ])
+            shell(commands=['mkdir -p /apps /scratch /lustre /work /projects'])
         ]
 
         return '\n'.join(str(x) for x in instructions)

@@ -1,6 +1,5 @@
 # pylint: disable=invalid-name, too-few-public-methods
 # pylint: disable=too-many-instance-attributes
-
 """OGS building block"""
 
 from __future__ import absolute_import
@@ -29,7 +28,6 @@ from ogscm.config import package_manager
 
 class ogs(bb_base, hpccm.templates.CMakeBuild, hpccm.templates.rm):
     """OGS building block"""
-
     def __init__(self, **kwargs):
         """Initialize building block"""
         super(ogs, self).__init__(**kwargs)
@@ -49,10 +47,20 @@ class ogs(bb_base, hpccm.templates.CMakeBuild, hpccm.templates.rm):
 
         if os.path.isdir(self.__version):
             self.__repo = 'local'
-            self.__branch = subprocess.run(['cd {} && git branch | grep \* | cut -d \' \' -f2'.format(self.__version)], capture_output=True, text=True, shell=True).stdout
+            self.__branch = subprocess.run([
+                'cd {} && git branch | grep \* | cut -d \' \' -f2'.format(
+                    self.__version)
+            ],
+                                           capture_output=True,
+                                           text=True,
+                                           shell=True).stdout
             self.__skip_clone = True
             self.__remove_source = False
-            self.__git_version = subprocess.run(['cd {} && git describe --tags'.format(self.__version)], capture_output=True, text=True, shell=True).stdout[0]
+            self.__git_version = subprocess.run(
+                ['cd {} && git describe --tags'.format(self.__version)],
+                capture_output=True,
+                text=True,
+                shell=True).stdout[0]
         else:
             m = re.search('(.+/.*)@(.*)', self.__version)
             self.__repo = m.group(1)
@@ -70,17 +78,17 @@ class ogs(bb_base, hpccm.templates.CMakeBuild, hpccm.templates.rm):
 
     def __instructions(self):
         self += comment('OpenGeoSys build from repo {0}, branch {1}'.format(
-                        self.__repo, self.__branch))
+            self.__repo, self.__branch))
         self += packages(ospackages=self.__ospackages)
-        self += shell(commands=self.__commands,
-                      _arguments='--mount=type=bind,target=/scif/apps/ogs/src,rw')
+        self += shell(
+            commands=self.__commands,
+            _arguments='--mount=type=bind,target=/scif/apps/ogs/src,rw')
         self += runscript(commands=['ogs'])
 
         if self.__environment_variables:
             self += environment(variables=self.__environment_variables)
         if self.__labels:
             self += label(metadata=self.__labels)
-
 
     def __setup(self):
         """Construct the series of shell commands, i.e., fill in
@@ -89,8 +97,8 @@ class ogs(bb_base, hpccm.templates.CMakeBuild, hpccm.templates.rm):
 
         # Get the source
         if self.__skip_clone:
-            self.__cmake_args.append(
-                '-DOGS_VERSION={}'.format(self.__git_version))
+            self.__cmake_args.append('-DOGS_VERSION={}'.format(
+                self.__git_version))
         else:
             self.__commands.extend([
                 'mkdir -p {0} && cd {0}'.format(self.__prefix),
@@ -108,39 +116,38 @@ class ogs(bb_base, hpccm.templates.CMakeBuild, hpccm.templates.rm):
             "-DCMAKE_BUILD_TYPE=Release",
         ])
 
-        self.__cmake_args.append('-DBUILD_SHARED_LIBS={}'.format(
-            'ON' if self.__shared else 'OFF'
-        ))
+        self.__cmake_args.append(
+            '-DBUILD_SHARED_LIBS={}'.format('ON' if self.__shared else 'OFF'))
         if self.__skip_lfs:
             self.__cmake_args.append('-DBUILD_TESTING=OFF')
         if self.__toolchain.CC == 'mpicc':
             self.__cmake_args.append("-DOGS_USE_PETSC=ON")
-            if conan == True:
+            if conan:
                 self.__cmake_args.append("-DOGS_CONAN_USE_SYSTEM_OPENMPI=ON")
-        if conan == False:
+        if conan:
             self.__cmake_args.append('-DOGS_USE_CONAN=OFF')
 
         # Configure and build
-        self.__commands.append(self.configure_step(
-            directory='{}/src'.format(self.__prefix),
-            build_directory='{}/build'.format(self.__prefix),
-            opts=self.__cmake_args,
-            toolchain=self.__toolchain))
-        self.__commands.append(self.build_step(
-            target='install', parallel=self.__parallel))
+        self.__commands.append(
+            self.configure_step(directory='{}/src'.format(self.__prefix),
+                                build_directory='{}/build'.format(
+                                    self.__prefix),
+                                opts=self.__cmake_args,
+                                toolchain=self.__toolchain))
+        self.__commands.append(
+            self.build_step(target='install', parallel=self.__parallel))
 
         # Cleanup
         if self.__remove_build:
-            self.__commands.append(self.cleanup_step(
-                items=[os.path.join(self.__prefix, 'build')]
-            ))
+            self.__commands.append(
+                self.cleanup_step(
+                    items=[os.path.join(self.__prefix, 'build')]))
         else:
             # Just run the clean-target
             self.__commands.append(self.build_step(target='clean'))
         if self.__remove_source:
-            self.__commands.append(self.cleanup_step(
-                items=[os.path.join(self.__prefix, 'src')]
-            ))
+            self.__commands.append(
+                self.cleanup_step(items=[os.path.join(self.__prefix, 'src')]))
 
         # Environment
         self.__environment_variables['PATH'] = '{0}/bin:$PATH'.format(
@@ -154,12 +161,11 @@ class ogs(bb_base, hpccm.templates.CMakeBuild, hpccm.templates.rm):
         instructions = [
             comment('OpenGeoSys build from repo {0}, branch {1}'.format(
                 self.__repo, self.__branch)),
-            copy(_from=_from, src=self.__prefix,
-                 dest=self.__prefix)
+            copy(_from=_from, src=self.__prefix, dest=self.__prefix)
         ]
         if self.__environment_variables:
-            instructions.append(environment(
-                variables=self.__environment_variables))
+            instructions.append(
+                environment(variables=self.__environment_variables))
         if self.__labels:
             instructions.append(label(metadata=self.__labels))
         return '\n'.join(str(x) for x in instructions)
