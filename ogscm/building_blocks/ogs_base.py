@@ -35,7 +35,7 @@ class ogs_base(bb_base):
     def __instructions(self):
         """String representation of the building block"""
         self += comment(__doc__, reformat=False)
-        self += python(devel=True)
+        self += python(devel=True, python2=False)
         self += pip(pip='pip3',
                     packages=['virtualenv', 'pre-commit', 'cmake-format'])
         self += packages(ospackages=self.__ospackages,

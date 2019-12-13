@@ -205,7 +205,7 @@ def main():  # pragma: no cover
             })
 
             if args.mpi_benchmarks:
-                Stage0 += pip(packages=['scif'])
+                Stage0 += pip(packages=['scif'], pip='pip3')
                 scif_installed = True
 
                 osu_app = scif(name='osu', file="_out/osu.scif")
@@ -287,7 +287,7 @@ def main():  # pragma: no cover
                 cmake_args.append('-DOGS_BUILD_GUI=ON')
 
             if not scif_installed:
-                Stage0 += pip(packages=['scif'])  # SCI-F
+                Stage0 += pip(packages=['scif'], pip='pip3')  # SCI-F
                 scif_installed = True
             Stage0 += raw(docker=f"ARG OGS_COMMIT_HASH={info.commit_hash}")
             if info.buildkit:
@@ -318,7 +318,8 @@ def main():  # pragma: no cover
             Stage1.baseimage(image=args.base_image)
             Stage1 += Stage0.runtime()
             if scif_installed:
-                Stage1 += pip(packages=['scif'])  # Install scif in runtime too
+                # Install scif in runtime too
+                Stage1 += pip(packages=['scif'], pip='pip3')
             stages_string += "\n\n" + str(Stage1)
 
         # ---------------------------- recipe end -----------------------------
