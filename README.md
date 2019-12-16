@@ -111,8 +111,7 @@ Image build options:
 
 Additional options:
   --base_image BASE_IMAGE
-                        The base image. 'centos:7' is supported too. (default:
-                        ubuntu:18.04)
+                        The base image. (default: ubuntu:18.04)
   --compiler COMPILER   The compiler to use. Possible options: off, gcc, clang
                         (default: gcc)
   --compiler_version COMPILER_VERSION

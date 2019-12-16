@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 # OpenMPI versions:
-#  Taurus: 1.8.8, 1.10.2, 2.1.0, 2.1.1, 3.0.0, 3.1.2
+#  Taurus: 1.8.8, 1.10.2, 2.1.0, 2.1.1, 3.0.0, 3.1.4, 4.0.1
 #  Eve: 1.8.8, 1.10.2, 2.1.1, 4.0.0
 #  --> 2.1.1
 # https://easybuild.readthedocs.io/en/latest/Common-toolchains.html#common-toolchains-overview
@@ -20,7 +20,7 @@ import sys
 import hpccm
 from hpccm import linux_distro
 from hpccm.building_blocks import packages, mlnx_ofed, knem, ucx, openmpi, \
-    boost, pip, scif, llvm, gnu, ofed, cmake
+    boost, pip, scif, llvm, gnu, ofed, cmake, slurm_pmi2, pmix
 from hpccm.primitives import baseimage, comment, user, environment, raw, \
     label, shell, copy
 
@@ -88,16 +88,12 @@ def main():  # pragma: no cover
 
         if args.runtime_only:
             Stage0.name = 'stage0'
-        Stage0 += baseimage(image=args.base_image)
-        centos = hpccm.config.g_linux_distro == linux_distro.CENTOS
+        Stage0 += baseimage(image=args.base_image, _as='build')
 
         Stage0 += comment(
             f"Generated with ogs-container-maker {__version__}",
             reformat=False)
 
-        if centos:
-            Stage0 += user(user='root')
-            Stage0 += packages(ospackages=['epel-release'])
         Stage0 += packages(ospackages=['wget', 'tar', 'curl', 'make'])
 
         # base compiler
@@ -122,74 +118,85 @@ def main():  # pragma: no cover
                 )
 
         if ompi != 'off':
-            # Stage0 += ofed() OR mlnx_ofed(); is installed later on from debian archive
-            # Stage0 += knem()
-            Stage0 += ucx(version='1.5.1', cuda=False) #  knem='/usr/local/knem'
-            Stage0 += packages(ospackages=['libpmi2-0-dev']) # req. for --with-pmi
-            # req. for --with-psm2
-            Stage0 += packages(ospackages=['libnuma1'])
-            psm_deb_url = 'http://snapshot.debian.org/archive/debian/20181231T220010Z/pool/main'
-            psm2_version = '11.2.68-4'
-            Stage0 += shell(commands=[
-                'cd /tmp',
-                f'wget -nv {psm_deb_url}/libp/libpsm2/libpsm2-2_{psm2_version}_amd64.deb',
-                f'wget -nv {psm_deb_url}/libp/libpsm2/libpsm2-dev_{psm2_version}_amd64.deb',
-                'dpkg --install *.deb'
-            ])
-
-            # libibverbs
-            # Available versions: http://snapshot.debian.org/binary/ibacm/
-            # ibverbs_version = '21.0-1'
-            # works on eve, eve has 17.2-3 installed nut this version is not available in snapshot.debian
-            ib_deb_url = 'http://snapshot.debian.org/archive/debian/20180430T215634Z/pool/main'
-            ibverbs_version = '17.1-2'
-            ibverbs_packages = [
-                'ibacm',
-                'ibverbs-providers',
-                'ibverbs-utils',
-                'libibumad-dev',
-                'libibumad3',
-                'libibverbs-dev',
-                'libibverbs1',
-                'librdmacm-dev',
-                'librdmacm1',
-                'rdma-core',
-                'rdmacm-utils'
-            ]
-            ibverbs_cmds = ['cd /tmp']
-            for package in ibverbs_packages:
-                ibverbs_cmds.extend([
-                    f'wget -nv {ib_deb_url}/r/rdma-core/{package}_{ibverbs_version}_amd64.deb'
+            mpicc = object
+            if False: # eve:
+                # Stage0 += ofed() OR mlnx_ofed(); is installed later on from debian archive
+                # Stage0 += knem()
+                Stage0 += ucx(version='1.5.1', cuda=False) #  knem='/usr/local/knem'
+                Stage0 += packages(ospackages=['libpmi2-0-dev']) # req. for --with-pmi
+                # req. for --with-psm2
+                Stage0 += packages(ospackages=['libnuma1'])
+                psm_deb_url = 'http://snapshot.debian.org/archive/debian/20181231T220010Z/pool/main'
+                psm2_version = '11.2.68-4'
+                Stage0 += shell(commands=[
+                    'cd /tmp',
+                    f'wget -nv {psm_deb_url}/libp/libpsm2/libpsm2-2_{psm2_version}_amd64.deb',
+                    f'wget -nv {psm_deb_url}/libp/libpsm2/libpsm2-dev_{psm2_version}_amd64.deb',
+                    'dpkg --install *.deb'
                 ])
-            ibverbs_cmds.append('dpkg --install *.deb')
-            Stage0 += packages(ospackages=[
-                'libnl-3-200',
-                'libnl-route-3-200',
-                'libnl-route-3-dev',
-                'udev',
-                'perl'
-            ])
-            Stage0 += shell(commands=ibverbs_cmds)
 
-            mpicc = openmpi(version=ompi, cuda=False, toolchain=toolchain,
-                            ldconfig=True,
-                            ucx='/usr/local/ucx',
-                            configure_opts=[
-                                '--disable-getpwuid',
-                                '--sysconfdir=/mnt/0'
-                                '--with-slurm',  # used on taurus
-                                '--with-pmi=/usr/include/slurm-wlm',
-                                'CPPFLAGS=\'-I /usr/include/slurm-wlm\'',
-                                '--with-pmi-libdir=/usr/lib/x86_64-linux-gnu',
-                                # '--with-pmix',
-                                '--with-psm2',
-                                '--disable-pty-support',
-                                '--enable-mca-no-build=btl-openib,plm-slurm',
-                                # eve:
-                                '--with-sge',
-                                '--enable-mpirun-prefix-by-default',
-                                '--enable-orterun-prefix-by-default',
-                            ])
+                # libibverbs
+                # Available versions: http://snapshot.debian.org/binary/ibacm/
+                # ibverbs_version = '21.0-1'
+                # works on eve, eve has 17.2-3 installed nut this version is not available in snapshot.debian
+                ib_deb_url = 'http://snapshot.debian.org/archive/debian/20180430T215634Z/pool/main'
+                ibverbs_version = '17.1-2'
+                ibverbs_packages = [
+                    'ibacm',
+                    'ibverbs-providers',
+                    'ibverbs-utils',
+                    'libibumad-dev',
+                    'libibumad3',
+                    'libibverbs-dev',
+                    'libibverbs1',
+                    'librdmacm-dev',
+                    'librdmacm1',
+                    'rdma-core',
+                    'rdmacm-utils'
+                ]
+                ibverbs_cmds = ['cd /tmp']
+                for package in ibverbs_packages:
+                    ibverbs_cmds.extend([
+                        f'wget -nv {ib_deb_url}/r/rdma-core/{package}_{ibverbs_version}_amd64.deb'
+                    ])
+                ibverbs_cmds.append('dpkg --install *.deb')
+                Stage0 += packages(ospackages=[
+                    'libnl-3-200',
+                    'libnl-route-3-200',
+                    'libnl-route-3-dev',
+                    'udev',
+                    'perl'
+                ])
+                Stage0 += shell(commands=ibverbs_cmds)
+
+                mpicc = openmpi(version=ompi, cuda=False, toolchain=toolchain,
+                                ldconfig=True,
+                                ucx='/usr/local/ucx',
+                                configure_opts=[
+                                    '--disable-getpwuid',
+                                    '--sysconfdir=/mnt/0'
+                                    '--with-slurm',  # used on taurus
+                                    '--with-pmi=/usr/include/slurm-wlm',
+                                    'CPPFLAGS=\'-I /usr/include/slurm-wlm\'',
+                                    '--with-pmi-libdir=/usr/lib/x86_64-linux-gnu',
+                                    # '--with-pmix',
+                                    '--with-psm2',
+                                    '--disable-pty-support',
+                                    '--enable-mca-no-build=btl-openib,plm-slurm',
+                                    # eve:
+                                    '--with-sge',
+                                    '--enable-mpirun-prefix-by-default',
+                                    '--enable-orterun-prefix-by-default',
+                                ])
+            else:
+                Stage0 += ucx(cuda=False)
+                Stage0 += pmix()
+                Stage0 += slurm_pmi2(version='17.02.11')
+                mpicc = openmpi(cuda=False, infiniband=False,
+                    pmi='/usr/local/slurm-pmi2',
+                    pmix='/usr/local/pmix',
+                    ucx='/usr/local/ucx')
+            
             toolchain = mpicc.toolchain
             Stage0 += mpicc
             # OpenMPI expects this program to exist, even if it's not used.
@@ -211,14 +218,13 @@ def main():  # pragma: no cover
                 osu_app = scif(name='osu', file="_out/osu.scif")
                 osu_app += osu_benchmarks(toolchain=toolchain, prefix='/scif/apps/osu')
                 Stage0 += osu_app
-                Stage0 += copy(src='files/openmpi', dest='/usr/local/mpi-examples')
+                Stage0 += copy(src='ogscm/files/openmpi', dest='/usr/local/mpi-examples')
                 Stage0 += shell(commands=[
                     'mpicc -o /usr/local/bin/mpi-hello /usr/local/mpi-examples/hello.c',
                     'mpicc -o /usr/local/bin/mpi-ring /usr/local/mpi-examples/ring.c',
                     'mpicc -o /usr/local/bin/mpi-bw /usr/local/mpi-examples/bw.c',
                 ])
 
-        Stage0 += cmake(eula=True, version='3.12.4')
         if ogs_version != 'off' or args.jenkins:
             Stage0 += ogs_base()
         if args.gui:
@@ -226,6 +232,7 @@ def main():  # pragma: no cover
                 'mesa-common-dev', 'libgl1-mesa-dev', 'libglu1-mesa-dev', 'libxt-dev'
             ])
         if ogscm.config.g_package_manager == package_manager.CONAN:
+            Stage0 += cmake(eula=True, version='3.12.4')
             conan_user_home = '/opt/conan'
             if args.dev:
                 conan_user_home = ''
@@ -249,6 +256,7 @@ def main():  # pragma: no cover
                 '/opt/spack/bin/spack install --only dependencies vtk@8.1.2 +osmesa'
             ])
         elif ogscm.config.g_package_manager == package_manager.SYSTEM:
+            Stage0 += cmake(eula=True, version='3.12.4')
             # Use ldconfig to set library search path (instead of
             # LD_LIBRARY_PATH) as host var overwrites container var. See
             # https://github.com/sylabs/singularity/pull/2669
@@ -320,6 +328,9 @@ def main():  # pragma: no cover
             if scif_installed:
                 # Install scif in runtime too
                 Stage1 += pip(packages=['scif'], pip='pip3')
+            if openmpi and args.mpi_benchmarks:
+                Stage1 += copy(_from='build', src='/usr/local/bin/mpi_*',
+                dest='/usr/local/bin/')
             stages_string += "\n\n" + str(Stage1)
 
         # ---------------------------- recipe end -----------------------------
@@ -342,7 +353,7 @@ def main():  # pragma: no cover
             subprocess.run(f"sudo chown $USER:$USER {info.images_out_dir}/{info.img_file}", shell=True)
             continue
 
-        build_cmd = (f"docker build --build-arg OGS_COMMIT_HASH={commit_hash} "
+        build_cmd = (f"pwd && docker build --build-arg OGS_COMMIT_HASH={commit_hash} "
                      f"-t {info.tag} -f {definition_file_path} .")
         if info.buildkit:
             build_cmd = "(cd {0} && DOCKER_BUILDKIT=1 {1})".format(ogs_version, build_cmd)

@@ -105,7 +105,7 @@ class Cli_Args(argparse.ArgumentParser):
             '--base_image',
             type=str,
             default='ubuntu:18.04',
-            help='The base image. \'centos:7\' is supported too.')
+            help='The base image.')
         switches_g.add_argument(
             '--compiler',
             type=str,
