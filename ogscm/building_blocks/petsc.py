@@ -25,6 +25,8 @@ class petsc(bb_base, hpccm.templates.ConfigureMake, hpccm.templates.ldconfig,
     """The `PETSc` building block downloads and installs the
     [VTK](https://vtk.org/) component.
 
+    Requires python3.
+
     # Parameters
 
     prefix: The top level installation location.  The default value
@@ -61,6 +63,7 @@ class petsc(bb_base, hpccm.templates.ConfigureMake, hpccm.templates.ldconfig,
         self += packages(ospackages=self.__ospackages)
         self += generic_autotools(
             directory='petsc-{}'.format(self.__version),
+            preconfigure=["sed -i -- 's/python/python3/g' configure"],
             prefix=self.__prefix,
             toolchain=self.__toolchain,
             url='{0}/petsc-lite-{1}.tar.gz'.format(self.__baseurl,
@@ -97,6 +100,6 @@ class petsc(bb_base, hpccm.templates.ConfigureMake, hpccm.templates.ldconfig,
 
         instructions.append(
             environment(variables=self.__environment_variables))
-        instructions.append(label(metadata=self.__labels))
+        instructions.append(label(metadata={'petsc.version': self.__version}))
         return '\n'.join(str(x) for x in instructions)
 
