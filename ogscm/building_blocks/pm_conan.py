@@ -38,7 +38,7 @@ class pm_conan(bb_base):
         self += packages(ospackages=['pkg-config'])
         # For building curl:
         self += packages(ospackages=['autoconf-archive', 'libtool'])
-        conan_version = "1.20.5"
+        conan_version = "1.21.0"
 
         self += pip(pip='pip3', packages=['conan=={}'.format(conan_version)])
         self += shell(commands=self.__commands)
