@@ -25,6 +25,9 @@ class container_info():
         self.images_out_dir = ''
         self.img_file = ''
         self.commit_hash = ''
+        self.repo = ''
+        self.branch = ''
+        self.git_version = ''
 
         container_format = args_iter[0]
         ogs_version = args_iter[1]
@@ -34,21 +37,39 @@ class container_info():
 
         if ogs_version != 'off':
             if os.path.isdir(ogs_version):
+                self.repo = 'local'
                 self.commit_hash = subprocess.run(
                     ['cd {} && git rev-parse HEAD'.format(ogs_version)],
                     capture_output=True,
                     text=True,
                     shell=True).stdout.rstrip()
+                self.branch = subprocess.run([
+                    'cd {} && git branch | grep \* | cut -d \' \' -f2'.format(
+                        ogs_version)
+                ],
+                                             capture_output=True,
+                                             text=True,
+                                             shell=True).stdout
+                self.git_version = subprocess.run(
+                    ['cd {} && git describe --tags'.format(ogs_version)],
+                    capture_output=True,
+                    text=True,
+                    shell=True).stdout[0]
             else:
                 # Get git commit hash and construct image tag name
-                repo, branch = ogs_version.split("@")
-                url = (
-                    f"https://api.github.com/repos/{repo}/commits?sha={branch}"
-                )
-                response = requests.get(url)
-                response_data = json.loads(response.text)
-                self.commit_hash = response_data[0]['sha']
-                # ogs_tag = ogs_version.replace('/', '.').replace('@', '.')
+                self.repo, self.branch, *commit = ogs_version.split("@")
+                if commit:
+                    self.commit_hash = commit[0]
+                    if self.branch == '':
+                        self.branch = 'master'
+                else:
+                    url = (
+                        f"https://api.github.com/repos/{self.repo}/commits?sha={self.branch}"
+                    )
+                    response = requests.get(url)
+                    response_data = json.loads(response.text)
+                    self.commit_hash = response_data[0]['sha']
+                    # ogs_tag = ogs_version.replace('/', '.').replace('@', '.')
 
             name_start = f'ogs-{self.commit_hash[:8]}'
         else:
@@ -65,10 +86,8 @@ class container_info():
             cmake_args_hash_short = cmake_args_hash[:8]
 
         name_image = args.base_image.replace(':', '_')
-        img_folder = (
-            f"{name_image}/{name_start}/{name_openmpi}/"
-            f"{config.g_package_manager.name.lower()}"
-        )
+        img_folder = (f"{name_image}/{name_start}/{name_openmpi}/"
+                      f"{config.g_package_manager.name.lower()}")
         self.img_file = img_folder.replace("/", "-")
         if len(cmake_args) > 0:
             self.img_file += f'-cmake-{cmake_args_hash_short}'

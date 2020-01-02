@@ -43,28 +43,14 @@ class ogs(bb_base, hpccm.templates.CMakeBuild, hpccm.templates.rm):
         self.__skip_clone = kwargs.get('skip_clone', False)
         self.__skip_lfs = kwargs.get('skip_lfs', False)
         self.__toolchain = kwargs.get('toolchain', toolchain())
-        self.__version = kwargs.get('version', 'ufz/ogs@master')
+        self.__repo = kwargs.get('repo', 'ufz/ogs')
+        self.__branch = kwargs.get('branch', 'master')
+        self.__commit = kwargs.get('commit')
+        self.__git_version = kwargs.get('git_version')
 
-        if os.path.isdir(self.__version):
-            self.__repo = 'local'
-            self.__branch = subprocess.run([
-                'cd {} && git branch | grep \* | cut -d \' \' -f2'.format(
-                    self.__version)
-            ],
-                                           capture_output=True,
-                                           text=True,
-                                           shell=True).stdout
+        if self.__repo == 'local':
             self.__skip_clone = True
             self.__remove_source = False
-            self.__git_version = subprocess.run(
-                ['cd {} && git describe --tags'.format(self.__version)],
-                capture_output=True,
-                text=True,
-                shell=True).stdout[0]
-        else:
-            m = re.search('(.+/.*)@(.*)', self.__version)
-            self.__repo = m.group(1)
-            self.__branch = m.group(2)
 
         # Filled in by __setup():
         self.__commands = []
@@ -102,12 +88,14 @@ class ogs(bb_base, hpccm.templates.CMakeBuild, hpccm.templates.rm):
         else:
             self.__commands.extend([
                 'mkdir -p {0} && cd {0}'.format(self.__prefix),
-                # TODO: --depth=1 --> ogs --version does not work
                 '{}git clone --branch {} https://github.com/{} src'.format(
                     'GIT_LFS_SKIP_SMUDGE=1 ' if self.__skip_lfs else '',
                     self.__branch, self.__repo),
-                "(cd src && git fetch --tags)"
             ])
+            if self.__commit:
+                self.__commands.append(
+                    '(cd src && git reset --hard {})'.format(self.__commit))
+            self.__commands.append('(cd src && git fetch --tags)')
 
         # Default CMake arguments
         self.__cmake_args.extend([
@@ -154,7 +142,11 @@ class ogs(bb_base, hpccm.templates.CMakeBuild, hpccm.templates.rm):
             self.__prefix)
 
         # Labels
-        self.__labels['version'] = self.__version
+        if self.__repo == 'local':
+            self.__labels['version'] = self.__git_version
+        else:
+            self.__labels['version'] = "{0}@{1} ({2})".format(
+                self.__repo, self.__branch, self.__commit)
         self.__labels['cmake_args'] = '\'' + ' '.join(self.__cmake_args) + '\''
 
     def runtime(self, _from='0'):
