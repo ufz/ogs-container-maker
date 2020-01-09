@@ -103,11 +103,10 @@ class Cli_Args(argparse.ArgumentParser):
             help='Generate multi-stage Dockerfiles for small runtime '
             'images')
         switches_g = self.add_argument_group('Additional options')
-        switches_g.add_argument(
-            '--base_image',
-            type=str,
-            default='ubuntu:18.04',
-            help='The base image.')
+        switches_g.add_argument('--base_image',
+                                type=str,
+                                default='ubuntu:18.04',
+                                help='The base image.')
         switches_g.add_argument(
             '--compiler',
             type=str,
@@ -162,3 +161,14 @@ class Cli_Args(argparse.ArgumentParser):
             dest='cleanup',
             action='store_true',
             help='Cleans up generated files in default directories.')
+        deploy_g = self.add_argument_group('Image deployment')
+        deploy_g.add_argument(
+            '--deploy',
+            '-D',
+            nargs='?',
+            const='ALL',
+            type=str,
+            default='',
+            help=
+            'Deploys to all configured hosts (in config/deploy_hosts.yml) with no additional arguments or to the specified host. Implies --build and --convert arguments.'
+        )

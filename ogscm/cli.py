@@ -12,10 +12,11 @@ import json
 import math
 import multiprocessing
 import os
-
+import re
 import requests
 import subprocess
 import sys
+import yaml
 
 import hpccm
 from hpccm import linux_distro
@@ -39,6 +40,9 @@ def main():  # pragma: no cover
 
     if args.jenkins:
         args.ogs = ['off']
+    if args.deploy != '':
+        args.build = True
+        args.convert = True
 
     cwd = os.getcwd()
 
@@ -321,18 +325,17 @@ def main():  # pragma: no cover
                     file=f"{info.out_dir[context_path_size+1:]}/ogs.scif")
             else:
                 ogs_app = scif(name='ogs', file=f"{info.out_dir}/ogs.scif")
-            ogs_app += ogs(
-                repo=info.repo,
-                branch=info.branch,
-                commit=info.commit_hash,
-                git_version=info.git_version,
-                toolchain=toolchain,
-                prefix='/scif/apps/ogs',
-                cmake_args=cmake_args,
-                parallel=math.ceil(multiprocessing.cpu_count() / 2),
-                skip_lfs=True,
-                remove_build=True,
-                remove_source=True)
+            ogs_app += ogs(repo=info.repo,
+                           branch=info.branch,
+                           commit=info.commit_hash,
+                           git_version=info.git_version,
+                           toolchain=toolchain,
+                           prefix='/scif/apps/ogs',
+                           cmake_args=cmake_args,
+                           parallel=math.ceil(multiprocessing.cpu_count() / 2),
+                           skip_lfs=True,
+                           remove_build=True,
+                           remove_source=True)
             Stage0 += ogs_app
 
         if args.jenkins:
@@ -370,12 +373,13 @@ def main():  # pragma: no cover
 
         if __format == 'singularity':
             subprocess.run(
-                f"sudo `which singularity` build --force {info.images_out_dir}/{info.img_file} "
+                f"sudo `which singularity` build --force {info.images_out_dir}/{info.img_file}.sif"
                 f"{definition_file_path}",
                 shell=True)
             subprocess.run(
-                f"sudo chown $USER:$USER {info.images_out_dir}/{info.img_file}",
+                f"sudo chown $USER:$USER {info.images_out_dir}/{info.img_file}.sif",
                 shell=True)
+            # TODO: adapt this to else
             continue
 
         build_cmd = (f"docker build --build-arg OGS_COMMIT_HASH={commit_hash} "
@@ -385,12 +389,48 @@ def main():  # pragma: no cover
                 ogs_version, build_cmd)
         print(f"Running: {build_cmd}")
         subprocess.run(build_cmd, shell=True)
+        inspect_out = subprocess.check_output(
+            f"docker inspect {info.tag} | grep Id",
+            shell=True).decode(sys.stdout.encoding)
+        image_id = re.search('sha256:(\w*)', inspect_out).group(1)
+        image_id_short = image_id[0:12]
         if args.upload:
             subprocess.run(f"docker push {info.tag}", shell=True)
-        if args.convert:
+        image_file = f'{info.images_out_dir}/{info.img_file}-{image_id_short}.sif'
+        if args.convert and not os.path.exists(image_file):
+            # (check docker image id)
             subprocess.run(
-                f"cd {cwd} && singularity build --force {info.images_out_dir}/{info.img_file} docker-daemon:{info.tag}",
+                f"cd {cwd} && singularity build --force {image_file} docker-daemon:{info.tag}",
                 shell=True)
+
+        # Deploy image
+        if not args.deploy:
+            continue
+
+        deploy_config_filename = f'{cwd}/config/deploy_hosts.yml'
+        if not os.path.isfile(deploy_config_filename):
+            print(
+                f'ERROR: {deploy_config_filename} not found but required for deploying!'
+            )
+            exit(1)
+
+        with open(deploy_config_filename, 'r') as ymlfile:
+            deploy_config = yaml.load(ymlfile, Loader=yaml.FullLoader)
+        if not args.deploy == 'ALL' and not args.deploy in deploy_config:
+            print(f'ERROR: Deploy host "{args.deploy}" not found in config!')
+            exit(1)
+        deploy_hosts = {}
+        if args.deploy == 'ALL':
+            deploy_hosts = deploy_config
+        else:
+            deploy_hosts[args.deploy] = deploy_config[args.deploy]
+        for deploy_host in deploy_hosts:
+            deploy_info = deploy_hosts[deploy_host]
+            print(f'Deploying to {deploy_info} ...')
+            print(
+                subprocess.check_output(
+                    f"rsync -c -v {image_file} {deploy_info['host']}:{deploy_info['dest_dir']}",
+                    shell=True).decode(sys.stdout.encoding))
 
 
 if __name__ == "__main__":  # pragma: no cover

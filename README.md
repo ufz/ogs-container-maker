@@ -68,9 +68,7 @@ usage: ogscm [-h] [--version] [--out OUT] [--file FILE] [--print]
               [--base_image BASE_IMAGE] [--compiler COMPILER]
               [--compiler_version COMPILER_VERSION] [--gui] [--docs]
               [--jenkins] [--cvode] [--cppcheck] [--iwyy] [--gcovr]
-              [--mpi_benchmarks] [--dev] [--clean]
-
-Generate container image definitions.
+              [--mpi_benchmarks] [--dev] [--clean] [--deploy [DEPLOY]]
 
 optional arguments:
   -h, --help            show this help message and exit
@@ -90,8 +88,10 @@ Combinatorial options:
                         OpenMPI version, e.g. 2.1.1, 2.1.5, 3.0.1, 3.1.2
                         (default: ['off'])
   --ogs [OGS [OGS ...]]
-                        OGS GitHub repo in the form 'user/repo@branch' or
-                        'off' to disable OGS building (default:
+                        OGS GitHub repo in the form 'user/repo@branch' OR
+                        'user/repo@@commit' to checkout a specific commit OR a
+                        path to a local subdirectory to the git cloned OGS
+                        sourcesOR 'off' to disable OGS building (default:
                         ['ufz/ogs@master'])
   --cmake_args [CMAKE_ARGS [CMAKE_ARGS ...]]
                         CMake argument sets have to be quoted and **must**
@@ -131,6 +131,13 @@ Additional options:
 Maintenance:
   --clean               Cleans up generated files in default directories.
                         (default: False)
+
+Image deployment:
+  --deploy [DEPLOY], -D [DEPLOY]
+                        Deploys to all configured hosts (in
+                        config/deploy_hosts.yml) with no additional arguments
+                        or to the specified host. Implies --build and
+                        --convert arguments. (default: )
 ```
 
 ## Advanced usage
@@ -148,3 +155,10 @@ pip install -r ThirdParty/container-maker/requirements.txt
 export PYTHONPATH="${PYTHONPATH}:${PWD}/ThirdParty/container-maker"
 python ThirdParty/container-maker/ogscm/cli.py -B -C -R --ogs . --pm system --cvode --ompi off 2.1.6 3.1.4 4.0.1
 ```
+
+### Deploy image files
+
+- Requires `rsync`
+- Rename the file `config/deploy_hosts_example.yml` to `config/deploy_hosts.yml`
+- `host` has to be a SSH host to which you have passwordless access
+- Deploy to the host with `... -D myhost`

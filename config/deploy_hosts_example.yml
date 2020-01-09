@@ -1,0 +1,6 @@
+singularity1:
+    host: singularity1
+    dest_dir: /data/images
+envinf1:
+    host: envinf1
+    dest_dir: /data/images

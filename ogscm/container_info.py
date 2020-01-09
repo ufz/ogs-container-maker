@@ -98,7 +98,6 @@ class container_info():
         if ogs_version != 'off' and not args.runtime_only:
             self.img_file += '-dev'
         docker_repo = self.img_file
-        self.img_file += '.sif'
 
         self.tag = f"{args.registry}/{docker_repo}:latest"
 
