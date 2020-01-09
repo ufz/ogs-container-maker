@@ -427,9 +427,16 @@ def main():  # pragma: no cover
         for deploy_host in deploy_hosts:
             deploy_info = deploy_hosts[deploy_host]
             print(f'Deploying to {deploy_info} ...')
+            proxy_cmd = ''
+            user_cmd = ''
+            if 'user' in deploy_info:
+                user_cmd = f"{deploy_info['user']}@"
+            if 'proxy' in deploy_info:
+                proxy_cmd = f"-e 'ssh -A -J {user_cmd}{deploy_info['proxy']}'"
+                print(proxy_cmd)
             print(
                 subprocess.check_output(
-                    f"rsync -c -v {image_file} {deploy_info['host']}:{deploy_info['dest_dir']}",
+                    f"rsync -c -v {proxy_cmd} {image_file} {user_cmd}{deploy_info['host']}:{deploy_info['dest_dir']}",
                     shell=True).decode(sys.stdout.encoding))
 
 
