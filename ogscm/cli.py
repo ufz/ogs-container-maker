@@ -84,6 +84,9 @@ def main():  # pragma: no cover
                       'Ignoring!')
 
         info = container_info(build, args)
+        if args.cleanup:
+            info.cleanup()
+            exit(0)
         info.make_dirs()
 
         # Create definition
