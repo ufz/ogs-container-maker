@@ -92,8 +92,9 @@ class container_info():
                 ' '.join(cmake_args).encode('utf-8')).hexdigest()
             cmake_args_hash_short = cmake_args_hash[:8]
 
-        name_image = args.base_image.replace(':', '_')
-        img_folder = (f"{name_image}/{name_start}/{name_openmpi}/"
+        # name_image = args.base_image.replace(':', '_')
+        # Removed {name_image}/
+        img_folder = (f"{name_start}/{name_openmpi}/"
                       f"{config.g_package_manager.name.lower()}")
         self.img_file = img_folder.replace("/", "-")
         if len(cmake_args) > 0:
