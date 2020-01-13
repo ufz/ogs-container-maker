@@ -7,13 +7,14 @@ from __future__ import unicode_literals
 from __future__ import print_function
 
 import hashlib
+import json
 import os
+import re
 import requests
 import shutil
 import subprocess
 
 from ogscm import config
-import json
 
 
 class container_info():
@@ -35,6 +36,7 @@ class container_info():
         cmake_args = args_iter[4].strip().split(' ')
         name_start = 'gcc'
 
+        branch_is_release = False
         if ogs_version != 'off':
             if os.path.isdir(ogs_version):
                 self.repo = 'local'
@@ -63,6 +65,8 @@ class container_info():
                     if self.branch == '':
                         self.branch = 'master'
                 else:
+                    if re.search(r'[\d.]+', self.branch):
+                        branch_is_release = True
                     url = (
                         f"https://api.github.com/repos/{self.repo}/commits?sha={self.branch}"
                     )
@@ -71,7 +75,10 @@ class container_info():
                     self.commit_hash = response_data[0]['sha']
                     # ogs_tag = ogs_version.replace('/', '.').replace('@', '.')
 
-            name_start = f'ogs-{self.commit_hash[:8]}'
+            if branch_is_release:
+                name_start = f'ogs-{self.branch}'
+            else:
+                name_start = f'ogs-{self.commit_hash[:8]}'
         else:
             if args.compiler == 'clang':
                 name_start = 'clang'

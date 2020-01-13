@@ -83,9 +83,6 @@ def main():  # pragma: no cover
                 print('--convert cannot be used with --format singularity! '
                       'Ignoring!')
 
-        commit_hash = '0'
-        ogs_tag = ''
-
         info = container_info(build, args)
         info.make_dirs()
 
@@ -382,7 +379,7 @@ def main():  # pragma: no cover
             # TODO: adapt this to else
             continue
 
-        build_cmd = (f"docker build --build-arg OGS_COMMIT_HASH={commit_hash} "
+        build_cmd = (f"docker build "
                      f"-t {info.tag} -f {definition_file_path} .")
         if info.buildkit:
             build_cmd = "(cd {0} && DOCKER_BUILDKIT=1 {1})".format(
@@ -398,7 +395,6 @@ def main():  # pragma: no cover
             subprocess.run(f"docker push {info.tag}", shell=True)
         image_file = f'{info.images_out_dir}/{info.img_file}-{image_id_short}.sif'
         if args.convert and not os.path.exists(image_file):
-            # (check docker image id)
             subprocess.run(
                 f"cd {cwd} && singularity build --force {image_file} docker-daemon:{info.tag}",
                 shell=True)
