@@ -1,6 +1,6 @@
 # pylint: disable=invalid-name, too-few-public-methods
 # pylint: disable=too-many-instance-attributes
-"""Package manager Conan building block"""
+"""ccache building block"""
 
 from __future__ import absolute_import
 from __future__ import unicode_literals
@@ -15,12 +15,12 @@ from hpccm.primitives.shell import shell
 
 
 class ccache(bb_base):
-    """Package manager Conan building block"""
+    """ccache building block"""
 
     def __init__(self, **kwargs):
         """Initialize building block"""
         super(ccache, self).__init__()
-        self.__cache_dir = kwargs.get('cache_dir', '/opt/cache')
+        self.__cache_dir = kwargs.get('cache_dir', '/opt/ccache')
         self.__cache_size = kwargs.get('cache_size', '5G')
 
         self.__instructions()

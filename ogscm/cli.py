@@ -307,6 +307,11 @@ def main():  # pragma: no cover
             ])
 
         if ogs_version != 'off':
+            mount_args = ''
+            if args.ccache:
+                Stage0 += ccache(cache_size='15G')
+                if info.buildkit:
+                    mount_args = f'{mount_args} --mount=type=cache,target=/opt/ccache,id=ccache'
             if args.cvode:
                 cmake_args.append('-DOGS_USE_CVODE=ON')
             if args.gui:
@@ -316,15 +321,15 @@ def main():  # pragma: no cover
                 Stage0 += pip(packages=['scif'], pip='pip3')  # SCI-F
                 scif_installed = True
             Stage0 += raw(docker=f"ARG OGS_COMMIT_HASH={info.commit_hash}")
-            if info.buildkit:
+
+            scif_file = f"{info.out_dir}/ogs.scif"
+            if info.ogsdir != '':
                 context_path_size = len(ogs_version)
                 os.chdir(ogs_version)
-                ogs_app = scif(
-                    _arguments='--mount=type=bind,target=/scif/apps/ogs/src,rw',
-                    name='ogs',
-                    file=f"{info.out_dir[context_path_size+1:]}/ogs.scif")
-            else:
-                ogs_app = scif(name='ogs', file=f"{info.out_dir}/ogs.scif")
+                mount_args = f'{mount_args} --mount=type=bind,target=/scif/apps/ogs/src,rw'
+                scif_file = f"{info.out_dir[context_path_size+1:]}/ogs.scif"
+
+            ogs_app = scif(_arguments=mount_args, name='ogs', file=scif_file)
             ogs_app += ogs(repo=info.repo,
                            branch=info.branch,
                            commit=info.commit_hash,
@@ -382,10 +387,13 @@ def main():  # pragma: no cover
             # TODO: adapt this to else
             continue
 
-        build_cmd = (f"docker build "
-                     f"-t {info.tag} -f {definition_file_path} .")
+        enable_buildkit = ''
         if info.buildkit:
-            build_cmd = "(cd {0} && DOCKER_BUILDKIT=1 {1})".format(
+            enable_buildkit = 'DOCKER_BUILDKIT=1'
+        build_cmd = (f"{enable_buildkit} docker build "
+                     f"-t {info.tag} -f {definition_file_path} .")
+        if info.ogsdir != '':
+            build_cmd = "(cd {0} && {1})".format(
                 ogs_version, build_cmd)
         print(f"Running: {build_cmd}")
         subprocess.run(build_cmd, shell=True)

@@ -20,7 +20,8 @@ from ogscm import config
 class container_info():
     def __init__(self, args_iter, args):
         """Initialize container info"""
-        self.buildkit = False
+        self.buildkit = True
+        self.ogsdir = ''
         self.outdir = ''
         self.definition_file = ''
         self.images_out_dir = ''
@@ -111,12 +112,13 @@ class container_info():
 
         if os.path.isdir(ogs_version):
             self.buildkit = True
+            self.ogsdir = ogs_version
 
         if args.file != '':
             self.out_dir = args.out
             self.definition_file = args.file
         else:
-            if self.buildkit:
+            if self.ogsdir != '':
                 self.out_dir = os.path.join(
                     ogs_version, f"{args.out}/{container_format}/{img_folder}")
             else:

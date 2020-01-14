@@ -102,6 +102,12 @@ class Cli_Args(argparse.ArgumentParser):
             action='store_true',
             help='Generate multi-stage Dockerfiles for small runtime '
             'images')
+        build_g.add_argument(
+            '--ccache',
+            dest='ccache',
+            action='store_true',
+            help='Enables ccache build caching.'
+        )
         switches_g = self.add_argument_group('Additional options')
         switches_g.add_argument('--base_image',
                                 type=str,
