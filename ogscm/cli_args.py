@@ -7,6 +7,8 @@ from __future__ import unicode_literals
 from __future__ import print_function
 
 import argparse
+import math
+import multiprocessing
 
 from ogscm.version import __version__
 
@@ -107,6 +109,13 @@ class Cli_Args(argparse.ArgumentParser):
             dest='ccache',
             action='store_true',
             help='Enables ccache build caching.'
+        )
+        build_g.add_argument(
+            '--parallel',
+            '-j',
+            type=str,
+            default=math.ceil(multiprocessing.cpu_count() / 2),
+            help='The number of cores to use for compilation.'
         )
         switches_g = self.add_argument_group('Additional options')
         switches_g.add_argument('--base_image',

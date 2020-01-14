@@ -20,8 +20,7 @@ from ogscm import config
 class container_info():
     def __init__(self, args_iter, args):
         """Initialize container info"""
-        self.buildkit = True
-        self.ogsdir = ''
+        self.ogsdir = False
         self.outdir = ''
         self.definition_file = ''
         self.images_out_dir = ''
@@ -111,14 +110,13 @@ class container_info():
         self.tag = f"{args.registry}/{docker_repo}:latest"
 
         if os.path.isdir(ogs_version):
-            self.buildkit = True
-            self.ogsdir = ogs_version
+            self.ogsdir = True
 
         if args.file != '':
             self.out_dir = args.out
             self.definition_file = args.file
         else:
-            if self.ogsdir != '':
+            if self.ogsdir:
                 self.out_dir = os.path.join(
                     ogs_version, f"{args.out}/{container_format}/{img_folder}")
             else:

@@ -9,8 +9,6 @@
 import argparse
 import itertools
 import json
-import math
-import multiprocessing
 import os
 import re
 import requests
@@ -94,8 +92,7 @@ def main():  # pragma: no cover
 
         # ------------------------------ recipe -------------------------------
         Stage0 = hpccm.Stage()
-        if info.buildkit:
-            Stage0 += raw(docker='# syntax=docker/dockerfile:experimental')
+        Stage0 += raw(docker='# syntax=docker/dockerfile:experimental')
 
         if args.runtime_only:
             Stage0.name = 'build'
@@ -310,8 +307,7 @@ def main():  # pragma: no cover
             mount_args = ''
             if args.ccache:
                 Stage0 += ccache(cache_size='15G')
-                if info.buildkit:
-                    mount_args = f'{mount_args} --mount=type=cache,target=/opt/ccache,id=ccache'
+                mount_args = f'{mount_args} --mount=type=cache,target=/opt/ccache,id=ccache'
             if args.cvode:
                 cmake_args.append('-DOGS_USE_CVODE=ON')
             if args.gui:
@@ -323,7 +319,7 @@ def main():  # pragma: no cover
             Stage0 += raw(docker=f"ARG OGS_COMMIT_HASH={info.commit_hash}")
 
             scif_file = f"{info.out_dir}/ogs.scif"
-            if info.ogsdir != '':
+            if info.ogsdir:
                 context_path_size = len(ogs_version)
                 os.chdir(ogs_version)
                 mount_args = f'{mount_args} --mount=type=bind,target=/scif/apps/ogs/src,rw'
@@ -337,7 +333,7 @@ def main():  # pragma: no cover
                            toolchain=toolchain,
                            prefix='/scif/apps/ogs',
                            cmake_args=cmake_args,
-                           parallel=math.ceil(multiprocessing.cpu_count() / 2),
+                           parallel=args.parallel,
                            skip_lfs=True,
                            remove_build=True,
                            remove_source=True)
@@ -387,14 +383,10 @@ def main():  # pragma: no cover
             # TODO: adapt this to else
             continue
 
-        enable_buildkit = ''
-        if info.buildkit:
-            enable_buildkit = 'DOCKER_BUILDKIT=1'
-        build_cmd = (f"{enable_buildkit} docker build "
+        build_cmd = (f"DOCKER_BUILDKIT=1 docker build "
                      f"-t {info.tag} -f {definition_file_path} .")
-        if info.ogsdir != '':
-            build_cmd = "(cd {0} && {1})".format(
-                ogs_version, build_cmd)
+        if info.ogsdir:
+            build_cmd = "(cd {0} && {1})".format(ogs_version, build_cmd)
         print(f"Running: {build_cmd}")
         subprocess.run(build_cmd, shell=True)
         inspect_out = subprocess.check_output(
