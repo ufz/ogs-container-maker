@@ -77,7 +77,7 @@ class ogs_base(bb_base):
             'mkdir -p /apps /scratch /lustre /work /projects /data')
 
     def runtime(self, _from='0'):
-        p = python(python2=False)
+        p = python(devel=True, python2=False)
         instructions = [
             comment(__doc__, reformat=False),
             p.runtime(),
