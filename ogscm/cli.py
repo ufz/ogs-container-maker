@@ -16,6 +16,8 @@ import subprocess
 import sys
 import yaml
 
+from packaging import version
+
 import hpccm
 from hpccm import linux_distro
 from hpccm.building_blocks import packages, mlnx_ofed, knem, ucx, openmpi, \
@@ -198,12 +200,17 @@ def main():  # pragma: no cover
                     ])
             else:
                 Stage0 += ucx(cuda=False)
-                Stage0 += pmix()
                 Stage0 += slurm_pmi2(version='17.02.11')
-                mpicc = openmpi(cuda=False,
+                pmix_version = True
+                if version.parse(ompi) >= version.parse('4'):
+                    Stage0 += pmix()
+                    pmix_version = '/usr/local/pmix'
+
+                mpicc = openmpi(version=ompi,
+                                cuda=False,
                                 infiniband=False,
                                 pmi='/usr/local/slurm-pmi2',
-                                pmix='/usr/local/pmix',
+                                pmix=pmix_version,
                                 ucx='/usr/local/ucx')
 
             toolchain = mpicc.toolchain
