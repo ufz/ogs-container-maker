@@ -170,6 +170,10 @@ class Cli_Args(argparse.ArgumentParser):
                                 dest='dev',
                                 action='store_true',
                                 help='Installs development tools (vim, gdb)')
+        switches_g.add_argument('--insitu',
+                                dest='insitu',
+                                action='store_true',
+                                help='Builds with insitu capabilities')
         maint_g = self.add_argument_group('Maintenance')
         maint_g.add_argument(
             '--clean',

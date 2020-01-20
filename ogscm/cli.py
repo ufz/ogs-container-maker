@@ -31,7 +31,8 @@ from ogscm.config import package_manager
 from ogscm.container_info import container_info
 from ogscm.version import __version__
 from ogscm.building_blocks import ccache, cppcheck, cvode, eigen, iwyy, \
-    jenkins_node, ogs_base, ogs, osu_benchmarks, petsc, pm_conan, vtk, pm_spack
+    jenkins_node, ogs_base, ogs, osu_benchmarks, petsc, pm_conan, vtk, \
+    pm_spack, paraview
 
 
 def main():  # pragma: no cover
@@ -121,6 +122,10 @@ def main():  # pragma: no cover
                                version=args.compiler_version)
             toolchain = compiler.toolchain
             Stage0 += compiler
+            # Upgrade stdc++ lib after installing new compiler
+            # https://stackoverflow.com/a/46613656/80480
+            if args.compiler == 'gcc' and args.compiler_version != None:
+                Stage0 += packages(apt=['libstdc++6'])
             if args.compiler == 'clang':
                 Stage0 += packages(
                     apt=[
@@ -284,13 +289,19 @@ def main():  # pragma: no cover
             Stage0 += boost(version='1.66.0')  # header only?
             Stage0 += environment(variables={'BOOST_ROOT': '/usr/local/boost'})
             Stage0 += eigen()
-            vtk_cmake_args = [
-                '-DVTK_Group_StandAlone=OFF', '-DVTK_Group_Rendering=OFF',
-                '-DModule_vtkIOXML=ON'
-            ]
-            Stage0 += vtk(cmake_args=vtk_cmake_args,
-                          toolchain=toolchain,
-                          ldconfig=True)
+            if args.insitu:
+                Stage0 += paraview(cmake_args=['-D PARAVIEW_USE_PYTHON=ON'],
+                                   edition='CATALYST',
+                                   ldconfig=True,
+                                   toolchain=toolchain)
+            else:
+                vtk_cmake_args = [
+                    '-DVTK_Group_StandAlone=OFF', '-DVTK_Group_Rendering=OFF',
+                    '-DModule_vtkIOXML=ON'
+                ]
+                Stage0 += vtk(cmake_args=vtk_cmake_args,
+                              toolchain=toolchain,
+                              ldconfig=True)
             if ompi != 'off':
                 Stage0 += petsc(version='3.11.3', ldconfig=True)
         if args.cvode:
@@ -319,6 +330,8 @@ def main():  # pragma: no cover
                 cmake_args.append('-DOGS_USE_CVODE=ON')
             if args.gui:
                 cmake_args.append('-DOGS_BUILD_GUI=ON')
+            if args.insitu:
+                cmake_args.append('-DOGS_INSITU=ON')
 
             if not scif_installed:
                 Stage0 += pip(packages=['scif'], pip='pip3')  # SCI-F
@@ -363,6 +376,8 @@ def main():  # pragma: no cover
                                src='/usr/local/bin/mpi_*',
                                dest='/usr/local/bin/')
             Stage1 += Stage0.runtime()
+            if args.compiler == 'gcc' and args.compiler_version != None:
+                Stage1 += packages(apt=['libstdc++6'])
             stages_string += "\n\n" + str(Stage1)
 
         # ---------------------------- recipe end -----------------------------
