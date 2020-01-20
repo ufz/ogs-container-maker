@@ -8,7 +8,7 @@ pipeline {
            description: 'Build OGS in container (Github user/repo@branch)')
     string(name: 'format', defaultValue: 'docker',
            description: 'Container format, e.g.: docker singularity')
-    string(name: 'openmpi_versions', defaultValue: '3.1.2',
+    string(name: 'openmpi_versions', defaultValue: 'off',
            description: 'OpenMPI versions, e.g.: off 2.1.2 2.1.5 3.0.1 3.1.2, ...')
     string(name: 'pm', defaultValue: 'system',
            description: 'Package manager to install third-party libs, e.g.: system conan')
@@ -18,7 +18,7 @@ pipeline {
     //       description: 'Upload docker image to registry?')
     booleanParam(name: 'convert', defaultValue: true,
            description: 'Convert docker image to Singularity?')
-    booleanParam(name: 'runtime', defaultValue: false,
+    booleanParam(name: 'runtime', defaultValue: true,
            description: 'Create a runtime only image (contains just the built binaries and runtime dependencies)')
     booleanParam(name: 'deploy', defaultValue: false,
            description: 'Deploy Singularity images')
