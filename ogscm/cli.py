@@ -321,6 +321,9 @@ def main():  # pragma: no cover
                 'neovim', 'gdb', 'silversearcher-ag', 'ssh-client', 'less'
             ])
 
+        if args.pip:
+            Stage0 += pip(packages=args.pip, pip='pip3')
+
         if ogs_version != 'off':
             mount_args = ''
             if args.ccache:

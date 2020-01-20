@@ -174,6 +174,12 @@ class Cli_Args(argparse.ArgumentParser):
                                 dest='insitu',
                                 action='store_true',
                                 help='Builds with insitu capabilities')
+        switches_g.add_argument('--pip',
+                               nargs='*',
+                               type=str,
+                               default=[''],
+                               metavar='package',
+                               help='Install additional Python packages')
         maint_g = self.add_argument_group('Maintenance')
         maint_g.add_argument(
             '--clean',
