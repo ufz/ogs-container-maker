@@ -65,10 +65,11 @@ usage: ogscm [-h] [--version] [--out OUT] [--file FILE] [--print]
               [--ompi [OMPI [OMPI ...]]] [--ogs [OGS [OGS ...]]]
               [--cmake_args [CMAKE_ARGS [CMAKE_ARGS ...]]] [--build]
               [--upload] [--registry REGISTRY] [--convert] [--runtime-only]
-              [--base_image BASE_IMAGE] [--compiler COMPILER]
-              [--compiler_version COMPILER_VERSION] [--gui] [--docs]
-              [--jenkins] [--cvode] [--cppcheck] [--iwyy] [--gcovr]
-              [--mpi_benchmarks] [--dev] [--clean] [--deploy [DEPLOY]]
+              [--ccache] [--parallel PARALLEL] [--base_image BASE_IMAGE]
+              [--compiler COMPILER] [--compiler_version COMPILER_VERSION]
+              [--gui] [--docs] [--jenkins] [--cvode] [--cppcheck] [--iwyy]
+              [--gcovr] [--mpi_benchmarks] [--dev] [--insitu]
+              [--pip [package [package ...]]] [--clean] [--deploy [DEPLOY]]
 
 optional arguments:
   -h, --help            show this help message and exit
@@ -108,6 +109,10 @@ Image build options:
                         False)
   --runtime-only, -R    Generate multi-stage Dockerfiles for small runtime
                         images (default: False)
+  --ccache              Enables ccache build caching. (default: False)
+  --parallel PARALLEL, -j PARALLEL
+                        The number of cores to use for compilation. (default:
+                        10)
 
 Additional options:
   --base_image BASE_IMAGE
@@ -127,6 +132,9 @@ Additional options:
   --mpi_benchmarks      Installs OSU MPI benchmarks as scif app and mpi_bw,
                         mpi_ring,mpi_hello (default: False)
   --dev                 Installs development tools (vim, gdb) (default: False)
+  --insitu              Builds with insitu capabilities (default: False)
+  --pip [package [package ...]]
+                        Install additional Python packages (default: [''])
 
 Maintenance:
   --clean               Cleans up generated files in default directories.
