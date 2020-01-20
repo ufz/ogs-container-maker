@@ -59,8 +59,6 @@ def main():  # pragma: no cover
         ompi = build[3]
         cmake_args = build[4].strip().split(' ')
 
-        scif_installed = False
-
         # args checking
         if len(c) > 1 and args.file != '':
             print(
@@ -136,6 +134,14 @@ def main():  # pragma: no cover
                         "llvm-toolset-{}-clang-tools-extra".format(
                             args.compiler_version)
                     ])
+
+        # Prepare runtime stage
+        Stage1 = hpccm.Stage()
+        Stage1.baseimage(image=args.base_image)
+
+        # Install scif in all stages
+        Stage0 += pip(packages=['scif'], pip='pip3')
+        Stage1 += pip(packages=['scif'], pip='pip3')
 
         if ompi != 'off':
             mpicc = object
@@ -234,9 +240,6 @@ def main():  # pragma: no cover
                 })
 
             if args.mpi_benchmarks:
-                Stage0 += pip(packages=['scif'], pip='pip3')
-                scif_installed = True
-
                 osu_app = scif(name='osu', file="_out/osu.scif")
                 osu_app += osu_benchmarks(toolchain=toolchain,
                                           prefix='/scif/apps/osu')
@@ -248,6 +251,9 @@ def main():  # pragma: no cover
                     'mpicc -o /usr/local/bin/mpi-ring /usr/local/mpi-examples/ring.c',
                     'mpicc -o /usr/local/bin/mpi-bw /usr/local/mpi-examples/bw.c',
                 ])
+                Stage1 += copy(_from='build',
+                               src='/usr/local/bin/mpi_*',
+                               dest='/usr/local/bin/')
 
         if ogs_version != 'off' or args.jenkins:
             Stage0 += ogs_base()
@@ -323,6 +329,7 @@ def main():  # pragma: no cover
 
         if args.pip:
             Stage0 += pip(packages=args.pip, pip='pip3')
+            Stage1 += pip(packages=args.pip, pip='pip3')
 
         if ogs_version != 'off':
             mount_args = ''
@@ -336,9 +343,6 @@ def main():  # pragma: no cover
             if args.insitu:
                 cmake_args.append('-DOGS_INSITU=ON')
 
-            if not scif_installed:
-                Stage0 += pip(packages=['scif'], pip='pip3')  # SCI-F
-                scif_installed = True
             Stage0 += raw(docker=f"ARG OGS_COMMIT_HASH={info.commit_hash}")
 
             scif_file = f"{info.out_dir}/ogs.scif"
@@ -369,15 +373,6 @@ def main():  # pragma: no cover
         stages_string = str(Stage0)
 
         if args.runtime_only:
-            Stage1 = hpccm.Stage()
-            Stage1.baseimage(image=args.base_image)
-            if scif_installed:
-                # Install scif in runtime too
-                Stage1 += pip(packages=['scif'], pip='pip3')
-            if openmpi and args.mpi_benchmarks:
-                Stage1 += copy(_from='build',
-                               src='/usr/local/bin/mpi_*',
-                               dest='/usr/local/bin/')
             Stage1 += Stage0.runtime()
             if args.compiler == 'gcc' and args.compiler_version != None:
                 Stage1 += packages(apt=['libstdc++6'])
