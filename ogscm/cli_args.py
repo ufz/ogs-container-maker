@@ -177,7 +177,7 @@ class Cli_Args(argparse.ArgumentParser):
         switches_g.add_argument('--pip',
                                nargs='*',
                                type=str,
-                               default=[''],
+                               default=[],
                                metavar='package',
                                help='Install additional Python packages')
         maint_g = self.add_argument_group('Maintenance')
