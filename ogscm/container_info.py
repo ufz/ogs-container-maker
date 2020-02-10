@@ -101,13 +101,13 @@ class container_info():
             self.img_file += f'-cmake-{cmake_args_hash_short}'
         if args.gui:
             self.img_file += '-gui'
-        if args.docs:
-            self.img_file += '-docs'
         if ogs_version != 'off' and not args.runtime_only:
             self.img_file += '-dev'
-        docker_repo = self.img_file
 
-        self.tag = f"{args.registry}/{docker_repo}:latest"
+        if args.tag != '':
+            self.tag = args.tag
+        else:
+            self.tag = f"{args.registry}/{self.img_file}:latest"
 
         if os.path.isdir(ogs_version):
             self.ogsdir = True

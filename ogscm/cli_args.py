@@ -92,6 +92,11 @@ class Cli_Args(argparse.ArgumentParser):
             default='registry.opengeosys.org/ogs/ogs',
             help='The docker registry the image is tagged and '
             'uploaded to.')
+        build_g.add_argument(
+            '--tag',
+            type=str,
+            default='',
+            help='The full docker image tag. Overwrites --registry.')
         build_g.add_argument('--convert',
                              '-C',
                              dest='convert',
