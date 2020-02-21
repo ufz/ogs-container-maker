@@ -7,6 +7,7 @@
 # https://easybuild.readthedocs.io/en/latest/Common-toolchains.html#common-toolchains-overview
 # easybuild toolchain: 2017b (2.1.1), 2018a (2.1.2), 2018b (3.1.1)
 import argparse
+import hashlib
 import itertools
 import json
 import os
@@ -34,6 +35,12 @@ from ogscm.building_blocks import ccache, cppcheck, cvode, eigen, iwyy, \
     jenkins_node, ogs_base, ogs, osu_benchmarks, petsc, pm_conan, vtk, \
     pm_spack, paraview
 
+def md5(fname):
+    hash_md5 = hashlib.md5()
+    with open(fname, "rb") as f:
+        for chunk in iter(lambda: f.read(4096), b""):
+            hash_md5.update(chunk)
+    return hash_md5.hexdigest()
 
 def main():  # pragma: no cover
     cli = Cli_Args()
@@ -302,9 +309,15 @@ def main():  # pragma: no cover
                                    toolchain=toolchain)
             else:
                 vtk_cmake_args = [
-                    '-DVTK_Group_StandAlone=OFF', '-DVTK_Group_Rendering=OFF',
-                    '-DModule_vtkIOXML=ON'
+                    #'-DVTK_Group_StandAlone=OFF', '-DVTK_Group_Rendering=OFF',
+                    #'-DModule_vtkIOXML=ON'
+                    '-DVTK_GROUP_ENABLE_Rendering=DONT_WANT',
+                    '-DVTK_GROUP_ENABLE_StandAlone=DONT_WANT',
+                    '-DVTK_MODULE_ENABLE_VTK_IOXML=YES'
                 ]
+                if args.python:
+                    vtk_cmake_args.extend(['-DVTK_WRAP_PYTHON=ON',
+                                           '-DVTK_PYTHON_VERSION=3'])
                 Stage0 += vtk(cmake_args=vtk_cmake_args,
                               toolchain=toolchain,
                               ldconfig=True)
@@ -331,6 +344,11 @@ def main():  # pragma: no cover
             Stage0 += pip(packages=args.pip, pip='pip3')
             Stage1 += pip(packages=args.pip, pip='pip3')
 
+        # e.g. when installing vtk via pip you need
+        # libsm6 libxrender1 libxext6 libgl1-mesa-glx
+        if args.packages:
+            Stage0 += packages(ospackages=args.packages)
+
         if ogs_version != 'off':
             mount_args = ''
             if args.ccache:
@@ -342,6 +360,8 @@ def main():  # pragma: no cover
                 cmake_args.append('-DOGS_BUILD_GUI=ON')
             if args.insitu:
                 cmake_args.append('-DOGS_INSITU=ON')
+            if args.python:
+                cmake_args.append('-DOGS_USE_PYTHON=ON')
 
             Stage0 += raw(docker=f"ARG OGS_COMMIT_HASH={info.commit_hash}")
 
@@ -362,8 +382,10 @@ def main():  # pragma: no cover
                            cmake_args=cmake_args,
                            parallel=args.parallel,
                            skip_lfs=True,
-                           remove_build=True,
-                           remove_source=True)
+                           remove_build=False,
+                           remove_source=False)
+            str(ogs_app)
+            Stage0 += raw(docker=f"ARG SCIF_OGS_HASH={md5(scif_file)}")
             Stage0 += ogs_app
 
         if args.jenkins:

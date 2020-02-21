@@ -66,20 +66,25 @@ class vtk(bb_base, hpccm.templates.CMakeBuild, hpccm.templates.ldconfig,
         self += comment('VTK {}'.format(self.__version))
         self += packages(ospackages=self.__ospackages)
 
-        self.__cmake_args.append('-D CMAKE_BUILD_TYPE=Release')
+        self.__cmake_args.extend(['-D CMAKE_BUILD_TYPE=Release',
+                                  '-D VTK_BUILD_TESTING=OFF'])
         if not self.__shared:
             self.__cmake_args.append('-D BUILD_SHARED_LIBS=OFF')
         if self.__toolchain.CC == 'mpicc':
             self.__cmake_args.extend([
-                '-D Module_vtkIOParallelXML=ON', '-D Module_vtkParallelMPI=ON'
+                # '-D Module_vtkIOParallelXML=ON', '-D Module_vtkParallelMPI=ON'
+                '-D VTK_MODULE_ENABLE_VTK_IOParallelXML=YES', '-D VTK_MODULE_ENABLE_VTK_ParallelMPI=YES'
             ])
 
-        self += generic_cmake(cmake_opts=self.__cmake_args,
+        self += generic_cmake(branch = 'master',
+                              cmake_opts=self.__cmake_args,
                               directory='VTK-{}'.format(self.__version),
                               prefix=self.__prefix,
                               toolchain=self.__toolchain,
-                              url='{0}/VTK-{1}.tar.gz'.format(
-                                  self.__baseurl, self.__version))
+                              recursive=True,
+                              repository='https://gitlab.kitware.com/vtk/vtk.git')
+                            #   url='{0}/VTK-{1}.tar.gz'.format(
+                                #   self.__baseurl, self.__version))
         self.__environment_variables['VTK_ROOT'] = self.__prefix
         # Set library path
         if self.__shared:
