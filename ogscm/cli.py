@@ -210,7 +210,7 @@ def main():  # pragma: no cover
                         '--enable-orterun-prefix-by-default',
                     ])
             else:
-                Stage0 += ucx(cuda=False)
+                Stage0 += ucx(version='1.6.1' ,cuda=False)
                 Stage0 += slurm_pmi2(version='17.02.11')
                 pmix_version = True
                 if version.parse(ompi) >= version.parse('4'):
