@@ -263,7 +263,7 @@ def main():  # pragma: no cover
                 'libxt-dev'
             ])
         if ogscm.config.g_package_manager == package_manager.CONAN:
-            Stage0 += cmake(eula=True, version='3.12.4')
+            Stage0 += cmake(eula=True, version='3.14.7')
             conan_user_home = '/opt/conan'
             if args.dev:
                 conan_user_home = ''

@@ -6,10 +6,10 @@ subprocess.run(f"python ogscm/cli.py --pm system --cvode "
                shell=True)
 
 subprocess.run(f"python ogscm/cli.py --file Dockerfile.gcc.full --jenkins "
-               "--cppcheck --docs --gcovr",
+               "--cppcheck --docs --gcovr --compiler_version 8",
                shell=True)
 subprocess.run(f"python ogscm/cli.py --file Dockerfile.gcc.gui --jenkins "
-               "--cppcheck --gui --gcovr",
+               "--cppcheck --gui --gcovr --compiler_version 8",
                shell=True)
 subprocess.run(f"python ogscm/cli.py --file Dockerfile.clang.full "
                "--base_image ubuntu:18.04 --compiler clang --jenkins "
