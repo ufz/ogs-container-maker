@@ -7,15 +7,16 @@ cli.add_argument("--out", type=str, default="_out")
 args = cli.parse_args()
 
 subprocess.run(f"python ogscm/cli.py --out {args.out} --file Dockerfile.gcc.full "
-               "--jenkins --cppcheck --docs --gcovr --compiler_version 8",
+               "--jenkins --cppcheck --docs --gcovr",
                shell=True)
 subprocess.run(f"python ogscm/cli.py --out {args.out} --file Dockerfile.gcc.gui "
-               "--jenkins --cppcheck --gui --gcovr --compiler_version 8",
+               "--jenkins --cppcheck --gui --gcovr",
                shell=True)
 subprocess.run(f"python ogscm/cli.py --out {args.out} --file Dockerfile.clang.full "
-               "--base_image ubuntu:18.04 --compiler clang --jenkins --iwyy",
+               "--base_image ubuntu:18.04 --compiler clang --jenkins --iwyy "
+               "--compiler_version 9",
                shell=True)
 subprocess.run(f"python ogscm/cli.py --out {args.out} --file Dockerfile.clang.gui "
                "--base_image ubuntu:18.04 --compiler clang --jenkins --iwyy "
-               "--gui",
+               "--compiler_version 9 --gui",
                shell=True)
