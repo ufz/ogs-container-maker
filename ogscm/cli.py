@@ -81,6 +81,9 @@ def main():  # pragma: no cover
             if args.convert:
                 print('--convert cannot be used with --format singularity! '
                       'Ignoring!')
+        if args.gui and args.pm == "system":
+            print('--gui can only be used with --pm conan!')
+            quit(1)
 
         info = container_info(build, args)
         if args.cleanup:
