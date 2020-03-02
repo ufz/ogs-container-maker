@@ -81,9 +81,6 @@ def main():  # pragma: no cover
             if args.convert:
                 print('--convert cannot be used with --format singularity! '
                       'Ignoring!')
-        if args.gui and args.pm == "system":
-            print('--gui can only be used with --pm conan!')
-            quit(1)
 
         info = container_info(build, args)
         if args.cleanup:
@@ -298,16 +295,33 @@ def main():  # pragma: no cover
             Stage0 += boost(version='1.66.0')  # header only?
             Stage0 += environment(variables={'BOOST_ROOT': '/usr/local/boost'})
             Stage0 += eigen()
+            vtk_cmake_args = [
+                '-DModule_vtkIOXML=ON',
+                '-DVTK_Group_Rendering=OFF',
+                '-DVTK_Group_StandAlone=OFF'
+            ]
+            if args.gui:
+                Stage0 += packages(ospackages=[
+                    'libgeotiff-dev',
+                    'libqt5x11extras5-dev',
+                    'libqt5xmlpatterns5-dev',
+                    'libshp-dev',
+                    'qt5-default'
+                ])
+                vtk_cmake_args = [
+                    '-DVTK_BUILD_QT_DESIGNER_PLUGIN=OFF',
+                    '-DVTK_Group_Qt=ON',
+                    '-DVTK_QT_VERSION=5'
+                ]
             if args.insitu:
+                if args.gui:
+                    print('--gui can not be used with --insitu!')
+                    exit(1)
                 Stage0 += paraview(cmake_args=['-D PARAVIEW_USE_PYTHON=ON'],
                                    edition='CATALYST',
                                    ldconfig=True,
                                    toolchain=toolchain)
             else:
-                vtk_cmake_args = [
-                    '-DVTK_Group_StandAlone=OFF', '-DVTK_Group_Rendering=OFF',
-                    '-DModule_vtkIOXML=ON'
-                ]
                 Stage0 += vtk(cmake_args=vtk_cmake_args,
                               toolchain=toolchain,
                               ldconfig=True)
