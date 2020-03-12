@@ -65,7 +65,7 @@ class Cli_Args(argparse.ArgumentParser):
             default=['ufz/ogs@master'],
             help='OGS GitHub repo in the form \'user/repo@branch\' '
             'OR \'user/repo@@commit\' to checkout a specific commit '
-            'OR a path to a local subdirectory to the git cloned OGS sources'
+            'OR a path to a local subdirectory to the git cloned OGS sources '
             'OR \'off\' to disable OGS building')
         options_g.add_argument(
             '--cmake_args',

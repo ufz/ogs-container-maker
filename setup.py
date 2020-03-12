@@ -32,7 +32,7 @@ setup(
       "Operating System :: OS Independent",
     ],
     # Make build.py available from the command line as `ogscm`.
-    install_requires=['enum34', 'six', 'requests', 'hpccm'],
+    install_requires=['enum34', 'six', 'requests', 'hpccm', 'pyyaml'],
     # scripts=['ogscm']
     entry_points={
         'console_scripts': [
