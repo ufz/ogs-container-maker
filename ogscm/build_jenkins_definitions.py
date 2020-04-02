@@ -16,7 +16,7 @@ subprocess.run(f"python ogscm/cli.py --out {args.out} --file Dockerfile.clang.fu
                "--base_image ubuntu:18.04 --compiler clang --jenkins --iwyy "
                "--compiler_version 9",
                shell=True)
-subprocess.run(f"python ogscm/cli.py --out {args.out} --file Dockerfile.clang.gui "
-               "--base_image ubuntu:18.04 --compiler clang --jenkins --iwyy "
-               "--compiler_version 9 --gui",
-               shell=True)
+# subprocess.run(f"python ogscm/cli.py --out {args.out} --file Dockerfile.clang.gui "
+#                "--base_image ubuntu:18.04 --compiler clang --jenkins --iwyy "
+#                "--compiler_version 9 --gui",
+#                shell=True)

@@ -170,3 +170,11 @@ python ThirdParty/container-maker/ogscm/cli.py -B -C -R --ogs . --pm system --cv
 - Rename the file `config/deploy_hosts_example.yml` to `config/deploy_hosts.yml`
 - `host` has to be a SSH host to which you have passwordless access
 - Deploy to the host with `... -D myhost`
+
+
+## PyPi Publication
+
+- Check if requirements.txt has changed, change `setup.py` accordingly
+- Bump version in `version.py`
+- `python setup.py sdist`
+- `twine upload dist/*`

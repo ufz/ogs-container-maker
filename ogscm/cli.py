@@ -113,6 +113,7 @@ def main():  # pragma: no cover
                     args.compiler_version = None  # Use default
             if args.compiler == 'clang':
                 compiler = llvm(extra_repository=True,
+                                extra_tools=True,
                                 version=args.compiler_version)
             else:
                 compiler = gnu(fortran=False,
@@ -122,18 +123,8 @@ def main():  # pragma: no cover
             Stage0 += compiler
             # Upgrade stdc++ lib after installing new compiler
             # https://stackoverflow.com/a/46613656/80480
-            if args.compiler == 'gcc' and args.compiler_version != None:
+            if args.compiler == 'gcc' and args.compiler_version is not None:
                 Stage0 += packages(apt=['libstdc++6'])
-            if args.compiler == 'clang':
-                Stage0 += packages(
-                    apt=[
-                        "clang-tidy-{}".format(args.compiler_version),
-                        "clang-format-{}".format(args.compiler_version)
-                    ],
-                    yum=[
-                        "llvm-toolset-{}-clang-tools-extra".format(
-                            args.compiler_version)
-                    ])
 
         # Prepare runtime stage
         Stage1 = hpccm.Stage()
