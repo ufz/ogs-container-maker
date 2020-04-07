@@ -279,7 +279,7 @@ def main():  # pragma: no cover
                 '/opt/spack/bin/spack install --only dependencies vtk@8.1.2 +osmesa'
             ])
         elif ogscm.config.g_package_manager == package_manager.SYSTEM:
-            Stage0 += cmake(eula=True, version='3.12.4')
+            Stage0 += cmake(eula=True, version='3.14.7')
             # Use ldconfig to set library search path (instead of
             # LD_LIBRARY_PATH) as host var overwrites container var. See
             # https://github.com/sylabs/singularity/pull/2669
