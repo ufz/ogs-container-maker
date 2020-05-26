@@ -254,7 +254,7 @@ def main():  # pragma: no cover
                 'libxt-dev'
             ])
         if ogscm.config.g_package_manager == package_manager.CONAN:
-            Stage0 += cmake(eula=True, version='3.14.7')
+            Stage0 += cmake(eula=True, version='3.16.6')
             conan_user_home = '/opt/conan'
             if args.dev:
                 conan_user_home = ''
@@ -279,12 +279,13 @@ def main():  # pragma: no cover
                 '/opt/spack/bin/spack install --only dependencies vtk@8.1.2 +osmesa'
             ])
         elif ogscm.config.g_package_manager == package_manager.SYSTEM:
-            Stage0 += cmake(eula=True, version='3.14.7')
+            Stage0 += cmake(eula=True, version='3.16.6')
             # Use ldconfig to set library search path (instead of
             # LD_LIBRARY_PATH) as host var overwrites container var. See
             # https://github.com/sylabs/singularity/pull/2669
-            Stage0 += boost(version='1.66.0')  # header only?
-            Stage0 += environment(variables={'BOOST_ROOT': '/usr/local/boost'})
+            # Stage0 += boost(version='1.66.0')  # header only?
+            Stage0 += packages(ospackages=['libboost-dev'])
+            # Stage0 += environment(variables={'BOOST_ROOT': '/usr/local/boost'})
             Stage0 += eigen()
             vtk_cmake_args = [
                 '-DModule_vtkIOXML=ON',
@@ -338,6 +339,9 @@ def main():  # pragma: no cover
         if args.pip:
             Stage0 += pip(packages=args.pip, pip='pip3')
             Stage1 += pip(packages=args.pip, pip='pip3')
+
+        if args.packages:
+            Stage0 += packages(ospackages=args.packages)
 
         if ogs_version != 'off':
             mount_args = ''

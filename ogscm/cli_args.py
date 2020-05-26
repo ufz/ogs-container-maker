@@ -189,6 +189,12 @@ class Cli_Args(argparse.ArgumentParser):
                                default=[],
                                metavar='package',
                                help='Install additional Python packages')
+        switches_g.add_argument('--packages',
+                               nargs='*',
+                               type=str,
+                               default=[],
+                               metavar='packages',
+                               help='Install additional OS packages')
         maint_g = self.add_argument_group('Maintenance')
         maint_g.add_argument(
             '--clean',
