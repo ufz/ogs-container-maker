@@ -38,7 +38,7 @@ class cppcheck(bb_base, hpccm.templates.CMakeBuild, hpccm.templates.rm,
         self.__ospackages = kwargs.get('ospackages', [])
         self.__parallel = kwargs.get('parallel', '$(nproc)')
         self.__prefix = kwargs.get('prefix', '/usr/local/cppcheck')
-        self.__version = kwargs.get('version', '1.87')
+        self.__version = kwargs.get('version', '809a769c690d8ab6fef293e41a29c8490512866e')
 
         self.__instructions()
 

@@ -7,7 +7,7 @@ cli.add_argument("--out", type=str, default="_out")
 args = cli.parse_args()
 
 subprocess.run(f"python ogscm/cli.py --out {args.out} --file Dockerfile.gcc.full "
-               "--jenkins --cppcheck --docs --gcovr",
+               "--jenkins --docs --gcovr",
                shell=True)
 subprocess.run(f"python ogscm/cli.py --out {args.out} --file Dockerfile.gcc.gui "
                "--jenkins --pm conan --cvode --cppcheck --docs --gcovr --gui",
