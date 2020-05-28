@@ -39,7 +39,7 @@ def main():  # pragma: no cover
     cli = Cli_Args()
     args = cli.parse_args()
 
-    if args.jenkins:
+    if args.jenkins or args.gitlab:
         args.ogs = ['off']
     if args.deploy != '':
         args.build = True
