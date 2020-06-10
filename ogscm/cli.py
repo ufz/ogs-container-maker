@@ -252,8 +252,7 @@ def main():  # pragma: no cover
                                src='/usr/local/bin/mpi_*',
                                dest='/usr/local/bin/')
 
-        if ogs_version != 'off' or args.jenkins or args.gitlab:
-            Stage0 += ogs_base()
+        Stage0 += ogs_base()
         if args.gui:
             Stage0 += packages(ospackages=[
                 'mesa-common-dev', 'libgl1-mesa-dev', 'libglu1-mesa-dev',

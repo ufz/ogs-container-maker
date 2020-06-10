@@ -21,6 +21,8 @@ dev images:
     - python ogscm/cli.py -B -C --sif_file ubuntu-dev.sif --pm system --ogs off
     - python ogscm/cli.py -B -C --sif_file centos-dev.sif --base_image centos:8 --pm system --ogs off
   artifacts:
+    # example URL:
+    # https://gitlab.opengeosys.org/ogs/container-maker/-/jobs/artifacts/master/raw/_out/images/ubuntu-dev.sif?job=dev+images
     paths:
       - _out/images/*.sif
 
