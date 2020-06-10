@@ -1,0 +1,35 @@
+image: python:3
+variables:
+  PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
+cache:
+  paths:
+    - .cache/pip
+    - venv/
+variables:
+  PYTHONPATH: "${PYTHONPATH}:."
+
+before_script:
+  - python -V
+  - pip install virtualenv
+  - virtualenv venv
+  - source venv/bin/activate
+  - pip install -r requirements.txt
+
+dev images:
+  tags: ['docker-shell']
+  script:
+    - python ogscm/cli.py -B -C --sif_file ubuntu-dev.sif --pm system --ogs off
+    - python ogscm/cli.py -B -C --sif_file centos-dev.sif --base_image centos:8 --pm system --ogs off
+  artifacts:
+    paths:
+      - _out/images/*.sif
+
+publish:
+  tags: ['docker-shell']
+  stage: deploy
+  rules:
+    - changes:
+        - version.py
+  script:
+    - python setup.py sdist
+    - twine upload dist/*
