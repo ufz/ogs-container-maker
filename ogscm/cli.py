@@ -254,10 +254,16 @@ def main():  # pragma: no cover
 
         Stage0 += ogs_base()
         if args.gui:
-            Stage0 += packages(ospackages=[
-                'mesa-common-dev', 'libgl1-mesa-dev', 'libglu1-mesa-dev',
-                'libxt-dev'
-            ])
+            Stage0 += packages(
+                apt=[
+                    'mesa-common-dev', 'libgl1-mesa-dev', 'libglu1-mesa-dev',
+                    'libxt-dev'
+                ],
+                yum=[
+                    'mesa-libOSMesa-devel', 'mesa-libGL-devel',
+                    'mesa-libGLU-devel', 'libXt-devel'
+                ]
+            )
         if ogscm.config.g_package_manager == package_manager.CONAN:
             Stage0 += cmake(eula=True, version='3.16.6')
             conan_user_home = '/opt/conan'
@@ -308,9 +314,9 @@ def main():  # pragma: no cover
                     yum=[
                         'libgeotiff-devel',
                         'shapelib-devel',
-                        'qt5-qtbase',
-                        'qt5-qtxmlpatterns',
-                        'qt5-qtx11extras'
+                        'qt5-qtbase-devel',
+                        'qt5-qtxmlpatterns-devel',
+                        'qt5-qtx11extras-devel'
                     ])
                 vtk_cmake_args = [
                     '-DVTK_BUILD_QT_DESIGNER_PLUGIN=OFF',
