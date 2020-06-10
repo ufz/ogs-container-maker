@@ -15,6 +15,7 @@ from hpccm.building_blocks.python import python
 from hpccm.common import linux_distro
 from hpccm.primitives.comment import comment
 from hpccm.primitives.shell import shell
+from hpccm.primitives.environment import environment
 
 
 class ogs_base(bb_base):
@@ -42,6 +43,7 @@ class ogs_base(bb_base):
                          apt_ppas=['ppa:git-core/ppa'],
                          epel=True, powertools=True)
         self += shell(commands=self.__commands)
+        self += environment(variables={'CMAKE_GENERATOR': 'Ninja'})
 
     def __setup(self):
         self.__ospackages.extend(['git', 'git-lfs', 'ninja-build'])
