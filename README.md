@@ -158,5 +158,5 @@ python ThirdParty/container-maker/ogscm/cli.py -B -C -R --ogs . --pm system --cv
 
 - Check if requirements.txt has changed, change `setup.py` accordingly
 - Bump version in `version.py`
-- `python setup.py sdist`
-- `twine upload dist/*`
+- Create tag
+- Push to GitLab (`git push --tags`)
