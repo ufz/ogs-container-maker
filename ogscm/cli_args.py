@@ -31,6 +31,10 @@ class Cli_Args(argparse.ArgumentParser):
                           type=str,
                           default='',
                           help='Overwrite output recipe file name')
+        self.add_argument('--sif_file',
+                          type=str,
+                          default='',
+                          help='Overwrite output singularity image file name')
         self.add_argument('--print',
                           '-P',
                           dest='print',

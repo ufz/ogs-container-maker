@@ -65,6 +65,12 @@ def main():  # pragma: no cover
                 '--file can only be used when generating a single image definition'
             )
             quit(1)
+        if (len(c) > 1 and args.sif_file != '') or (args.sif_file != '' and args.convert == False):
+            print(
+                '--sif_file can only be used when generating a single image '
+                'definition and --convert is given'
+            )
+            quit(1)
         if ogs_version == 'off' and len(
                 cmake_args) > 0 and cmake_args[0] != '':
             cmake_args = []
@@ -350,6 +356,7 @@ def main():  # pragma: no cover
         if args.packages:
             Stage0 += packages(ospackages=args.packages)
 
+        definition_file_path = os.path.join(info.out_dir, info.definition_file)
         if ogs_version != 'off':
             mount_args = ''
             if args.ccache:
@@ -365,7 +372,6 @@ def main():  # pragma: no cover
             Stage0 += raw(docker=f"ARG OGS_COMMIT_HASH={info.commit_hash}")
 
             scif_file = f"{info.out_dir}/ogs.scif"
-            definition_file_path = os.path.join(info.out_dir, info.definition_file)
             if info.ogsdir:
                 context_path_size = len(ogs_version)
                 print(f"chdir to {ogs_version}")
@@ -434,7 +440,10 @@ def main():  # pragma: no cover
         image_id_short = image_id[0:12]
         if args.upload:
             subprocess.run(f"docker push {info.tag}", shell=True)
-        image_file = f'{info.images_out_dir}/{info.img_file}-{image_id_short}.sif'
+        if args.sif_file:
+            image_file = f'{info.images_out_dir}/{args.sif_file}'
+        else:
+            image_file = f'{info.images_out_dir}/{info.img_file}-{image_id_short}.sif'
         if args.convert and not os.path.exists(image_file):
             subprocess.run(
                 f"cd {cwd} && singularity build --force {image_file} docker-daemon:{info.tag}",
