@@ -284,7 +284,7 @@ def main():  # pragma: no cover
             # LD_LIBRARY_PATH) as host var overwrites container var. See
             # https://github.com/sylabs/singularity/pull/2669
             # Stage0 += boost(version='1.66.0')  # header only?
-            Stage0 += packages(ospackages=['libboost-dev'])
+            Stage0 += packages(apt=['libboost-dev'], yum=['boost-devel'], epel=True)
             # Stage0 += environment(variables={'BOOST_ROOT': '/usr/local/boost'})
             Stage0 += eigen()
             vtk_cmake_args = [
@@ -293,13 +293,20 @@ def main():  # pragma: no cover
                 '-DVTK_Group_StandAlone=OFF'
             ]
             if args.gui:
-                Stage0 += packages(ospackages=[
-                    'libgeotiff-dev',
-                    'libqt5x11extras5-dev',
-                    'libqt5xmlpatterns5-dev',
-                    'libshp-dev',
-                    'qt5-default'
-                ])
+                Stage0 += packages(apt=[
+                        'libgeotiff-dev',
+                        'libshp-dev',
+                        'libqt5x11extras5-dev',
+                        'libqt5xmlpatterns5-dev',
+                        'qt5-default'
+                    ],
+                    yum=[
+                        'libgeotiff-devel',
+                        'shapelib-devel',
+                        'qt5-qtbase',
+                        'qt5-qtxmlpatterns',
+                        'qt5-qtx11extras'
+                    ])
                 vtk_cmake_args = [
                     '-DVTK_BUILD_QT_DESIGNER_PLUGIN=OFF',
                     '-DVTK_Group_Qt=ON',
@@ -358,11 +365,14 @@ def main():  # pragma: no cover
             Stage0 += raw(docker=f"ARG OGS_COMMIT_HASH={info.commit_hash}")
 
             scif_file = f"{info.out_dir}/ogs.scif"
+            definition_file_path = os.path.join(info.out_dir, info.definition_file)
             if info.ogsdir:
                 context_path_size = len(ogs_version)
+                print(f"chdir to {ogs_version}")
                 os.chdir(ogs_version)
                 mount_args = f'{mount_args} --mount=type=bind,target=/scif/apps/ogs/src,rw'
                 scif_file = f"{info.out_dir[context_path_size+1:]}/ogs.scif"
+                definition_file_path = f"{info.out_dir[context_path_size+1:]}/{info.definition_file}"
 
             ogs_app = scif(_arguments=mount_args, name='ogs', file=scif_file)
             ogs_app += ogs(repo=info.repo,
@@ -391,14 +401,12 @@ def main():  # pragma: no cover
             stages_string += "\n\n" + str(Stage1)
 
         # ---------------------------- recipe end -----------------------------
-
-        definition_file_path = os.path.join(info.out_dir, info.definition_file)
         with open(definition_file_path, 'w') as f:
             print(stages_string, file=f)
         if args.print:
             print(stages_string)
         else:
-            print(f'Created definition {definition_file_path}')
+            print(f'Created definition {os.path.abspath(definition_file_path)}')
 
         # Create image
         if not args.build:
@@ -417,8 +425,6 @@ def main():  # pragma: no cover
 
         build_cmd = (f"DOCKER_BUILDKIT=1 docker build "
                      f"-t {info.tag} -f {definition_file_path} .")
-        if info.ogsdir:
-            build_cmd = "(cd {0} && {1})".format(ogs_version, build_cmd)
         print(f"Running: {build_cmd}")
         subprocess.run(build_cmd, shell=True)
         inspect_out = subprocess.check_output(

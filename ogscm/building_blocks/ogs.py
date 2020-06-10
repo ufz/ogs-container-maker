@@ -112,7 +112,7 @@ class ogs(bb_base, hpccm.templates.CMakeBuild, hpccm.templates.rm):
             self.__cmake_args.append("-DOGS_USE_PETSC=ON")
             if conan:
                 self.__cmake_args.append("-DOGS_CONAN_USE_SYSTEM_OPENMPI=ON")
-        if conan:
+        if not conan:
             self.__cmake_args.append('-DOGS_USE_CONAN=OFF')
 
         # Configure and build

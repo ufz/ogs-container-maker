@@ -59,17 +59,12 @@ Check help for more options:
 
 ```
 $ ogscm --help
-usage: ogscm [-h] [--version] [--out OUT] [--file FILE] [--print]
-              [--format [{docker,singularity} [{docker,singularity} ...]]]
-              [--pm [{system,conan,spack,off} [{system,conan,spack,off} ...]]]
-              [--ompi [OMPI [OMPI ...]]] [--ogs [OGS [OGS ...]]]
-              [--cmake_args [CMAKE_ARGS [CMAKE_ARGS ...]]] [--build]
-              [--upload] [--registry REGISTRY] [--convert] [--runtime-only]
-              [--ccache] [--parallel PARALLEL] [--base_image BASE_IMAGE]
-              [--compiler COMPILER] [--compiler_version COMPILER_VERSION]
-              [--gui] [--docs] [--jenkins] [--cvode] [--cppcheck] [--iwyy]
-              [--gcovr] [--mpi_benchmarks] [--dev] [--insitu]
-              [--pip [package [package ...]]] [--clean] [--deploy [DEPLOY]]
+usage: ogscm [-h] [--version] [--out OUT] [--file FILE] [--print] [--format [{docker,singularity} [{docker,singularity} ...]]]
+              [--pm [{system,conan,spack,off} [{system,conan,spack,off} ...]]] [--ompi [OMPI [OMPI ...]]] [--ogs [OGS [OGS ...]]]
+              [--cmake_args [CMAKE_ARGS [CMAKE_ARGS ...]]] [--build] [--upload] [--registry REGISTRY] [--tag TAG] [--convert] [--runtime-only] [--ccache]
+              [--parallel PARALLEL] [--base_image BASE_IMAGE] [--compiler COMPILER] [--compiler_version COMPILER_VERSION] [--gui] [--docs] [--jenkins]
+              [--gitlab] [--cvode] [--cppcheck] [--iwyy] [--gcovr] [--mpi_benchmarks] [--dev] [--insitu] [--pip [package [package ...]]]
+              [--packages [packages [packages ...]]] [--clean] [--deploy [DEPLOY]]
 
 optional arguments:
   -h, --help            show this help message and exit
@@ -83,69 +78,56 @@ Combinatorial options:
 
   --format [{docker,singularity} [{docker,singularity} ...]]
   --pm [{system,conan,spack,off} [{system,conan,spack,off} ...]]
-                        Package manager to install third-party dependencies
-                        (default: ['conan'])
+                        Package manager to install third-party dependencies (default: ['conan'])
   --ompi [OMPI [OMPI ...]]
-                        OpenMPI version, e.g. 2.1.1, 2.1.5, 3.0.1, 3.1.2
-                        (default: ['off'])
+                        OpenMPI version, e.g. 2.1.1, 2.1.5, 3.0.1, 3.1.2 (default: ['off'])
   --ogs [OGS [OGS ...]]
-                        OGS GitHub repo in the form 'user/repo@branch' OR
-                        'user/repo@@commit' to checkout a specific commit OR a
-                        path to a local subdirectory to the git cloned OGS
-                        sourcesOR 'off' to disable OGS building (default:
-                        ['ufz/ogs@master'])
+                        OGS GitHub repo in the form 'user/repo@branch' OR 'user/repo@@commit' to checkout a specific commit OR a path to a local subdirectory
+                        to the git cloned OGS sources OR 'off' to disable OGS building (default: ['ufz/ogs@master'])
   --cmake_args [CMAKE_ARGS [CMAKE_ARGS ...]]
-                        CMake argument sets have to be quoted and **must**
-                        start with a space. e.g. --cmake_args ' -DFIRST=TRUE
-                        -DFOO=BAR' ' -DSECOND=TRUE' (default: [''])
+                        CMake argument sets have to be quoted and **must** start with a space. e.g. --cmake_args ' -DFIRST=TRUE -DFOO=BAR' ' -DSECOND=TRUE'
+                        (default: [''])
 
 Image build options:
-  --build, -B           Build the images from the definition files (default:
-                        False)
+  --build, -B           Build the images from the definition files (default: False)
   --upload, -U          Upload Docker image to registry (default: False)
-  --registry REGISTRY   The docker registry the image is tagged and uploaded
-                        to. (default: registry.opengeosys.org/ogs/ogs)
-  --convert, -C         Convert Docker image to Singularity image (default:
-                        False)
-  --runtime-only, -R    Generate multi-stage Dockerfiles for small runtime
-                        images (default: False)
+  --registry REGISTRY   The docker registry the image is tagged and uploaded to. (default: registry.opengeosys.org/ogs/ogs)
+  --tag TAG             The full docker image tag. Overwrites --registry. (default: )
+  --convert, -C         Convert Docker image to Singularity image (default: False)
+  --runtime-only, -R    Generate multi-stage Dockerfiles for small runtime images (default: False)
   --ccache              Enables ccache build caching. (default: False)
   --parallel PARALLEL, -j PARALLEL
-                        The number of cores to use for compilation. (default:
-                        10)
+                        The number of cores to use for compilation. (default: 10)
 
 Additional options:
   --base_image BASE_IMAGE
-                        The base image. (default: ubuntu:18.04)
-  --compiler COMPILER   The compiler to use. Possible options: off, gcc, clang
-                        (default: gcc)
+                        The base image. (centos:8 is supported too) (default: ubuntu:19.10)
+  --compiler COMPILER   The compiler to use. Possible options: off, gcc, clang (default: gcc)
   --compiler_version COMPILER_VERSION
                         Compiler version. (default: )
   --gui                 Builds the GUI (Data Explorer) (default: False)
-  --docs                Setup documentation requirements (Doxygen) (default:
-                        False)
+  --docs                Setup documentation requirements (Doxygen) (default: False)
   --jenkins             Setup Jenkins slave (default: False)
+  --gitlab              Setup for GitLab-CI (default: False)
   --cvode               Install and configure with cvode (default: False)
   --cppcheck            Install cppcheck (default: False)
   --iwyy                Install include-what-you-use (default: False)
   --gcovr               Install gcovr (default: False)
-  --mpi_benchmarks      Installs OSU MPI benchmarks as scif app and mpi_bw,
-                        mpi_ring,mpi_hello (default: False)
+  --mpi_benchmarks      Installs OSU MPI benchmarks as scif app and mpi_bw, mpi_ring,mpi_hello (default: False)
   --dev                 Installs development tools (vim, gdb) (default: False)
   --insitu              Builds with insitu capabilities (default: False)
   --pip [package [package ...]]
-                        Install additional Python packages (default: [''])
+                        Install additional Python packages (default: [])
+  --packages [packages [packages ...]]
+                        Install additional OS packages (default: [])
 
 Maintenance:
-  --clean               Cleans up generated files in default directories.
-                        (default: False)
+  --clean               Cleans up generated files in default directories. (default: False)
 
 Image deployment:
   --deploy [DEPLOY], -D [DEPLOY]
-                        Deploys to all configured hosts (in
-                        config/deploy_hosts.yml) with no additional arguments
-                        or to the specified host. Implies --build and
-                        --convert arguments. (default: )
+                        Deploys to all configured hosts (in config/deploy_hosts.yml) with no additional arguments or to the specified host. Implies --build
+                        and --convert arguments. (default: )
 ```
 
 ## Advanced usage

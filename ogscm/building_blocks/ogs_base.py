@@ -40,7 +40,7 @@ class ogs_base(bb_base):
                     packages=['virtualenv', 'pre-commit', 'cmake-format'])
         self += packages(ospackages=self.__ospackages,
                          apt_ppas=['ppa:git-core/ppa'],
-                         epel=True)
+                         epel=True, powertools=True)
         self += shell(commands=self.__commands)
 
     def __setup(self):
