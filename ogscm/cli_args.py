@@ -153,10 +153,6 @@ class Cli_Args(argparse.ArgumentParser):
                                 dest='jenkins',
                                 action='store_true',
                                 help='Setup Jenkins slave')
-        switches_g.add_argument('--gitlab',
-                                dest='gitlab',
-                                action='store_true',
-                                help='Setup for GitLab-CI')
         switches_g.add_argument('--cvode',
                                 dest='cvode',
                                 action='store_true',

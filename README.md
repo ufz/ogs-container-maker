@@ -108,7 +108,6 @@ Additional options:
   --gui                 Builds the GUI (Data Explorer) (default: False)
   --docs                Setup documentation requirements (Doxygen) (default: False)
   --jenkins             Setup Jenkins slave (default: False)
-  --gitlab              Setup for GitLab-CI (default: False)
   --cvode               Install and configure with cvode (default: False)
   --cppcheck            Install cppcheck (default: False)
   --iwyy                Install include-what-you-use (default: False)

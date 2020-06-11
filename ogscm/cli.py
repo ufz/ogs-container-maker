@@ -39,7 +39,7 @@ def main():  # pragma: no cover
     cli = Cli_Args()
     args = cli.parse_args()
 
-    if args.jenkins or args.gitlab:
+    if args.jenkins:
         args.ogs = ['off']
     if args.deploy != '':
         args.build = True
@@ -256,7 +256,7 @@ def main():  # pragma: no cover
         if args.gui:
             Stage0 += packages(
                 apt=[
-                    'mesa-common-dev', 'libgl1-mesa-dev', 'libglu1-mesa-dev',
+                    'mesa-common-dev', 'libgl1-mesa-dev', 'libglu1-mesa-dev',x
                     'libxt-dev'
                 ],
                 yum=[
@@ -297,7 +297,6 @@ def main():  # pragma: no cover
             # Stage0 += boost(version='1.66.0')  # header only?
             Stage0 += packages(apt=['libboost-dev'], yum=['boost-devel'], epel=True)
             # Stage0 += environment(variables={'BOOST_ROOT': '/usr/local/boost'})
-            Stage0 += eigen()
             vtk_cmake_args = [
                 '-DModule_vtkIOXML=ON',
                 '-DVTK_Group_Rendering=OFF',
@@ -337,6 +336,7 @@ def main():  # pragma: no cover
                               ldconfig=True)
             if ompi != 'off':
                 Stage0 += petsc(version='3.11.3', ldconfig=True)
+            Stage0 += eigen(version='3.3.7')
         if args.cvode:
             Stage0 += cvode()
         if args.cppcheck:
