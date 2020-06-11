@@ -32,7 +32,7 @@ from ogscm.container_info import container_info
 from ogscm.version import __version__
 from ogscm.building_blocks import ccache, cppcheck, cvode, eigen, iwyy, \
     jenkins_node, ogs_base, ogs, osu_benchmarks, petsc, pm_conan, vtk, \
-    pm_spack, paraview
+    paraview
 
 
 def main():  # pragma: no cover
@@ -272,23 +272,6 @@ def main():  # pragma: no cover
             Stage0 += pm_conan(user_home=conan_user_home)
             if not args.jenkins:
                 Stage0 += environment(variables={'CONAN_SYSREQUIRES_SUDO': 0})
-        elif ogscm.config.g_package_manager == package_manager.SPACK:
-            vtk_variants = '+osmesa'
-            if ompi == 'off':
-                vtk_variants += ' -mpi'
-            spack_packages = [
-                # 'vtk@8.1.2' + vtk_variants,
-                'eigen@3.3.4',
-                'boost@1.68.0'
-            ]
-            Stage0 += pm_spack(
-                packages=spack_packages,
-                # ospackages=['libgl1-mesa-dev'],
-                repo='https://github.com/bilke/spack',
-                branch='patch-1')
-            Stage0 += shell(commands=[
-                '/opt/spack/bin/spack install --only dependencies vtk@8.1.2 +osmesa'
-            ])
         elif ogscm.config.g_package_manager == package_manager.SYSTEM:
             Stage0 += cmake(eula=True, version='3.16.6')
             # Use ldconfig to set library search path (instead of

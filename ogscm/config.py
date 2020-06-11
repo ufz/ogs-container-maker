@@ -13,8 +13,6 @@ def set_package_manager(pm):
 
   if pm == 'conan':
     this.g_package_manager = package_manager.CONAN
-  elif pm == 'spack':
-    this.g_package_manager = package_manager.SPACK
   elif pm == 'easybuild':
     this.g_package_manager = package_manager.EASYBUILD
   elif pm == 'guix':

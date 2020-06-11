@@ -52,7 +52,7 @@ class Cli_Args(argparse.ArgumentParser):
         options_g.add_argument('--pm',
                                nargs='*',
                                type=str,
-                               choices=['system', 'conan', 'spack', 'off'],
+                               choices=['system', 'conan', 'off'],
                                default=['conan'],
                                help='Package manager to install third-party '
                                'dependencies')

@@ -60,7 +60,7 @@ Check help for more options:
 ```
 $ ogscm --help
 usage: ogscm [-h] [--version] [--out OUT] [--file FILE] [--print] [--format [{docker,singularity} [{docker,singularity} ...]]]
-              [--pm [{system,conan,spack,off} [{system,conan,spack,off} ...]]] [--ompi [OMPI [OMPI ...]]] [--ogs [OGS [OGS ...]]]
+              [--pm [{system,conan,off} [{system,conan,off} ...]]] [--ompi [OMPI [OMPI ...]]] [--ogs [OGS [OGS ...]]]
               [--cmake_args [CMAKE_ARGS [CMAKE_ARGS ...]]] [--build] [--upload] [--registry REGISTRY] [--tag TAG] [--convert] [--runtime-only] [--ccache]
               [--parallel PARALLEL] [--base_image BASE_IMAGE] [--compiler COMPILER] [--compiler_version COMPILER_VERSION] [--gui] [--docs] [--jenkins]
               [--cvode] [--cppcheck] [--iwyy] [--gcovr] [--mpi_benchmarks] [--dev] [--insitu] [--pip [package [package ...]]]
@@ -77,7 +77,7 @@ Combinatorial options:
   All combinations of the given options will be generated
 
   --format [{docker,singularity} [{docker,singularity} ...]]
-  --pm [{system,conan,spack,off} [{system,conan,spack,off} ...]]
+  --pm [{system,conan,off} [{system,conan,off} ...]]
                         Package manager to install third-party dependencies (default: ['conan'])
   --ompi [OMPI [OMPI ...]]
                         OpenMPI version, e.g. 2.1.1, 2.1.5, 3.0.1, 3.1.2 (default: ['off'])
