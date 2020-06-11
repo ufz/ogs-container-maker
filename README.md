@@ -63,7 +63,7 @@ usage: ogscm [-h] [--version] [--out OUT] [--file FILE] [--print] [--format [{do
               [--pm [{system,conan,spack,off} [{system,conan,spack,off} ...]]] [--ompi [OMPI [OMPI ...]]] [--ogs [OGS [OGS ...]]]
               [--cmake_args [CMAKE_ARGS [CMAKE_ARGS ...]]] [--build] [--upload] [--registry REGISTRY] [--tag TAG] [--convert] [--runtime-only] [--ccache]
               [--parallel PARALLEL] [--base_image BASE_IMAGE] [--compiler COMPILER] [--compiler_version COMPILER_VERSION] [--gui] [--docs] [--jenkins]
-              [--gitlab] [--cvode] [--cppcheck] [--iwyy] [--gcovr] [--mpi_benchmarks] [--dev] [--insitu] [--pip [package [package ...]]]
+              [--cvode] [--cppcheck] [--iwyy] [--gcovr] [--mpi_benchmarks] [--dev] [--insitu] [--pip [package [package ...]]]
               [--packages [packages [packages ...]]] [--clean] [--deploy [DEPLOY]]
 
 optional arguments:

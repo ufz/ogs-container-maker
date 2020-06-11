@@ -256,7 +256,7 @@ def main():  # pragma: no cover
         if args.gui:
             Stage0 += packages(
                 apt=[
-                    'mesa-common-dev', 'libgl1-mesa-dev', 'libglu1-mesa-dev',x
+                    'mesa-common-dev', 'libgl1-mesa-dev', 'libglu1-mesa-dev',
                     'libxt-dev'
                 ],
                 yum=[
