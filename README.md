@@ -101,7 +101,7 @@ Image build options:
 
 Additional options:
   --base_image BASE_IMAGE
-                        The base image. (centos:8 is supported too) (default: ubuntu:19.10)
+                        The base image. (centos:8 is supported too) (default: ubuntu:20.04)
   --compiler COMPILER   The compiler to use. Possible options: off, gcc, clang (default: gcc)
   --compiler_version COMPILER_VERSION
                         Compiler version. (default: )

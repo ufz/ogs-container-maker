@@ -129,7 +129,7 @@ class Cli_Args(argparse.ArgumentParser):
         switches_g = self.add_argument_group('Additional options')
         switches_g.add_argument('--base_image',
                                 type=str,
-                                default='ubuntu:19.10',
+                                default='ubuntu:20.04',
                                 help='The base image. (centos:8 is supported too)')
         switches_g.add_argument(
             '--compiler',
