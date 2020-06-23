@@ -289,6 +289,7 @@ def main():  # pragma: no cover
                 Stage0 += packages(apt=[
                         'libgeotiff-dev',
                         'libshp-dev',
+                        'libnetcdf-c++4-dev',
                         'libqt5x11extras5-dev',
                         'libqt5xmlpatterns5-dev',
                         'qt5-default'
@@ -296,6 +297,7 @@ def main():  # pragma: no cover
                     yum=[
                         'libgeotiff-devel',
                         'shapelib-devel',
+                        'netcdf-devel',
                         'qt5-qtbase-devel',
                         'qt5-qtxmlpatterns-devel',
                         'qt5-qtx11extras-devel'
