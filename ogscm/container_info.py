@@ -45,18 +45,21 @@ class container_info():
                     capture_output=True,
                     text=True,
                     shell=True).stdout.rstrip()
-                self.branch = subprocess.run([
-                    'cd {} && git branch | grep \* | cut -d \' \' -f2'.format(
-                        ogs_version)
-                ],
-                                             capture_output=True,
-                                             text=True,
-                                             shell=True).stdout
-                self.git_version = subprocess.run(
-                    ['cd {} && git describe --tags'.format(ogs_version)],
-                    capture_output=True,
-                    text=True,
-                    shell=True).stdout[0]
+                if 'GITLAB_CI' in os.environ:
+                    self.branch = os.environ['CI_COMMIT_BRANCH']
+                    self.git_version = os.getenv('OGS_VERSION', 'x.x.x')
+                else:
+                    self.branch = subprocess.run([
+                        'cd {} && git branch | grep \* | cut -d \' \' -f2'.format(
+                            ogs_version)],
+                        capture_output=True,
+                        text=True,
+                        shell=True).stdout
+                    self.git_version = subprocess.run(
+                        ['cd {} && git describe --tags'.format(ogs_version)],
+                        capture_output=True,
+                        text=True,
+                        shell=True).stdout[0]
             else:
                 # Get git commit hash and construct image tag name
                 self.repo, self.branch, *commit = ogs_version.split("@")
