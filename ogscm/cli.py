@@ -30,7 +30,7 @@ from ogscm.cli_args import Cli_Args
 from ogscm.config import package_manager
 from ogscm.container_info import container_info
 from ogscm.version import __version__
-from ogscm.building_blocks import ccache, iwyy, \
+from ogscm.building_blocks import ccache, \
     jenkins_node, ogs_base, ogs, osu_benchmarks, petsc, pm_conan, \
     paraview
 
@@ -363,7 +363,22 @@ def main():  # pragma: no cover
             )
 
         if args.iwyy and args.compiler == 'clang':
-            Stage0 += iwyy(clang_version=args.compiler_version)
+            Stage0 += packages(ospackages=[
+                'libncurses5-dev', 'zlib1g-dev',
+                f"llvm-{args.compiler_version}-dev",
+                f"libclang-{args.compiler_version}-dev"
+            ])
+            Stage0 += generic_cmake(
+                cmake_opts = [
+                    f"-D IWYU_LLVM_ROOT_PATH=/usr/lib/llvm-{args.compiler_version}"
+                ],
+                devel_environment = {'PATH': '/usr/local/iwyy/bin:$PATH'},
+                directory = f"include-what-you-use-clang_{args.compiler_version}.0",
+                prefix = '/usr/local/iwyy',
+                runtime_environment = {'PATH': '/usr/local/iwyy/bin:$PATH'},
+                url = "https://github.com/include-what-you-use/include-what-"
+                      f"you-use/archive/clang_{args.compiler_version}.0.tar.gz"
+            )
         if args.docs:
             Stage0 += packages(
                 ospackages=['doxygen', 'graphviz', 'texlive-base'])
