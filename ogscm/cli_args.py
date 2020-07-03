@@ -169,6 +169,10 @@ class Cli_Args(argparse.ArgumentParser):
                                 dest='gcovr',
                                 action='store_true',
                                 help='Install gcovr')
+        switches_g.add_argument('--tfel',
+                                dest='tfel',
+                                action='store_true',
+                                help='Install tfel')
         switches_g.add_argument('--mpi_benchmarks',
                                 dest='mpi_benchmarks',
                                 action='store_true',

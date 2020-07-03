@@ -21,7 +21,7 @@ from packaging import version
 import hpccm
 from hpccm import linux_distro
 from hpccm.building_blocks import packages, mlnx_ofed, knem, ucx, openmpi, \
-    boost, pip, scif, llvm, gnu, ofed, cmake, slurm_pmi2, pmix
+    boost, pip, scif, llvm, gnu, ofed, cmake, slurm_pmi2, pmix, generic_cmake
 from hpccm.primitives import baseimage, comment, user, environment, raw, \
     label, shell, copy
 
@@ -345,6 +345,13 @@ def main():  # pragma: no cover
 
         if args.packages:
             Stage0 += packages(ospackages=args.packages)
+
+        if args.tfel:
+            Stage0 += generic_cmake(
+              directory='tfel-TFEL-3.3.0',
+              url='https://github.com/thelfer/tfel/archive/TFEL-3.3.0.tar.gz',
+              prefix='/usr/local/tfel'
+            )
 
         definition_file_path = os.path.join(info.out_dir, info.definition_file)
         if ogs_version != 'off':
