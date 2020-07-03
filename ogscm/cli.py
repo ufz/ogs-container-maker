@@ -30,17 +30,14 @@ from ogscm.cli_args import Cli_Args
 from ogscm.config import package_manager
 from ogscm.container_info import container_info
 from ogscm.version import __version__
-from ogscm.building_blocks import ccache, \
-    jenkins_node, ogs_base, ogs, osu_benchmarks, petsc, pm_conan, \
-    paraview
+from ogscm.building_blocks import ccache, ogs_base, ogs, osu_benchmarks, \
+    petsc, pm_conan, paraview
 
 
 def main():  # pragma: no cover
     cli = Cli_Args()
     args = cli.parse_args()
 
-    if args.jenkins:
-        args.ogs = ['off']
     if args.deploy != '':
         args.build = True
         args.convert = True
@@ -270,8 +267,7 @@ def main():  # pragma: no cover
             if args.dev:
                 conan_user_home = ''
             Stage0 += pm_conan(user_home=conan_user_home)
-            if not args.jenkins:
-                Stage0 += environment(variables={'CONAN_SYSREQUIRES_SUDO': 0})
+            Stage0 += environment(variables={'CONAN_SYSREQUIRES_SUDO': 0})
         elif ogscm.config.g_package_manager == package_manager.SYSTEM:
             Stage0 += cmake(eula=True, version='3.16.6')
             # Use ldconfig to set library search path (instead of
@@ -442,10 +438,6 @@ def main():  # pragma: no cover
                            remove_build=True,
                            remove_source=True)
             Stage0 += ogs_app
-
-        if args.jenkins:
-            Stage0 += ccache(cache_size='15G')
-            Stage0 += jenkins_node()
 
         stages_string = str(Stage0)
 

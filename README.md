@@ -62,7 +62,7 @@ $ ogscm --help
 usage: ogscm [-h] [--version] [--out OUT] [--file FILE] [--print] [--format [{docker,singularity} [{docker,singularity} ...]]]
               [--pm [{system,conan,off} [{system,conan,off} ...]]] [--ompi [OMPI [OMPI ...]]] [--ogs [OGS [OGS ...]]]
               [--cmake_args [CMAKE_ARGS [CMAKE_ARGS ...]]] [--build] [--upload] [--registry REGISTRY] [--tag TAG] [--convert] [--runtime-only] [--ccache]
-              [--parallel PARALLEL] [--base_image BASE_IMAGE] [--compiler COMPILER] [--compiler_version COMPILER_VERSION] [--gui] [--docs] [--jenkins]
+              [--parallel PARALLEL] [--base_image BASE_IMAGE] [--compiler COMPILER] [--compiler_version COMPILER_VERSION] [--gui] [--docs]
               [--cvode] [--cppcheck] [--iwyy] [--gcovr] [--mpi_benchmarks] [--dev] [--insitu] [--pip [package [package ...]]]
               [--packages [packages [packages ...]]] [--clean] [--deploy [DEPLOY]]
 
@@ -107,7 +107,6 @@ Additional options:
                         Compiler version. (default: )
   --gui                 Builds the GUI (Data Explorer) (default: False)
   --docs                Setup documentation requirements (Doxygen) (default: False)
-  --jenkins             Setup Jenkins slave (default: False)
   --cvode               Install and configure with cvode (default: False)
   --cppcheck            Install cppcheck (default: False)
   --iwyy                Install include-what-you-use (default: False)

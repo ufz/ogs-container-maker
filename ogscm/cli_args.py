@@ -149,10 +149,6 @@ class Cli_Args(argparse.ArgumentParser):
             dest='docs',
             action='store_true',
             help='Setup documentation requirements (Doxygen)')
-        switches_g.add_argument('--jenkins',
-                                dest='jenkins',
-                                action='store_true',
-                                help='Setup Jenkins slave')
         switches_g.add_argument('--cvode',
                                 dest='cvode',
                                 action='store_true',

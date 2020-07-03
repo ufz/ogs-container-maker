@@ -3,25 +3,5 @@
     // for the documentation about the tasks.json format
     "version": "2.0.0",
     "tasks": [
-      {
-        "label": "Jenkins Definitions",
-        "type": "shell",
-        "command": "direnv exec . python ogscm/build_jenkins_definitions.py --out ~/code/ogs6/ogs/scripts/docker",
-        "group": {
-          "kind": "build",
-          "isDefault": true
-        },
-        "problemMatcher": []
-      },
-      {
-        "label": "Conan Definitions",
-        "type": "shell",
-        "command": "direnv exec . python ogscm/build_jenkins_conan_definitions.py"
-      },
-      {
-        "label": "Common Definitions",
-        "type": "shell",
-        "command": "direnv exec . python ogscm/build_common_definitions.py"
-      }
     ]
 }

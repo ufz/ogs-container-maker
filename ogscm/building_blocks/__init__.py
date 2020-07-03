@@ -1,7 +1,6 @@
 from __future__ import absolute_import
 
 from ogscm.building_blocks.ccache import ccache
-from ogscm.building_blocks.jenkins_node import jenkins_node
 from ogscm.building_blocks.lmod import lmod
 from ogscm.building_blocks.ogs import ogs
 from ogscm.building_blocks.ogs_base import ogs_base
