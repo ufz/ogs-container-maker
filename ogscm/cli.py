@@ -30,7 +30,7 @@ from ogscm.cli_args import Cli_Args
 from ogscm.config import package_manager
 from ogscm.container_info import container_info
 from ogscm.version import __version__
-from ogscm.building_blocks import ccache, cppcheck, iwyy, \
+from ogscm.building_blocks import ccache, iwyy, \
     jenkins_node, ogs_base, ogs, osu_benchmarks, petsc, pm_conan, \
     paraview
 
@@ -323,36 +323,45 @@ def main():  # pragma: no cover
                     ])
                 Stage0 += generic_cmake(
                     cmake_opts = vtk_cmake_args,
+                    devel_environment = { 'VTK_ROOT': '/usr/local/vtk' },
                     directory='VTK-8.2.0',
                     ldconfig=True,
                     prefix = '/usr/local/vtk',
                     toolchain = toolchain,
                     url = 'https://www.vtk.org/files/release/8.2/VTK-8.2.0.tar.gz'
                 )
-                Stage0 += environment(variables={'VTK_ROOT': '/usr/local/vtk'})
             if ompi != 'off':
                 Stage0 += petsc(version='3.11.3', ldconfig=True)
             Stage0 += generic_cmake(
+                devel_environment = {
+                    'Eigen3_ROOT': '/usr/local/eigen',
+                    'Eigen3_DIR': '/usr/local/eigen'
+                },
                 directory='eigen-eigen-*',
                 prefix= '/usr/local/eigen',
                 url='http://bitbucket.org/eigen/eigen/get/3.3.7.tar.gz'
             )
-            Stage0 += environment(variables={
-                'Eigen3_ROOT': '/usr/local/eigen',
-                'Eigen3_DIR': '/usr/local/eigen'
-            })
         if args.cvode:
             Stage0 += generic_cmake(
                 cmake_opts=[
                     '-D EXAMPLES_INSTALL=OFF', '-D BUILD_SHARED_LIBS=OFF',
                     '-D CMAKE_POSITION_INDEPENDENT_CODE=ON'
                 ],
+                devel_environment = {'CVODE_ROOT': '/usr/local/cvode'},
                 directory = 'cvode-2.8.2',
                 prefix = '/usr/local/cvode',
-                url = 'https://github.com/ufz/cvode/archive/2.8.2.tar.gz')
-            Stage0 += environment(variables={'CVODE_ROOT': '/usr/local/cvode'})
+                url = 'https://github.com/ufz/cvode/archive/2.8.2.tar.gz'
+            )
+
         if args.cppcheck:
-            Stage0 += cppcheck()
+            Stage0 += generic_cmake(
+                devel_environment = {'PATH': '/usr/local/cppcheck/bin:$PATH'},
+                directory = 'cppcheck-809a769c690d8ab6fef293e41a29c8490512866e',
+                prefix = '/usr/local/cppcheck',
+                runtime_environment = {'PATH': '/usr/local/cppcheck/bin:$PATH'},
+                url = 'https://github.com/danmar/cppcheck/archive/809a769c690d8ab6fef293e41a29c8490512866e.tar.gz'
+            )
+
         if args.iwyy and args.compiler == 'clang':
             Stage0 += iwyy(clang_version=args.compiler_version)
         if args.docs:
