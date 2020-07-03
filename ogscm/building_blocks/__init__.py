@@ -14,4 +14,3 @@ from ogscm.building_blocks.paraview import paraview
 from ogscm.building_blocks.petsc import petsc
 from ogscm.building_blocks.pm_conan import pm_conan
 from ogscm.building_blocks.pm_easybuild import pm_easybuild
-from ogscm.building_blocks.vtk import vtk

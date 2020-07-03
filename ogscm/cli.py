@@ -31,7 +31,7 @@ from ogscm.config import package_manager
 from ogscm.container_info import container_info
 from ogscm.version import __version__
 from ogscm.building_blocks import ccache, cppcheck, cvode, eigen, iwyy, \
-    jenkins_node, ogs_base, ogs, osu_benchmarks, petsc, pm_conan, vtk, \
+    jenkins_node, ogs_base, ogs, osu_benchmarks, petsc, pm_conan, \
     paraview
 
 
@@ -316,9 +316,20 @@ def main():  # pragma: no cover
                                    ldconfig=True,
                                    toolchain=toolchain)
             else:
-                Stage0 += vtk(cmake_args=vtk_cmake_args,
-                              toolchain=toolchain,
-                              ldconfig=True)
+                if toolchain.CC == 'mpicc':
+                    vtk_cmake_args.extend([
+                        '-D Module_vtkIOParallelXML=ON',
+                        '-D Module_vtkParallelMPI=ON'
+                    ])
+                Stage0 += generic_cmake(
+                    cmake_opts = vtk_cmake_args,
+                    directory='VTK-8.2.0',
+                    ldconfig=True,
+                    prefix = '/usr/local/vtk',
+                    toolchain = toolchain,
+                    url = 'https://www.vtk.org/files/release/8.2/VTK-8.2.0.tar.gz'
+                )
+                Stage0 += environment(variables={'VTK_ROOT': '/usr/local/vtk'})
             if ompi != 'off':
                 Stage0 += petsc(version='3.11.3', ldconfig=True)
             Stage0 += eigen(version='3.3.7')
