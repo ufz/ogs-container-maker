@@ -332,7 +332,15 @@ def main():  # pragma: no cover
                 Stage0 += environment(variables={'VTK_ROOT': '/usr/local/vtk'})
             if ompi != 'off':
                 Stage0 += petsc(version='3.11.3', ldconfig=True)
-            Stage0 += eigen(version='3.3.7')
+            Stage0 += generic_cmake(
+                directory='eigen-eigen-*',
+                prefix= '/usr/local/eigen',
+                url='http://bitbucket.org/eigen/eigen/get/3.3.7.tar.gz'
+            )
+            Stage0 += environment(variables={
+                'Eigen3_ROOT': '/usr/local/eigen',
+                'Eigen3_DIR': '/usr/local/eigen'
+            })
         if args.cvode:
             Stage0 += cvode()
         if args.cppcheck:
