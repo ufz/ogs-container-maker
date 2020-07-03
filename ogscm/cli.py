@@ -30,7 +30,7 @@ from ogscm.cli_args import Cli_Args
 from ogscm.config import package_manager
 from ogscm.container_info import container_info
 from ogscm.version import __version__
-from ogscm.building_blocks import ccache, cppcheck, cvode, eigen, iwyy, \
+from ogscm.building_blocks import ccache, cppcheck, iwyy, \
     jenkins_node, ogs_base, ogs, osu_benchmarks, petsc, pm_conan, \
     paraview
 
@@ -342,7 +342,15 @@ def main():  # pragma: no cover
                 'Eigen3_DIR': '/usr/local/eigen'
             })
         if args.cvode:
-            Stage0 += cvode()
+            Stage0 += generic_cmake(
+                cmake_opts=[
+                    '-D EXAMPLES_INSTALL=OFF', '-D BUILD_SHARED_LIBS=OFF',
+                    '-D CMAKE_POSITION_INDEPENDENT_CODE=ON'
+                ],
+                directory = 'cvode-2.8.2',
+                prefix = '/usr/local/cvode',
+                url = 'https://github.com/ufz/cvode/archive/2.8.2.tar.gz')
+            Stage0 += environment(variables={'CVODE_ROOT': '/usr/local/cvode'})
         if args.cppcheck:
             Stage0 += cppcheck()
         if args.iwyy and args.compiler == 'clang':
