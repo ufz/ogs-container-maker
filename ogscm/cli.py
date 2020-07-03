@@ -352,6 +352,7 @@ def main():  # pragma: no cover
               url='https://github.com/thelfer/tfel/archive/TFEL-3.3.0.tar.gz',
               prefix='/usr/local/tfel'
             )
+            Stage0 += environment(variables={'TFELHOME': '/usr/local/tfel'})
 
         definition_file_path = os.path.join(info.out_dir, info.definition_file)
         if ogs_version != 'off':
