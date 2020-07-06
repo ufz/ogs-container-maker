@@ -396,6 +396,7 @@ def main():  # pragma: no cover
         if args.tfel:
             Stage0 += generic_cmake(
               directory='tfel-TFEL-3.3.0',
+              ldconfig=True,
               url='https://github.com/thelfer/tfel/archive/TFEL-3.3.0.tar.gz',
               prefix='/usr/local/tfel'
             )
