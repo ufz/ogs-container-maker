@@ -46,22 +46,11 @@ class ogs_base(bb_base):
         self += environment(variables={'CMAKE_GENERATOR': 'Ninja'})
 
     def __setup(self):
-        self.__ospackages.extend(['git', 'git-lfs', 'ninja-build'])
+        self.__ospackages.extend(['git', 'ninja-build'])
 
         dist = 'deb'
         if hpccm.config.g_linux_distro == linux_distro.CENTOS:
             dist = 'rpm'
-        if hpccm.config.g_linux_distro == linux_distro.UBUNTU:
-            self.__commands.extend([
-                "apt-get update",
-                # Workaround for https://github.com/git-lfs/git-lfs/issues/3474
-                "apt-get install -y dirmngr --install-recommends",
-                "apt-key adv --keyserver keyserver.ubuntu.com --recv-keys "
-                "6B05F25D762E3157"
-            ])
-        self.__commands.append(
-            "curl -s https://packagecloud.io/install/repositories/github/"
-            "git-lfs/script.{0}.sh | bash".format(dist))
 
         if hpccm.config.g_ctype == hpccm.container_type.SINGULARITY:
             self.__ospackages.append('locales')
@@ -71,8 +60,6 @@ class ogs_base(bb_base):
                 'echo "LANG=en_US.UTF-8" > /etc/locale.conf',
                 'locale-gen en_US.UTF-8'
             ])
-
-        self.__commands.append('git lfs install')
 
         # Common directories
         self.__commands.append(
