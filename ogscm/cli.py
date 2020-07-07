@@ -21,7 +21,8 @@ from packaging import version
 import hpccm
 from hpccm import linux_distro
 from hpccm.building_blocks import packages, mlnx_ofed, knem, ucx, openmpi, \
-    boost, pip, scif, llvm, gnu, ofed, cmake, slurm_pmi2, pmix, generic_cmake
+    boost, pip, scif, llvm, gnu, ofed, cmake, slurm_pmi2, pmix, generic_cmake, \
+    generic_autotools
 from hpccm.primitives import baseimage, comment, user, environment, raw, \
     label, shell, copy
 
@@ -31,7 +32,7 @@ from ogscm.config import package_manager
 from ogscm.container_info import container_info
 from ogscm.version import __version__
 from ogscm.building_blocks import ccache, ogs_base, ogs, osu_benchmarks, \
-    petsc, pm_conan, paraview
+    pm_conan, paraview
 
 
 def main():  # pragma: no cover
@@ -204,7 +205,7 @@ def main():  # pragma: no cover
                         '--enable-orterun-prefix-by-default',
                     ])
             else:
-                Stage0 += ucx(version='1.6.1' ,cuda=False)
+                Stage0 += ucx(version='1.8.0' ,cuda=False)
                 Stage0 += slurm_pmi2(version='17.02.11')
                 pmix_version = True
                 if version.parse(ompi) >= version.parse('4'):
@@ -216,7 +217,8 @@ def main():  # pragma: no cover
                                 infiniband=False,
                                 pmi='/usr/local/slurm-pmi2',
                                 pmix=pmix_version,
-                                ucx='/usr/local/ucx')
+                                ucx='/usr/local/ucx'
+                )
 
             toolchain = mpicc.toolchain
             Stage0 += mpicc
@@ -327,7 +329,24 @@ def main():  # pragma: no cover
                     url = 'https://www.vtk.org/files/release/8.2/VTK-8.2.0.tar.gz'
                 )
             if ompi != 'off':
-                Stage0 += petsc(version='3.11.3', ldconfig=True)
+                Stage0 += packages(yum=['diffutils'])
+                Stage0 += generic_autotools(
+                    configure_opts = [
+                        f'CC={toolchain.CC}', f'CXX={toolchain.CXX}',
+                        '--CFLAGS=\'-O3\'',
+                        '--CXXFLAGS=\'-O3\'', '--FFLAGS=\'-O3\'',
+                        '--with-debugging=no', '--with-fc=0',
+                        '--download-f2cblaslapack=1'
+                    ],
+                    devel_environment = { 'PETSC_DIR': '/usr/local/petsc' },
+                    directory = 'petsc-3.11.3',
+                    preconfigure = ["sed -i -- 's/python/python3/g' configure"],
+                    prefix = '/usr/local/petsc',
+                    toolchain = toolchain,
+                    url = 'http://ftp.mcs.anl.gov/pub/petsc/release-snapshots/'
+                          'petsc-lite-3.11.3.tar.gz'
+                )
+
             Stage0 += generic_cmake(
                 devel_environment = {
                     'Eigen3_ROOT': '/usr/local/eigen',
