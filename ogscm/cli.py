@@ -92,6 +92,11 @@ def main():  # pragma: no cover
             exit(0)
         info.make_dirs()
 
+        if ompi != 'off':
+            if args.base_image == 'ubuntu:20.04':
+                args.base_image = 'centos:8'
+                print('Setting base_image to \'centos:8\'. OpenMPI is supported on CentOS only.')
+
         # Create definition
         hpccm.config.set_container_format(__format)
 
@@ -114,7 +119,10 @@ def main():  # pragma: no cover
                 if args.compiler == 'clang':
                     args.compiler_version = '8'
                 else:
-                    args.compiler_version = None  # Use default
+                    if hpccm.config.g_linux_distro == linux_distro.CENTOS:
+                        args.compiler_version = '10' # required for std::filesystem
+                    else:
+                        args.compiler_version = None  # Use default
             if args.compiler == 'clang':
                 compiler = llvm(extra_repository=True,
                                 extra_tools=True,
@@ -272,12 +280,8 @@ def main():  # pragma: no cover
             Stage0 += environment(variables={'CONAN_SYSREQUIRES_SUDO': 0})
         elif ogscm.config.g_package_manager == package_manager.SYSTEM:
             Stage0 += cmake(eula=True, version='3.16.6')
-            # Use ldconfig to set library search path (instead of
-            # LD_LIBRARY_PATH) as host var overwrites container var. See
-            # https://github.com/sylabs/singularity/pull/2669
-            # Stage0 += boost(version='1.66.0')  # header only?
-            Stage0 += packages(apt=['libboost-dev'], yum=['boost-devel'], epel=True)
-            # Stage0 += environment(variables={'BOOST_ROOT': '/usr/local/boost'})
+            Stage0 += boost(version='1.66.0', bootstrap_opts=['headers'])
+            Stage0 += environment(variables={'BOOST_ROOT': '/usr/local/boost'})
             vtk_cmake_args = [
                 '-DModule_vtkIOXML=ON',
                 '-DVTK_Group_Rendering=OFF',
@@ -305,6 +309,11 @@ def main():  # pragma: no cover
                     '-DVTK_Group_Qt=ON',
                     '-DVTK_QT_VERSION=5'
                 ]
+            if hpccm.config.g_linux_distro == linux_distro.CENTOS:
+                # otherwise linker error, maybe due to gcc 10?
+                vtk_cmake_args.extend([
+                    '-DBUILD_SHARED_LIBS=OFF',
+                    '-DCMAKE_POSITION_INDEPENDENT_CODE=ON'])
             if args.insitu:
                 if args.gui:
                     print('--gui can not be used with --insitu!')
@@ -340,6 +349,7 @@ def main():  # pragma: no cover
                     ],
                     devel_environment = { 'PETSC_DIR': '/usr/local/petsc' },
                     directory = 'petsc-3.11.3',
+                    ldconfig = True,
                     preconfigure = ["sed -i -- 's/python/python3/g' configure"],
                     prefix = '/usr/local/petsc',
                     toolchain = toolchain,
@@ -454,7 +464,6 @@ def main():  # pragma: no cover
                            prefix='/scif/apps/ogs',
                            cmake_args=cmake_args,
                            parallel=args.parallel,
-                           skip_lfs=True,
                            remove_build=True,
                            remove_source=True)
             Stage0 += ogs_app
@@ -490,7 +499,7 @@ def main():  # pragma: no cover
             # TODO: adapt this to else
             continue
 
-        build_cmd = (f"DOCKER_BUILDKIT=1 docker build "
+        build_cmd = (f"DOCKER_BUILDKIT=1 docker build {args.build_args} "
                      f"-t {info.tag} -f {definition_file_path} .")
         print(f"Running: {build_cmd}")
         subprocess.run(build_cmd, shell=True)

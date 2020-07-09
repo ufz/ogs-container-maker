@@ -85,6 +85,12 @@ class Cli_Args(argparse.ArgumentParser):
                              dest='build',
                              action='store_true',
                              help='Build the images from the definition files')
+        build_g.add_argument('--build_args',
+                             type=str,
+                             default='',
+                             help='Arguments to the build command. Have to be '
+                             'quoted and **must** start with a space. E.g. '
+                             '--build_args \' --no-cache\'')
         build_g.add_argument('--upload',
                              '-U',
                              dest='upload',
