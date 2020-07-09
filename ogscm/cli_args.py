@@ -66,8 +66,8 @@ class Cli_Args(argparse.ArgumentParser):
             '--ogs',
             nargs='*',
             type=str,
-            default=['ufz/ogs@master'],
-            help='OGS GitHub repo in the form \'user/repo@branch\' '
+            default=['ogs/ogs@master'],
+            help='OGS repo on gitlab.opengeosys.org in the form \'user/repo@branch\' '
             'OR \'user/repo@@commit\' to checkout a specific commit '
             'OR a path to a local subdirectory to the git cloned OGS sources '
             'OR \'off\' to disable OGS building')

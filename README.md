@@ -59,11 +59,12 @@ Check help for more options:
 
 ```
 $ ogscm --help
-usage: ogscm [-h] [--version] [--out OUT] [--file FILE] [--print] [--format [{docker,singularity} [{docker,singularity} ...]]]
-              [--pm [{system,conan,off} [{system,conan,off} ...]]] [--ompi [OMPI [OMPI ...]]] [--ogs [OGS [OGS ...]]]
-              [--cmake_args [CMAKE_ARGS [CMAKE_ARGS ...]]] [--build] [--upload] [--registry REGISTRY] [--tag TAG] [--convert] [--runtime-only] [--ccache]
+usage: ogscm [-h] [--version] [--out OUT] [--file FILE] [--sif_file SIF_FILE] [--print]
+              [--format [{docker,singularity} [{docker,singularity} ...]]] [--pm [{system,conan,off} [{system,conan,off} ...]]]
+              [--ompi [OMPI [OMPI ...]]] [--ogs [OGS [OGS ...]]] [--cmake_args [CMAKE_ARGS [CMAKE_ARGS ...]]] [--build]
+              [--build_args BUILD_ARGS] [--upload] [--registry REGISTRY] [--tag TAG] [--convert] [--runtime-only] [--ccache]
               [--parallel PARALLEL] [--base_image BASE_IMAGE] [--compiler COMPILER] [--compiler_version COMPILER_VERSION] [--gui] [--docs]
-              [--cvode] [--cppcheck] [--iwyy] [--gcovr] [--mpi_benchmarks] [--dev] [--insitu] [--pip [package [package ...]]]
+              [--cvode] [--cppcheck] [--iwyy] [--gcovr] [--tfel] [--mpi_benchmarks] [--dev] [--insitu] [--pip [package [package ...]]]
               [--packages [packages [packages ...]]] [--clean] [--deploy [DEPLOY]]
 
 optional arguments:
@@ -71,6 +72,7 @@ optional arguments:
   --version             show program's version number and exit
   --out OUT             Output directory (default: _out)
   --file FILE           Overwrite output recipe file name (default: )
+  --sif_file SIF_FILE   Overwrite output singularity image file name (default: )
   --print, -P           Print the definition to stdout (default: False)
 
 Combinatorial options:
@@ -82,14 +84,18 @@ Combinatorial options:
   --ompi [OMPI [OMPI ...]]
                         OpenMPI version, e.g. 2.1.1, 2.1.5, 3.0.1, 3.1.2 (default: ['off'])
   --ogs [OGS [OGS ...]]
-                        OGS GitHub repo in the form 'user/repo@branch' OR 'user/repo@@commit' to checkout a specific commit OR a path to a local subdirectory
-                        to the git cloned OGS sources OR 'off' to disable OGS building (default: ['ufz/ogs@master'])
+                        OGS repo on gitlab.opengeosys.org in the form 'user/repo@branch' OR 'user/repo@@commit' to checkout a specific commit
+                        OR a path to a local subdirectory to the git cloned OGS sources OR 'off' to disable OGS building (default:
+                        ['ogs/ogs@master'])
   --cmake_args [CMAKE_ARGS [CMAKE_ARGS ...]]
-                        CMake argument sets have to be quoted and **must** start with a space. e.g. --cmake_args ' -DFIRST=TRUE -DFOO=BAR' ' -DSECOND=TRUE'
-                        (default: [''])
+                        CMake argument sets have to be quoted and **must** start with a space. e.g. --cmake_args ' -DFIRST=TRUE -DFOO=BAR' '
+                        -DSECOND=TRUE' (default: [''])
 
 Image build options:
   --build, -B           Build the images from the definition files (default: False)
+  --build_args BUILD_ARGS
+                        Arguments to the build command. Have to be quoted and **must** start with a space. E.g. --build_args ' --no-cache'
+                        (default: )
   --upload, -U          Upload Docker image to registry (default: False)
   --registry REGISTRY   The docker registry the image is tagged and uploaded to. (default: registry.opengeosys.org/ogs/ogs)
   --tag TAG             The full docker image tag. Overwrites --registry. (default: )
@@ -111,6 +117,7 @@ Additional options:
   --cppcheck            Install cppcheck (default: False)
   --iwyy                Install include-what-you-use (default: False)
   --gcovr               Install gcovr (default: False)
+  --tfel                Install tfel (default: False)
   --mpi_benchmarks      Installs OSU MPI benchmarks as scif app and mpi_bw, mpi_ring,mpi_hello (default: False)
   --dev                 Installs development tools (vim, gdb) (default: False)
   --insitu              Builds with insitu capabilities (default: False)
@@ -124,8 +131,8 @@ Maintenance:
 
 Image deployment:
   --deploy [DEPLOY], -D [DEPLOY]
-                        Deploys to all configured hosts (in config/deploy_hosts.yml) with no additional arguments or to the specified host. Implies --build
-                        and --convert arguments. (default: )
+                        Deploys to all configured hosts (in config/deploy_hosts.yml) with no additional arguments or to the specified host.
+                        Implies --build and --convert arguments. (default: )
 ```
 
 ## Advanced usage

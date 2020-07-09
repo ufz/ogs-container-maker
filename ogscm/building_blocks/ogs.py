@@ -41,7 +41,6 @@ class ogs(bb_base, hpccm.templates.CMakeBuild, hpccm.templates.rm):
         self.__remove_source = kwargs.get('remove_source', False)
         self.__shared = kwargs.get('shared', True)
         self.__skip_clone = kwargs.get('skip_clone', False)
-        self.__skip_lfs = kwargs.get('skip_lfs', False)
         self.__toolchain = kwargs.get('toolchain', toolchain())
         self.__repo = kwargs.get('repo', 'ufz/ogs')
         self.__branch = kwargs.get('branch', 'master')
@@ -88,8 +87,7 @@ class ogs(bb_base, hpccm.templates.CMakeBuild, hpccm.templates.rm):
         else:
             self.__commands.extend([
                 'mkdir -p {0} && cd {0}'.format(self.__prefix),
-                '{}git clone --branch {} https://github.com/{} src'.format(
-                    'GIT_LFS_SKIP_SMUDGE=1 ' if self.__skip_lfs else '',
+                'git clone --filter=blob:limit=100k --branch {} https://gitlab.opengeosys.org/{} src'.format(
                     self.__branch, self.__repo),
             ])
             if self.__commit:
@@ -106,8 +104,6 @@ class ogs(bb_base, hpccm.templates.CMakeBuild, hpccm.templates.rm):
 
         self.__cmake_args.append(
             '-DBUILD_SHARED_LIBS={}'.format('ON' if self.__shared else 'OFF'))
-        if self.__skip_lfs:
-            self.__cmake_args.append('-DBUILD_TESTING=OFF')
         if self.__toolchain.CC == 'mpicc':
             self.__cmake_args.append("-DOGS_USE_PETSC=ON")
             if conan:

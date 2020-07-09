@@ -70,12 +70,12 @@ class container_info():
                 else:
                     if re.search(r'[\d.]+', self.branch):
                         branch_is_release = True
-                    url = (
-                        f"https://api.github.com/repos/{self.repo}/commits?sha={self.branch}"
+                    repo_split = self.repo.split('/')
+                    response = requests.get(
+                        f"https://gitlab.opengeosys.org/api/v4/projects/{self.repo.replace('/', '%2F')}/repository/commits?ref_name={self.branch}"
                     )
-                    response = requests.get(url)
                     response_data = json.loads(response.text)
-                    self.commit_hash = response_data[0]['sha']
+                    self.commit_hash = response_data[0]['id']
                     # ogs_tag = ogs_version.replace('/', '.').replace('@', '.')
 
             if branch_is_release:
