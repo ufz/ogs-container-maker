@@ -16,6 +16,7 @@ from hpccm.common import linux_distro
 from hpccm.primitives.comment import comment
 from hpccm.primitives.shell import shell
 from hpccm.primitives.environment import environment
+from hpccm.primitives.raw import raw
 
 
 class ogs_base(bb_base):
@@ -41,16 +42,24 @@ class ogs_base(bb_base):
                     packages=['virtualenv', 'pre-commit', 'cmake-format'])
         self += packages(ospackages=self.__ospackages,
                          apt_ppas=['ppa:git-core/ppa'],
-                         epel=True, powertools=True)
+                         epel=True)
         self += shell(commands=self.__commands)
         self += environment(variables={'CMAKE_GENERATOR': 'Ninja'})
 
     def __setup(self):
-        self.__ospackages.extend(['git', 'ninja-build'])
+        self.__ospackages.extend(['git'])
 
         dist = 'deb'
         if hpccm.config.g_linux_distro == linux_distro.CENTOS:
             dist = 'rpm'
+            self.__commands.extend([
+                'wget https://github.com/ninja-build/ninja/releases/download/v1.10.0/ninja-linux.zip',
+                'unzip ninja-linux.zip',
+                'mv ninja /usr/local/bin',
+                'rm ninja-linux.zip'
+            ])
+        else:
+            self.__ospackages.extend(['ninja-build'])
 
         if hpccm.config.g_ctype == hpccm.container_type.SINGULARITY:
             self.__ospackages.append('locales')
