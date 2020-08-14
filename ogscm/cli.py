@@ -432,10 +432,11 @@ def main():  # pragma: no cover
             Stage0 += environment(variables={'TFELHOME': '/usr/local/tfel'})
 
         definition_file_path = os.path.join(info.out_dir, info.definition_file)
+        if args.ccache:
+            Stage0 += ccache(cache_size='15G')
         if ogs_version != 'off':
             mount_args = ''
             if args.ccache:
-                Stage0 += ccache(cache_size='15G')
                 mount_args = f'{mount_args} --mount=type=cache,target=/opt/ccache,id=ccache'
             if args.cvode:
                 cmake_args.append('-DOGS_USE_CVODE=ON')
