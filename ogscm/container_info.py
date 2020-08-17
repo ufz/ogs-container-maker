@@ -46,7 +46,10 @@ class container_info():
                     text=True,
                     shell=True).stdout.rstrip()
                 if 'GITLAB_CI' in os.environ:
-                    self.branch = os.environ['CI_COMMIT_BRANCH']
+                    if 'CI_COMMIT_BRANCH' in os.environ:
+                        self.branch = os.environ['CI_COMMIT_BRANCH']
+                    elif 'CI_MERGE_REQUEST_SOURCE_BRANCH_NAME' in os.environ:
+                        self.branch = os.environ['CI_MERGE_REQUEST_SOURCE_BRANCH_NAME']
                     self.git_version = os.getenv('OGS_VERSION', 'x.x.x')
                 else:
                     self.branch = subprocess.run([
