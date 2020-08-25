@@ -18,10 +18,11 @@ from hpccm.primitives.copy import copy
 from hpccm.primitives.environment import environment
 from hpccm.toolchain import toolchain
 from hpccm.primitives.shell import shell
+from hpccm.common import linux_distro
 
 
 class paraview(bb_base, hpccm.templates.CMakeBuild, hpccm.templates.ldconfig,
-          hpccm.templates.rm, hpccm.templates.tar, hpccm.templates.wget):
+               hpccm.templates.rm, hpccm.templates.tar, hpccm.templates.wget):
     """The `paraview` building block downloads and installs the
     [paraview](https://paraview.org/) component.
 
@@ -40,6 +41,7 @@ class paraview(bb_base, hpccm.templates.CMakeBuild, hpccm.templates.ldconfig,
     ```
 
     """
+
     def __init__(self, **kwargs):
         super(paraview, self).__init__(**kwargs)
 
@@ -68,9 +70,16 @@ class paraview(bb_base, hpccm.templates.CMakeBuild, hpccm.templates.ldconfig,
     def __instructions(self):
         self += comment('paraview {}'.format(self.__version))
 
-        # if ubuntu:
-        self.__ospackages.append('ninja-build')
-        self += packages(ospackages=self.__ospackages)
+        if hpccm.config.g_linux_distro == linux_distro.CENTOS:
+            dist = 'rpm'
+            self += shell(commands=[
+                'wget https://github.com/ninja-build/ninja/releases/download/v1.10.0/ninja-linux.zip',
+                'unzip ninja-linux.zip',
+                'mv ninja /usr/local/bin',
+                'rm ninja-linux.zip'
+            ])
+        else:
+            self.__ospackages.extend(['ninja-build'])
 
         self.__cmake_args.extend([
             '-G Ninja',
@@ -83,9 +92,8 @@ class paraview(bb_base, hpccm.templates.CMakeBuild, hpccm.templates.ldconfig,
 
         # TODO: Install dependencies for rendering editions (ospackages)
 
-        self += generic_cmake(branch = self.__version,
+        self += generic_cmake(branch=self.__version,
                               cmake_opts=self.__cmake_args,
-                              directory='paraview-{}'.format(self.__version),
                               prefix=self.__prefix,
                               toolchain=self.__toolchain,
                               recursive=True,
@@ -94,6 +102,8 @@ class paraview(bb_base, hpccm.templates.CMakeBuild, hpccm.templates.ldconfig,
         # Set library path
         if self.__shared:
             libpath = os.path.join(self.__prefix, 'lib')
+            if hpccm.config.g_linux_distro == linux_distro.CENTOS:
+                libpath += '64'
             if self.ldconfig:
                 self += shell(commands=[self.ldcache_step(directory=libpath)])
             else:
@@ -111,6 +121,8 @@ class paraview(bb_base, hpccm.templates.CMakeBuild, hpccm.templates.ldconfig,
             copy(_from=_from, src=self.__prefix, dest=self.__prefix))
         if self.ldconfig:
             libpath = os.path.join(self.__prefix, 'lib')
+            if hpccm.config.g_linux_distro == linux_distro.CENTOS:
+                libpath += '64'
             instructions.append(
                 shell(commands=[self.ldcache_step(directory=libpath)]))
 

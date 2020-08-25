@@ -28,6 +28,7 @@ from ogscm.config import package_manager
 
 class ogs(bb_base, hpccm.templates.CMakeBuild, hpccm.templates.rm):
     """OGS building block"""
+
     def __init__(self, **kwargs):
         """Initialize building block"""
         super(ogs, self).__init__(**kwargs)
@@ -42,7 +43,7 @@ class ogs(bb_base, hpccm.templates.CMakeBuild, hpccm.templates.rm):
         self.__shared = kwargs.get('shared', True)
         self.__skip_clone = kwargs.get('skip_clone', False)
         self.__toolchain = kwargs.get('toolchain', toolchain())
-        self.__repo = kwargs.get('repo', 'ufz/ogs')
+        self.__repo = kwargs.get('repo', 'ufz/ogs.git')
         self.__branch = kwargs.get('branch', 'master')
         self.__commit = kwargs.get('commit')
         self.__git_version = kwargs.get('git_version')

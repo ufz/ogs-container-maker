@@ -16,7 +16,6 @@ from hpccm.common import linux_distro
 from hpccm.primitives.comment import comment
 from hpccm.primitives.shell import shell
 from hpccm.primitives.environment import environment
-from hpccm.primitives.raw import raw
 
 
 class ogs_base(bb_base):
