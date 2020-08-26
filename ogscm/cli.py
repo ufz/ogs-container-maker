@@ -310,7 +310,7 @@ def main():  # pragma: no cover
                 if args.gui:
                     print('--gui can not be used with --insitu!')
                     exit(1)
-                Stage0 += paraview(cmake_args=['-D PARAVIEW_USE_PYTHON=ON'],
+                Stage0 += paraview(cmake_args=['-DPARAVIEW_USE_PYTHON=ON'],
                                    edition='CATALYST',
                                    ldconfig=True,
                                    toolchain=toolchain,
