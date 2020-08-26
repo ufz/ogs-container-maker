@@ -248,12 +248,15 @@ def main():  # pragma: no cover
                 osu_app += osu_benchmarks(toolchain=toolchain,
                                           prefix='/scif/apps/osu')
                 Stage0 += osu_app
-                Stage0 += copy(src='ogscm/files/openmpi',
-                               dest='/usr/local/mpi-examples')
                 Stage0 += shell(commands=[
+                    'mkdir -p /usr/local/mpi-examples',
+                    'cd /usr/local/mpi-examples',
+                    'curl -O https://raw.githubusercontent.com/hpc/charliecloud/674b3b4e4ad243be5565f200d8f5fb92b7544480/examples/mpihello/hello.c',
+                    'curl -O https://computing.llnl.gov/tutorials/mpi/samples/C/mpi_bandwidth.c',
+                    'curl -O https://raw.githubusercontent.com/mpitutorial/mpitutorial/gh-pages/tutorials/mpi-send-and-receive/code/ring.c',
                     'mpicc -o /usr/local/bin/mpi-hello /usr/local/mpi-examples/hello.c',
                     'mpicc -o /usr/local/bin/mpi-ring /usr/local/mpi-examples/ring.c',
-                    'mpicc -o /usr/local/bin/mpi-bw /usr/local/mpi-examples/bw.c',
+                    'mpicc -o /usr/local/bin/mpi-bandwidth /usr/local/mpi-examples/mpi_bandwidth.c',
                 ])
                 Stage1 += copy(_from='build',
                                src='/usr/local/bin/mpi_*',
