@@ -272,6 +272,12 @@ def main():  # pragma: no cover
                                    'mesa-libOSMesa-devel', 'mesa-libGL-devel',
                                    'mesa-libGLU-devel', 'libXt-devel'
                                ])
+            Stage1 += packages(
+                apt=[
+                    'libosmesa6', 'libgl1-mesa-glx', 'libglu1-mesa', 'libxt6',
+                    'libopengl0'
+                ],
+                yum=['mesa-libOSMesa', 'mesa-libGL', 'mesa-libGLU', 'libXt'])
         if ogscm.config.g_package_manager == package_manager.CONAN:
             Stage0 += cmake(eula=True, version='3.16.6')
             conan_user_home = '/opt/conan'
@@ -298,6 +304,15 @@ def main():  # pragma: no cover
                                        'netcdf-devel', 'qt5-qtbase-devel',
                                        'qt5-qtxmlpatterns-devel',
                                        'qt5-qtx11extras-devel'
+                                   ])
+                Stage1 += packages(apt=[
+                    'geotiff-bin', 'shapelib', 'libnetcdf-c++4',
+                    'libqt5x11extras5', 'libqt5xmlpatterns5', 'qt5-default'
+                ],
+                                   yum=[
+                                       'libgeotiff', 'shapelib', 'netcdf',
+                                       'qt5-qtbase', 'qt5-qtxmlpatterns',
+                                       'qt5-qtx11extras'
                                    ])
                 vtk_cmake_args = [
                     '-DVTK_BUILD_QT_DESIGNER_PLUGIN=OFF', '-DVTK_Group_Qt=ON',
@@ -466,7 +481,7 @@ def main():  # pragma: no cover
         stages_string = str(Stage0)
 
         if args.runtime_only:
-            Stage1 += Stage0.runtime()
+            Stage1 += Stage0.runtime(exclude=['boost'])
             if args.compiler == 'gcc' and args.compiler_version != None:
                 Stage1 += packages(apt=['libstdc++6'])
             stages_string += "\n\n" + str(Stage1)
