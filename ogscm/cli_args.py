@@ -67,10 +67,12 @@ class Cli_Args(argparse.ArgumentParser):
             nargs='*',
             type=str,
             default=['ogs/ogs@master'],
-            help='OGS repo on gitlab.opengeosys.org in the form \'user/repo@branch\' '
+            help=
+            'OGS repo on gitlab.opengeosys.org in the form \'user/repo@branch\' '
             'OR \'user/repo@@commit\' to checkout a specific commit '
             'OR a path to a local subdirectory to the git cloned OGS sources '
-            'OR \'off\' to disable OGS building')
+            'OR \'off\' to disable OGS building '
+            'OR \'clean\' to disable OGS and all its dev dependencies')
         options_g.add_argument(
             '--cmake_args',
             nargs='*',
@@ -119,24 +121,22 @@ class Cli_Args(argparse.ArgumentParser):
             action='store_true',
             help='Generate multi-stage Dockerfiles for small runtime '
             'images')
-        build_g.add_argument(
-            '--ccache',
-            dest='ccache',
-            action='store_true',
-            help='Enables ccache build caching.'
-        )
+        build_g.add_argument('--ccache',
+                             dest='ccache',
+                             action='store_true',
+                             help='Enables ccache build caching.')
         build_g.add_argument(
             '--parallel',
             '-j',
             type=str,
             default=math.ceil(multiprocessing.cpu_count() / 2),
-            help='The number of cores to use for compilation.'
-        )
+            help='The number of cores to use for compilation.')
         switches_g = self.add_argument_group('Additional options')
-        switches_g.add_argument('--base_image',
-                                type=str,
-                                default='ubuntu:20.04',
-                                help='The base image. (centos:8 is supported too)')
+        switches_g.add_argument(
+            '--base_image',
+            type=str,
+            default='ubuntu:20.04',
+            help='The base image. (centos:8 is supported too)')
         switches_g.add_argument(
             '--compiler',
             type=str,
@@ -190,17 +190,17 @@ class Cli_Args(argparse.ArgumentParser):
                                 action='store_true',
                                 help='Builds with insitu capabilities')
         switches_g.add_argument('--pip',
-                               nargs='*',
-                               type=str,
-                               default=[],
-                               metavar='package',
-                               help='Install additional Python packages')
+                                nargs='*',
+                                type=str,
+                                default=[],
+                                metavar='package',
+                                help='Install additional Python packages')
         switches_g.add_argument('--packages',
-                               nargs='*',
-                               type=str,
-                               default=[],
-                               metavar='packages',
-                               help='Install additional OS packages')
+                                nargs='*',
+                                type=str,
+                                default=[],
+                                metavar='packages',
+                                help='Install additional OS packages')
         maint_g = self.add_argument_group('Maintenance')
         maint_g.add_argument(
             '--clean',

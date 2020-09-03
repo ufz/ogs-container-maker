@@ -68,8 +68,8 @@ def main():  # pragma: no cover
             print('--sif_file can only be used when generating a single image '
                   'definition and --convert is given')
             quit(1)
-        if ogs_version == 'off' and len(
-                cmake_args) > 0 and cmake_args[0] != '':
+        if (ogs_version == 'off' or ogs_version
+                == 'clean') and len(cmake_args) > 0 and cmake_args[0] != '':
             cmake_args = []
             print('--cmake_args cannot be used with --ogs off! Ignoring!')
         if __format == 'singularity':
@@ -214,7 +214,8 @@ def main():  # pragma: no cover
                         '--enable-orterun-prefix-by-default',
                     ])
             else:
-                Stage0 += ucx(version='1.8.0', cuda=False)
+                ucx_version = '1.8.1'
+                Stage0 += ucx(version=ucx_version, cuda=False)
                 Stage0 += slurm_pmi2(version='17.02.11')
                 pmix_version = True
                 if version.parse(ompi) >= version.parse('4'):
@@ -244,10 +245,8 @@ def main():  # pragma: no cover
                 })
 
             if args.mpi_benchmarks:
-                osu_app = scif(name='osu', file="_out/osu.scif")
-                osu_app += osu_benchmarks(toolchain=toolchain,
-                                          prefix='/scif/apps/osu')
-                Stage0 += osu_app
+                # osu_app = scif(name='osu', file=f"{info.out_dir}/osu.scif")
+                Stage0 += osu_benchmarks(toolchain=toolchain)
                 Stage0 += shell(commands=[
                     'mkdir -p /usr/local/mpi-examples',
                     'cd /usr/local/mpi-examples',
@@ -259,10 +258,11 @@ def main():  # pragma: no cover
                     'mpicc -o /usr/local/bin/mpi-bandwidth /usr/local/mpi-examples/mpi_bandwidth.c',
                 ])
                 Stage1 += copy(_from='build',
-                               src='/usr/local/bin/mpi_*',
+                               src='/usr/local/bin/mpi-*',
                                dest='/usr/local/bin/')
 
-        Stage0 += ogs_base()
+        if ogs_version != 'clean':
+            Stage0 += ogs_base()
         if args.gui:
             Stage0 += packages(apt=[
                 'mesa-common-dev', 'libgl1-mesa-dev', 'libglu1-mesa-dev',
@@ -278,104 +278,110 @@ def main():  # pragma: no cover
                     'libopengl0'
                 ],
                 yum=['mesa-libOSMesa', 'mesa-libGL', 'mesa-libGLU', 'libXt'])
-        if ogscm.config.g_package_manager == package_manager.CONAN:
-            Stage0 += cmake(eula=True, version='3.16.6')
-            conan_user_home = '/opt/conan'
-            if args.dev:
-                conan_user_home = ''
-            Stage0 += pm_conan(user_home=conan_user_home)
-            Stage0 += environment(variables={'CONAN_SYSREQUIRES_SUDO': 0})
-        elif ogscm.config.g_package_manager == package_manager.SYSTEM:
-            Stage0 += cmake(eula=True, version='3.16.6')
-            Stage0 += boost(version='1.66.0', bootstrap_opts=['headers'])
-            Stage0 += environment(variables={'BOOST_ROOT': '/usr/local/boost'})
-            vtk_cmake_args = [
-                '-DModule_vtkIOXML=ON', '-DVTK_Group_Rendering=OFF',
-                '-DVTK_Group_StandAlone=OFF'
-            ]
-            if args.gui:
-                Stage0 += packages(apt=[
-                    'libgeotiff-dev', 'libshp-dev', 'libnetcdf-c++4-dev',
-                    'libqt5x11extras5-dev', 'libqt5xmlpatterns5-dev',
-                    'qt5-default'
-                ],
-                                   yum=[
-                                       'libgeotiff-devel', 'shapelib-devel',
-                                       'netcdf-devel', 'qt5-qtbase-devel',
-                                       'qt5-qtxmlpatterns-devel',
-                                       'qt5-qtx11extras-devel'
-                                   ])
-                Stage1 += packages(apt=[
-                    'geotiff-bin', 'shapelib', 'libnetcdf-c++4',
-                    'libqt5x11extras5', 'libqt5xmlpatterns5', 'qt5-default'
-                ],
-                                   yum=[
-                                       'libgeotiff', 'shapelib', 'netcdf',
-                                       'qt5-qtbase', 'qt5-qtxmlpatterns',
-                                       'qt5-qtx11extras'
-                                   ])
+        if ogs_version != 'clean':
+            if ogscm.config.g_package_manager == package_manager.CONAN:
+                Stage0 += cmake(eula=True, version='3.16.6')
+                conan_user_home = '/opt/conan'
+                if args.dev:
+                    conan_user_home = ''
+                Stage0 += pm_conan(user_home=conan_user_home)
+                Stage0 += environment(variables={'CONAN_SYSREQUIRES_SUDO': 0})
+            elif ogscm.config.g_package_manager == package_manager.SYSTEM:
+                Stage0 += cmake(eula=True, version='3.16.6')
+                Stage0 += boost(version='1.66.0', bootstrap_opts=['headers'])
+                Stage0 += environment(
+                    variables={'BOOST_ROOT': '/usr/local/boost'})
                 vtk_cmake_args = [
-                    '-DVTK_BUILD_QT_DESIGNER_PLUGIN=OFF', '-DVTK_Group_Qt=ON',
-                    '-DVTK_QT_VERSION=5'
+                    '-DModule_vtkIOXML=ON', '-DVTK_Group_Rendering=OFF',
+                    '-DVTK_Group_StandAlone=OFF'
                 ]
-            if hpccm.config.g_linux_distro == linux_distro.CENTOS:
-                # otherwise linker error, maybe due to gcc 10?
-                vtk_cmake_args.extend([
-                    '-DBUILD_SHARED_LIBS=OFF',
-                    '-DCMAKE_POSITION_INDEPENDENT_CODE=ON'
-                ])
-            if args.insitu:
                 if args.gui:
-                    print('--gui can not be used with --insitu!')
-                    exit(1)
-                Stage0 += paraview(cmake_args=['-DPARAVIEW_USE_PYTHON=ON'],
-                                   edition='CATALYST',
-                                   ldconfig=True,
-                                   toolchain=toolchain,
-                                   version="v5.8.1")
-            else:
-                if toolchain.CC == 'mpicc':
-                    vtk_cmake_args.extend([
-                        '-D Module_vtkIOParallelXML=ON',
-                        '-D Module_vtkParallelMPI=ON'
-                    ])
-                Stage0 += generic_cmake(
-                    cmake_opts=vtk_cmake_args,
-                    devel_environment={'VTK_ROOT': '/usr/local/vtk'},
-                    directory='VTK-8.2.0',
-                    ldconfig=True,
-                    prefix='/usr/local/vtk',
-                    toolchain=toolchain,
-                    url='https://www.vtk.org/files/release/8.2/VTK-8.2.0.tar.gz'
-                )
-            if ompi != 'off':
-                Stage0 += packages(yum=['diffutils'])
-                Stage0 += generic_autotools(
-                    configure_opts=[
-                        f'CC={toolchain.CC}', f'CXX={toolchain.CXX}',
-                        '--CFLAGS=\'-O3\'', '--CXXFLAGS=\'-O3\'',
-                        '--FFLAGS=\'-O3\'', '--with-debugging=no',
-                        '--with-fc=0', '--download-f2cblaslapack=1'
+                    Stage0 += packages(apt=[
+                        'libgeotiff-dev', 'libshp-dev', 'libnetcdf-c++4-dev',
+                        'libqt5x11extras5-dev', 'libqt5xmlpatterns5-dev',
+                        'qt5-default'
                     ],
-                    devel_environment={'PETSC_DIR': '/usr/local/petsc'},
-                    directory='petsc-3.11.3',
-                    ldconfig=True,
-                    preconfigure=["sed -i -- 's/python/python3/g' configure"],
-                    prefix='/usr/local/petsc',
-                    toolchain=toolchain,
-                    url='http://ftp.mcs.anl.gov/pub/petsc/release-snapshots/'
-                    'petsc-lite-3.11.3.tar.gz')
+                                       yum=[
+                                           'libgeotiff-devel',
+                                           'shapelib-devel', 'netcdf-devel',
+                                           'qt5-qtbase-devel',
+                                           'qt5-qtxmlpatterns-devel',
+                                           'qt5-qtx11extras-devel'
+                                       ])
+                    Stage1 += packages(apt=[
+                        'geotiff-bin', 'shapelib', 'libnetcdf-c++4',
+                        'libqt5x11extras5', 'libqt5xmlpatterns5', 'qt5-default'
+                    ],
+                                       yum=[
+                                           'libgeotiff', 'shapelib', 'netcdf',
+                                           'qt5-qtbase', 'qt5-qtxmlpatterns',
+                                           'qt5-qtx11extras'
+                                       ])
+                    vtk_cmake_args = [
+                        '-DVTK_BUILD_QT_DESIGNER_PLUGIN=OFF',
+                        '-DVTK_Group_Qt=ON', '-DVTK_QT_VERSION=5'
+                    ]
+                if hpccm.config.g_linux_distro == linux_distro.CENTOS:
+                    # otherwise linker error, maybe due to gcc 10?
+                    vtk_cmake_args.extend([
+                        '-DBUILD_SHARED_LIBS=OFF',
+                        '-DCMAKE_POSITION_INDEPENDENT_CODE=ON'
+                    ])
+                if args.insitu:
+                    if args.gui:
+                        print('--gui can not be used with --insitu!')
+                        exit(1)
+                    Stage0 += paraview(cmake_args=['-DPARAVIEW_USE_PYTHON=ON'],
+                                       edition='CATALYST',
+                                       ldconfig=True,
+                                       toolchain=toolchain,
+                                       version="v5.8.1")
+                else:
+                    if toolchain.CC == 'mpicc':
+                        vtk_cmake_args.extend([
+                            '-D Module_vtkIOParallelXML=ON',
+                            '-D Module_vtkParallelMPI=ON'
+                        ])
+                    Stage0 += generic_cmake(
+                        cmake_opts=vtk_cmake_args,
+                        devel_environment={'VTK_ROOT': '/usr/local/vtk'},
+                        directory='VTK-8.2.0',
+                        ldconfig=True,
+                        prefix='/usr/local/vtk',
+                        toolchain=toolchain,
+                        url=
+                        'https://www.vtk.org/files/release/8.2/VTK-8.2.0.tar.gz'
+                    )
+                if ompi != 'off':
+                    Stage0 += packages(yum=['diffutils'])
+                    Stage0 += generic_autotools(
+                        configure_opts=[
+                            f'CC={toolchain.CC}', f'CXX={toolchain.CXX}',
+                            '--CFLAGS=\'-O3\'', '--CXXFLAGS=\'-O3\'',
+                            '--FFLAGS=\'-O3\'', '--with-debugging=no',
+                            '--with-fc=0', '--download-f2cblaslapack=1'
+                        ],
+                        devel_environment={'PETSC_DIR': '/usr/local/petsc'},
+                        directory='petsc-3.11.3',
+                        ldconfig=True,
+                        preconfigure=[
+                            "sed -i -- 's/python/python3/g' configure"
+                        ],
+                        prefix='/usr/local/petsc',
+                        toolchain=toolchain,
+                        url='http://ftp.mcs.anl.gov/pub/petsc/release-snapshots/'
+                        'petsc-lite-3.11.3.tar.gz')
 
-            Stage0 += generic_cmake(
-                devel_environment={
-                    'Eigen3_ROOT': '/usr/local/eigen',
-                    'Eigen3_DIR': '/usr/local/eigen'
-                },
-                directory='eigen-3.3.7',
-                prefix='/usr/local/eigen',
-                url=
-                'https://gitlab.com/libeigen/eigen/-/archive/3.3.7/eigen-3.3.7.tar.gz'
-            )
+                Stage0 += generic_cmake(
+                    devel_environment={
+                        'Eigen3_ROOT': '/usr/local/eigen',
+                        'Eigen3_DIR': '/usr/local/eigen'
+                    },
+                    directory='eigen-3.3.7',
+                    prefix='/usr/local/eigen',
+                    url=
+                    'https://gitlab.com/libeigen/eigen/-/archive/3.3.7/eigen-3.3.7.tar.gz'
+                )
         if args.cvode:
             Stage0 += generic_cmake(
                 cmake_opts=[
@@ -443,7 +449,7 @@ def main():  # pragma: no cover
         definition_file_path = os.path.join(info.out_dir, info.definition_file)
         if args.ccache:
             Stage0 += ccache(cache_size='15G')
-        if ogs_version != 'off':
+        if ogs_version != 'off' and ogs_version != 'clean':
             mount_args = ''
             if args.ccache:
                 mount_args = f'{mount_args} --mount=type=cache,target=/opt/ccache,id=ccache'

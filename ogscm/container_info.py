@@ -37,7 +37,7 @@ class container_info():
         name_start = 'gcc'
 
         branch_is_release = False
-        if ogs_version != 'off':
+        if ogs_version != 'off' and ogs_version != 'clean':
             if os.path.isdir(ogs_version):
                 self.repo = 'local'
                 self.commit_hash = subprocess.run(
@@ -49,15 +49,17 @@ class container_info():
                     if 'CI_COMMIT_BRANCH' in os.environ:
                         self.branch = os.environ['CI_COMMIT_BRANCH']
                     elif 'CI_MERGE_REQUEST_SOURCE_BRANCH_NAME' in os.environ:
-                        self.branch = os.environ['CI_MERGE_REQUEST_SOURCE_BRANCH_NAME']
+                        self.branch = os.environ[
+                            'CI_MERGE_REQUEST_SOURCE_BRANCH_NAME']
                     self.git_version = os.getenv('OGS_VERSION', 'x.x.x')
                 else:
                     self.branch = subprocess.run([
-                        'cd {} && git branch | grep \* | cut -d \' \' -f2'.format(
-                            ogs_version)],
-                        capture_output=True,
-                        text=True,
-                        shell=True).stdout
+                        'cd {} && git branch | grep \* | cut -d \' \' -f2'.
+                        format(ogs_version)
+                    ],
+                                                 capture_output=True,
+                                                 text=True,
+                                                 shell=True).stdout
                     self.git_version = subprocess.run(
                         ['cd {} && git describe --tags'.format(ogs_version)],
                         capture_output=True,
