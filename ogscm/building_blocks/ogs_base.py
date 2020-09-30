@@ -43,7 +43,10 @@ class ogs_base(bb_base):
                          apt_ppas=['ppa:git-core/ppa'],
                          epel=True)
         self += shell(commands=self.__commands)
-        self += environment(variables={'CMAKE_GENERATOR': 'Ninja'})
+        self += environment(variables={
+            'CMAKE_GENERATOR': 'Ninja',
+            'PATH': '/usr/local/poetry/bin:$PATH'
+        })
 
     def __setup(self):
         self.__ospackages.extend(['git'])
@@ -72,6 +75,13 @@ class ogs_base(bb_base):
         # Common directories
         self.__commands.append(
             'mkdir -p /apps /scratch /lustre /work /projects /data')
+
+        # Poetry
+        self.__ospackages.append('python3-venv')
+        self.__commands.append('''curl -sSL \
+               https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py \
+               | POETRY_HOME=/usr/local/poetry POETRY_VERSION=1.0.10 python3'''
+                               )
 
     def runtime(self, _from='0'):
         p = python(devel=True, python2=False)

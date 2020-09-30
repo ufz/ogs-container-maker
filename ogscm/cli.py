@@ -199,7 +199,7 @@ def main():  # pragma: no cover
                     ucx='/usr/local/ucx',
                     configure_opts=[
                         '--disable-getpwuid',
-                        '--sysconfdir=/mnt/0'
+                        '--sysconfdir=/mnt/0',
                         '--with-slurm',  # used on taurus
                         '--with-pmi=/usr/include/slurm-wlm',
                         'CPPFLAGS=\'-I /usr/include/slurm-wlm\'',
@@ -219,7 +219,7 @@ def main():  # pragma: no cover
                 Stage0 += slurm_pmi2(version='17.02.11')
                 pmix_version = True
                 if version.parse(ompi) >= version.parse('4'):
-                    Stage0 += pmix()
+                    Stage0 += pmix(version='3.1.5')
                     pmix_version = '/usr/local/pmix'
 
                 mpicc = openmpi(version=ompi,
@@ -260,6 +260,8 @@ def main():  # pragma: no cover
                 Stage1 += copy(_from='build',
                                src='/usr/local/bin/mpi-*',
                                dest='/usr/local/bin/')
+
+            # Stage0 += mlnx_ofed()
 
         if ogs_version != 'clean':
             Stage0 += ogs_base()
