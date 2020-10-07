@@ -16,25 +16,14 @@ import subprocess
 import sys
 import yaml
 
-from packaging import version
-
 import hpccm
 from hpccm import linux_distro
 from hpccm.building_blocks import (
     packages,
-    mlnx_ofed,
-    knem,
-    ucx,
-    openmpi,
     boost,
     pip,
     scif,
-    llvm,
-    gnu,
-    ofed,
     cmake,
-    slurm_pmi2,
-    pmix,
     generic_cmake,
     generic_autotools,
 )
@@ -58,11 +47,11 @@ from ogscm.building_blocks import (
     ccache,
     ogs_base,
     ogs,
-    osu_benchmarks,
     pm_conan,
     paraview,
 )
 from ogscm.app import builder
+from ogscm.recipes import compiler_recipe, mpi_recipe
 
 
 def main():  # pragma: no cover
@@ -124,182 +113,20 @@ def main():  # pragma: no cover
         f"Generated with ogs-container-maker {__version__}", reformat=False
     )
 
-    Stage0 += packages(ospackages=["wget", "tar", "curl", "make"])
-
-    # base compiler
-    if args.compiler != "off":
-        if args.compiler_version == "":
-            if args.compiler == "clang":
-                args.compiler_version = "8"
-            else:
-                if hpccm.config.g_linux_distro == linux_distro.CENTOS:
-                    args.compiler_version = "10"  # required for std::filesystem
-                else:
-                    args.compiler_version = None  # Use default
-        if args.compiler == "clang":
-            compiler = llvm(
-                extra_repository=True, extra_tools=True, version=args.compiler_version
-            )
-        else:
-            compiler = gnu(
-                fortran=False, extra_repository=True, version=args.compiler_version
-            )
-        toolchain = compiler.toolchain
-        Stage0 += compiler
-        # Upgrade stdc++ lib after installing new compiler
-        # https://stackoverflow.com/a/46613656/80480
-        if args.compiler == "gcc" and args.compiler_version is not None:
-            Stage0 += packages(apt=["libstdc++6"])
-
     # Prepare runtime stage
     Stage1 = hpccm.Stage()
     Stage1.baseimage(image=args.base_image)
+
+    Stage0 += packages(ospackages=["wget", "tar", "curl", "make"])
+
+    toolchain = compiler_recipe(Stage0, Stage1, args).toolchain
 
     # Install scif in all stages
     Stage0 += pip(packages=["scif"], pip="pip3")
     Stage1 += pip(packages=["scif"], pip="pip3")
 
     if args.ompi != "off":
-        mpicc = object
-        if False:  # eve:
-            # Stage0 += ofed() OR mlnx_ofed(); is installed later on from debian archive
-            # Stage0 += knem()
-            Stage0 += ucx(version="1.5.1", cuda=False)  # knem='/usr/local/knem'
-            Stage0 += packages(ospackages=["libpmi2-0-dev"])  # req. for --with-pmi
-            # req. for --with-psm2
-            Stage0 += packages(ospackages=["libnuma1"])
-            psm_deb_url = (
-                "http://snapshot.debian.org/archive/debian/20181231T220010Z/pool/main"
-            )
-            psm2_version = "11.2.68-4"
-            Stage0 += shell(
-                commands=[
-                    "cd /tmp",
-                    f"wget -nv {psm_deb_url}/libp/libpsm2/libpsm2-2_{psm2_version}_amd64.deb",
-                    f"wget -nv {psm_deb_url}/libp/libpsm2/libpsm2-dev_{psm2_version}_amd64.deb",
-                    "dpkg --install *.deb",
-                ]
-            )
-
-            # libibverbs
-            # Available versions: http://snapshot.debian.org/binary/ibacm/
-            # ibverbs_version = '21.0-1'
-            # works on eve, eve has 17.2-3 installed nut this version is not available in snapshot.debian
-            ib_deb_url = (
-                "http://snapshot.debian.org/archive/debian/20180430T215634Z/pool/main"
-            )
-            ibverbs_version = "17.1-2"
-            ibverbs_packages = [
-                "ibacm",
-                "ibverbs-providers",
-                "ibverbs-utils",
-                "libibumad-dev",
-                "libibumad3",
-                "libibverbs-dev",
-                "libibverbs1",
-                "librdmacm-dev",
-                "librdmacm1",
-                "rdma-core",
-                "rdmacm-utils",
-            ]
-            ibverbs_cmds = ["cd /tmp"]
-            for package in ibverbs_packages:
-                ibverbs_cmds.extend(
-                    [
-                        f"wget -nv {ib_deb_url}/r/rdma-core/{package}_{ibverbs_version}_amd64.deb"
-                    ]
-                )
-            ibverbs_cmds.append("dpkg --install *.deb")
-            Stage0 += packages(
-                ospackages=[
-                    "libnl-3-200",
-                    "libnl-route-3-200",
-                    "libnl-route-3-dev",
-                    "udev",
-                    "perl",
-                ]
-            )
-            Stage0 += shell(commands=ibverbs_cmds)
-
-            mpicc = openmpi(
-                version=args.ompi,
-                cuda=False,
-                toolchain=toolchain,
-                ldconfig=True,
-                ucx="/usr/local/ucx",
-                configure_opts=[
-                    "--disable-getpwuid",
-                    "--sysconfdir=/mnt/0",
-                    "--with-slurm",  # used on taurus
-                    "--with-pmi=/usr/include/slurm-wlm",
-                    "CPPFLAGS='-I /usr/include/slurm-wlm'",
-                    "--with-pmi-libdir=/usr/lib/x86_64-linux-gnu",
-                    # '--with-pmix',
-                    "--with-psm2",
-                    "--disable-pty-support",
-                    "--enable-mca-no-build=btl-openib,plm-slurm",
-                    # eve:
-                    "--with-sge",
-                    "--enable-mpirun-prefix-by-default",
-                    "--enable-orterun-prefix-by-default",
-                ],
-            )
-        else:
-            ucx_version = "1.8.1"
-            Stage0 += ucx(version=ucx_version, cuda=False)
-            Stage0 += slurm_pmi2(version="17.02.11")
-            pmix_version = True
-            if version.parse(args.ompi) >= version.parse("4"):
-                Stage0 += pmix(version="3.1.5")
-                pmix_version = "/usr/local/pmix"
-
-            mpicc = openmpi(
-                version=args.ompi,
-                cuda=False,
-                infiniband=False,
-                pmi="/usr/local/slurm-pmi2",
-                pmix=pmix_version,
-                ucx="/usr/local/ucx",
-            )
-
-        toolchain = mpicc.toolchain
-        Stage0 += mpicc
-        # OpenMPI expects this program to exist, even if it's not used.
-        # Default is "ssh : rsh", but that's not installed.
-        Stage0 += shell(
-            commands=[
-                "mkdir /mnt/0",
-                "echo 'plm_rsh_agent = false' >> /mnt/0/openmpi-mca-params.conf",
-            ]
-        )
-
-        Stage0 += label(
-            metadata={
-                "org.opengeosys.mpi": "openmpi",
-                "org.opengeosys.mpi.version": args.ompi,
-            }
-        )
-
-        if args.mpi_benchmarks:
-            # osu_app = scif(name='osu', file=f"{info.out_dir}/osu.scif")
-            Stage0 += osu_benchmarks(toolchain=toolchain)
-            Stage0 += shell(
-                commands=[
-                    "mkdir -p /usr/local/mpi-examples",
-                    "cd /usr/local/mpi-examples",
-                    "curl -O https://raw.githubusercontent.com/hpc/charliecloud/674b3b4e4ad243be5565f200d8f5fb92b7544480/examples/mpihello/hello.c",
-                    "curl -O https://computing.llnl.gov/tutorials/mpi/samples/C/mpi_bandwidth.c",
-                    "curl -O https://raw.githubusercontent.com/mpitutorial/mpitutorial/gh-pages/tutorials/mpi-send-and-receive/code/ring.c",
-                    "mpicc -o /usr/local/bin/mpi-hello /usr/local/mpi-examples/hello.c",
-                    "mpicc -o /usr/local/bin/mpi-ring /usr/local/mpi-examples/ring.c",
-                    "mpicc -o /usr/local/bin/mpi-bandwidth /usr/local/mpi-examples/mpi_bandwidth.c",
-                ]
-            )
-            Stage1 += copy(
-                _from="build", src="/usr/local/bin/mpi-*", dest="/usr/local/bin/"
-            )
-
-            # Stage0 += mlnx_ofed()
+        toolchain = mpi_recipe(Stage0, Stage1, args).toolchain
 
     if args.ogs != "clean":
         Stage0 += ogs_base()
@@ -567,8 +394,7 @@ def main():  # pragma: no cover
     if not args.build:
         exit(0)
 
-    _builder = builder(args=args, info=info)
-    _builder.build()
+    builder(args=args, info=info).build()
 
     # Deploy image
     if not args.deploy:
