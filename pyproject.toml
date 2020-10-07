@@ -1,0 +1,27 @@
+[tool.poetry]
+name = "ogscm"
+version = "1.6.1"
+description = "OGS Container Maker"
+authors = ["Lars Bilke <lars.bilke@ufz.de>"]
+license = "BSD 3-clause"
+repository = "https://gitlab.opengeosys.org/ogs/container-maker"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.7"
+hpccm = "^20.9.0"
+requests = "^2.24.0"
+PyYAML = "^5.3.1"
+packaging = "^20.4"
+
+[tool.poetry.dev-dependencies]
+
+[tool.poetry.scripts]
+ogscm = "ogscm.cli:main"
+
+[tool.poetry.urls]
+"OpenGepSys project" = "https://www.opengeosys.org"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"

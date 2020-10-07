@@ -161,7 +161,6 @@ python ThirdParty/container-maker/ogscm/cli.py -B -C -R --ogs . --pm system --cv
 
 ## PyPi Publication
 
-- Check if requirements.txt has changed, change `setup.py` accordingly
-- Bump version in `version.py`
+- Bump version in `pyproject.py`
 - Create tag
 - Push to GitLab (`git push --tags`)

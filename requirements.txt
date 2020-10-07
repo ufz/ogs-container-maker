@@ -1,5 +1,0 @@
-six
-hpccm
-requests
-pyyaml
-packaging
