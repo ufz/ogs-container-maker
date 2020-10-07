@@ -77,10 +77,13 @@ class ogs_base(bb_base):
             'mkdir -p /apps /scratch /lustre /work /projects /data')
 
         # Poetry
-        self.__ospackages.append('python3-venv')
+        if hpccm.config.g_linux_distro == linux_distro.UBUNTU:
+            self.__ospackages.append('python3-venv')
+        else:
+            self.__ospackages.append('python3-virtualenv')
         self.__commands.append('''curl -sSL \
                https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py \
-               | POETRY_HOME=/usr/local/poetry POETRY_VERSION=1.0.10 python3'''
+               | POETRY_HOME=/usr/local/poetry POETRY_VERSION=1.1.2 python3'''
                                )
 
     def runtime(self, _from='0'):
