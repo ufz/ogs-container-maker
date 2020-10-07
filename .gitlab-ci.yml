@@ -11,6 +11,7 @@ before_script:
 dev images:
   tags: ['docker-shell']
   script:
+    - black --check ogscm
     - poetry run ogscm -B -C --sif_file ubuntu-dev.sif --pm system --ogs off
     - poetry run ogscm -B -C --sif_file centos-dev.sif --base_image centos:8 --pm system --ogs off
   artifacts:
