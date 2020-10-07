@@ -24,7 +24,7 @@ class pm_conan(bb_base):
     def __init__(self, **kwargs):
         super(pm_conan, self).__init__()
 
-        self.__user_home = kwargs.get('user_home', '')
+        self.__user_home = kwargs.get("user_home", "")
 
         self.__commands = []
 
@@ -35,31 +35,35 @@ class pm_conan(bb_base):
     def __instructions(self):
         self += comment(__doc__, reformat=False)
         # https://github.com/bincrafters/community/issues/880
-        self += packages(ospackages=['pkg-config'])
+        self += packages(ospackages=["pkg-config"])
         # For building curl:
-        self += packages(ospackages=['autoconf-archive', 'libtool'])
+        self += packages(ospackages=["autoconf-archive", "libtool"])
         conan_version = "1.22.2"
 
-        self += pip(pip='pip3', packages=['conan=={}'.format(conan_version)])
+        self += pip(pip="pip3", packages=["conan=={}".format(conan_version)])
         self += shell(commands=self.__commands)
-        if self.__user_home != '':
-            self += environment(variables={'CONAN_USER_HOME': self.__user_home})
-        self += label(metadata={
-            'org.opengeosys.pm': 'conan',
-            'org.opengeosys.pm.conan.version': conan_version
-        })
-        if self.__user_home != '':
-            self += label(metadata={
-                'org.opengeosys.pm.conan.user_home': self.__user_home
-            })
+        if self.__user_home != "":
+            self += environment(variables={"CONAN_USER_HOME": self.__user_home})
+        self += label(
+            metadata={
+                "org.opengeosys.pm": "conan",
+                "org.opengeosys.pm.conan.version": conan_version,
+            }
+        )
+        if self.__user_home != "":
+            self += label(
+                metadata={"org.opengeosys.pm.conan.user_home": self.__user_home}
+            )
 
     def __setup(self):
-        if self.__user_home != '':
-            self.__commands.extend([
-                # Create Conan cache dir writable by all users
-                # TODO: does not work in Singularity: Read-only file system
-                'mkdir -p /opt/conan',
-                'chmod 777 /opt/conan'
-            ])
+        if self.__user_home != "":
+            self.__commands.extend(
+                [
+                    # Create Conan cache dir writable by all users
+                    # TODO: does not work in Singularity: Read-only file system
+                    "mkdir -p /opt/conan",
+                    "chmod 777 /opt/conan",
+                ]
+            )
 
     # No runtime

@@ -178,6 +178,6 @@ python ThirdParty/container-maker/ogscm/cli.py -B -C -R --ogs . --pm system --cv
 
 ## PyPi Publication
 
-- Bump version in `pyproject.py`
+- Bump version in `pyproject.py` and `version.py`
 - Create tag
 - Push to GitLab (`git push --tags`)
