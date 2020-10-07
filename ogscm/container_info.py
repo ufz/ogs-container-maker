@@ -30,18 +30,14 @@ class container_info():
         self.branch = ''
         self.git_version = ''
 
-        container_format = args.format
-        ogs_version = args.ogs
-        ompi = args.ompi
-        cmake_args = args.cmake_args
         name_start = 'gcc'
-
         branch_is_release = False
-        if ogs_version != 'off' and ogs_version != 'clean':
-            if os.path.isdir(ogs_version):
+
+        if args.ogs != 'off' and args.ogs != 'clean':
+            if os.path.isdir(args.ogs):
                 self.repo = 'local'
                 self.commit_hash = subprocess.run(
-                    ['cd {} && git rev-parse HEAD'.format(ogs_version)],
+                    ['cd {} && git rev-parse HEAD'.format(args.ogs)],
                     capture_output=True,
                     text=True,
                     shell=True).stdout.rstrip()
@@ -51,23 +47,23 @@ class container_info():
                     elif 'CI_MERGE_REQUEST_SOURCE_BRANCH_NAME' in os.environ:
                         self.branch = os.environ[
                             'CI_MERGE_REQUEST_SOURCE_BRANCH_NAME']
-                    self.git_version = os.getenv('OGS_VERSION', 'x.x.x')
+                    self.git_version = os.getenv('args.ogs', 'x.x.x')
                 else:
                     self.branch = subprocess.run([
                         'cd {} && git branch | grep \* | cut -d \' \' -f2'.
-                        format(ogs_version)
+                        format(args.ogs)
                     ],
                                                  capture_output=True,
                                                  text=True,
                                                  shell=True).stdout
                     self.git_version = subprocess.run(
-                        ['cd {} && git describe --tags'.format(ogs_version)],
+                        ['cd {} && git describe --tags'.format(args.ogs)],
                         capture_output=True,
                         text=True,
                         shell=True).stdout[0]
             else:
                 # Get git commit hash and construct image tag name
-                self.repo, self.branch, *commit = ogs_version.split("@")
+                self.repo, self.branch, *commit = args.ogs.split("@")
                 if commit:
                     self.commit_hash = commit[0]
                     if self.branch == '':
@@ -81,7 +77,7 @@ class container_info():
                     )
                     response_data = json.loads(response.text)
                     self.commit_hash = response_data[0]['id']
-                    # ogs_tag = ogs_version.replace('/', '.').replace('@', '.')
+                    # ogs_tag = args.ogs.replace('/', '.').replace('@', '.')
 
             if branch_is_release:
                 name_start = f'ogs-{self.branch}'
@@ -92,12 +88,12 @@ class container_info():
                 name_start = 'clang'
 
         name_openmpi = 'serial'
-        if ompi != 'off':
-            name_openmpi = f"openmpi-{ompi}"
+        if args.ompi != 'off':
+            name_openmpi = f"openmpi-{args.ompi}"
 
-        if len(cmake_args) > 0:
+        if len(args.cmake_args) > 0:
             cmake_args_hash = hashlib.md5(
-                ' '.join(cmake_args).encode('utf-8')).hexdigest()
+                ' '.join(args.cmake_args).encode('utf-8')).hexdigest()
             cmake_args_hash_short = cmake_args_hash[:8]
 
         # name_image = args.base_image.replace(':', '_')
@@ -105,11 +101,11 @@ class container_info():
         img_folder = (f"{name_start}/{name_openmpi}/"
                       f"{config.g_package_manager.name.lower()}")
         self.img_file = img_folder.replace("/", "-")
-        if len(cmake_args) > 0:
+        if len(args.cmake_args) > 0:
             self.img_file += f'-cmake-{cmake_args_hash_short}'
         if args.gui:
             self.img_file += '-gui'
-        if ogs_version != 'off' and not args.runtime_only:
+        if args.ogs != 'off' and not args.runtime_only:
             self.img_file += '-dev'
 
         if args.tag != '':
@@ -117,7 +113,7 @@ class container_info():
         else:
             self.tag = f"{args.registry}/{self.img_file}:latest"
 
-        if os.path.isdir(ogs_version):
+        if os.path.isdir(args.ogs):
             self.ogsdir = True
 
         if args.file != '':
@@ -126,14 +122,14 @@ class container_info():
         else:
             if self.ogsdir:
                 self.out_dir = os.path.join(
-                    ogs_version, f"{args.out}/{container_format}/{img_folder}")
+                    args.ogs, f"{args.out}/{args.format}/{img_folder}")
             else:
-                self.out_dir = f"{args.out}/{container_format}/{img_folder}"
-            if len(cmake_args) > 0:
+                self.out_dir = f"{args.out}/{args.format}/{img_folder}"
+            if len(args.cmake_args) > 0:
                 self.out_dir += f'/cmake-{cmake_args_hash_short}'
             self.images_out_dir = f"{args.out}/images"
             self.definition_file = 'Dockerfile'
-            if container_format == 'singularity':
+            if args.format == 'singularity':
                 self.definition_file = 'Singularity.def'
 
     def make_dirs(self):

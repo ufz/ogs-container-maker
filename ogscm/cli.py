@@ -21,7 +21,7 @@ from packaging import version
 import hpccm
 from hpccm import linux_distro
 from hpccm.building_blocks import packages, mlnx_ofed, knem, ucx, openmpi, \
-    boost, pip, scif, llvm, gnu, ofed, cmake, slurm_pmi2, pmix, generic_cmake, \
+    boost, pip, scif, llvm, gnu, ofed, cmake, slurm_pmi2, pmix, generic_cmake,\
     generic_autotools
 from hpccm.primitives import baseimage, comment, user, environment, raw, \
     label, shell, copy
@@ -39,27 +39,22 @@ def main():  # pragma: no cover
     cli = Cli_Args()
     args = cli.parse_args()
 
-    if args.deploy != '':
-        args.build = True
-        args.convert = True
-
     cwd = os.getcwd()
 
-    __format = args.format
-    ogs_version = args.ogs
     ogscm.config.set_package_manager(args.pm)
-    ompi = args.ompi
     cmake_args = args.cmake_args.strip().split(' ')
 
     # args checking
-    if (args.sif_file != '' and args.convert == False):
-        print('--sif_file can only be used when --convert is given')
-        quit(1)
-    if (ogs_version == 'off' or ogs_version
+    if not args.deploy == '':
+        args.build = True
+        args.convert = True
+    if not args.sif_file == '':
+        args.convert = True
+    if (args.ogs == 'off' or args.ogs
             == 'clean') and len(cmake_args) > 0 and cmake_args[0] != '':
         cmake_args = []
         print('--cmake_args cannot be used with --ogs off! Ignoring!')
-    if __format == 'singularity':
+    if args.format == 'singularity':
         if args.runtime_only:
             args.runtime_only = False
             print(
@@ -78,7 +73,7 @@ def main():  # pragma: no cover
         exit(0)
     info.make_dirs()
 
-    if ompi != 'off':
+    if args.ompi != 'off':
         if args.base_image == 'ubuntu:20.04':
             args.base_image = 'centos:8'
             print(
@@ -86,7 +81,7 @@ def main():  # pragma: no cover
             )
 
     # Create definition
-    hpccm.config.set_container_format(__format)
+    hpccm.config.set_container_format(args.format)
 
     # ------------------------------ recipe -------------------------------
     Stage0 = hpccm.Stage()
@@ -134,7 +129,7 @@ def main():  # pragma: no cover
     Stage0 += pip(packages=['scif'], pip='pip3')
     Stage1 += pip(packages=['scif'], pip='pip3')
 
-    if ompi != 'off':
+    if args.ompi != 'off':
         mpicc = object
         if False:  # eve:
             # Stage0 += ofed() OR mlnx_ofed(); is installed later on from debian archive
@@ -179,7 +174,7 @@ def main():  # pragma: no cover
             Stage0 += shell(commands=ibverbs_cmds)
 
             mpicc = openmpi(
-                version=ompi,
+                version=args.ompi,
                 cuda=False,
                 toolchain=toolchain,
                 ldconfig=True,
@@ -205,11 +200,11 @@ def main():  # pragma: no cover
             Stage0 += ucx(version=ucx_version, cuda=False)
             Stage0 += slurm_pmi2(version='17.02.11')
             pmix_version = True
-            if version.parse(ompi) >= version.parse('4'):
+            if version.parse(args.ompi) >= version.parse('4'):
                 Stage0 += pmix(version='3.1.5')
                 pmix_version = '/usr/local/pmix'
 
-            mpicc = openmpi(version=ompi,
+            mpicc = openmpi(version=args.ompi,
                             cuda=False,
                             infiniband=False,
                             pmi='/usr/local/slurm-pmi2',
@@ -228,7 +223,7 @@ def main():  # pragma: no cover
         Stage0 += label(
             metadata={
                 'org.opengeosys.mpi': 'openmpi',
-                'org.opengeosys.mpi.version': ompi
+                'org.opengeosys.mpi.version': args.ompi
             })
 
         if args.mpi_benchmarks:
@@ -250,7 +245,7 @@ def main():  # pragma: no cover
 
             # Stage0 += mlnx_ofed()
 
-    if ogs_version != 'clean':
+    if args.ogs != 'clean':
         Stage0 += ogs_base()
     if args.gui:
         Stage0 += packages(apt=[
@@ -267,7 +262,7 @@ def main():  # pragma: no cover
                 'libopengl0'
             ],
             yum=['mesa-libOSMesa', 'mesa-libGL', 'mesa-libGLU', 'libXt'])
-    if ogs_version != 'clean':
+    if args.ogs != 'clean':
         if ogscm.config.g_package_manager == package_manager.CONAN:
             Stage0 += cmake(eula=True, version='3.16.6')
             conan_user_home = '/opt/conan'
@@ -341,7 +336,7 @@ def main():  # pragma: no cover
                     url=
                     'https://www.vtk.org/files/release/8.2/VTK-8.2.0.tar.gz'
                 )
-            if ompi != 'off':
+            if args.ompi != 'off':
                 Stage0 += packages(yum=['diffutils'])
                 Stage0 += generic_autotools(
                     configure_opts=[
@@ -438,7 +433,7 @@ def main():  # pragma: no cover
     definition_file_path = os.path.join(info.out_dir, info.definition_file)
     if args.ccache:
         Stage0 += ccache(cache_size='15G')
-    if ogs_version != 'off' and ogs_version != 'clean':
+    if args.ogs != 'off' and args.ogs != 'clean':
         mount_args = ''
         if args.ccache:
             mount_args = f'{mount_args} --mount=type=cache,target=/opt/ccache,id=ccache'
@@ -453,9 +448,9 @@ def main():  # pragma: no cover
 
         scif_file = f"{info.out_dir}/ogs.scif"
         if info.ogsdir:
-            context_path_size = len(ogs_version)
-            print(f"chdir to {ogs_version}")
-            os.chdir(ogs_version)
+            context_path_size = len(args.ogs)
+            print(f"chdir to {args.ogs}")
+            os.chdir(args.ogs)
             mount_args = f'{mount_args} --mount=type=bind,target=/scif/apps/ogs/src,rw'
             scif_file = f"{info.out_dir[context_path_size+1:]}/ogs.scif"
             definition_file_path = f"{info.out_dir[context_path_size+1:]}/{info.definition_file}"
@@ -494,7 +489,7 @@ def main():  # pragma: no cover
     if not args.build:
         exit(0)
 
-    if __format == 'singularity':
+    if args.format == 'singularity':
         subprocess.run(
             f"sudo `which singularity` build --force {info.images_out_dir}/{info.img_file}.sif"
             f"{definition_file_path}",
