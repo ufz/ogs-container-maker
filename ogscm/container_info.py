@@ -29,6 +29,7 @@ class container_info:
         self.repo = ""
         self.branch = ""
         self.git_version = ""
+        self.cwd = os.getcwd()
 
         name_start = "gcc"
         branch_is_release = False

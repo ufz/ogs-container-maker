@@ -62,13 +62,12 @@ from ogscm.building_blocks import (
     pm_conan,
     paraview,
 )
+from ogscm.app import builder
 
 
 def main():  # pragma: no cover
     cli = Cli_Args()
     args = cli.parse_args()
-
-    cwd = os.getcwd()
 
     ogscm.config.set_package_manager(args.pm)
     cmake_args = args.cmake_args.strip().split(" ")
@@ -575,47 +574,14 @@ def main():  # pragma: no cover
     if not args.build:
         exit(0)
 
-    if args.format == "singularity":
-        subprocess.run(
-            f"sudo `which singularity` build --force {info.images_out_dir}/{info.img_file}.sif"
-            f"{definition_file_path}",
-            shell=True,
-        )
-        subprocess.run(
-            f"sudo chown $USER:$USER {info.images_out_dir}/{info.img_file}.sif",
-            shell=True,
-        )
-        # TODO: adapt this to else
-        exit(0)
-
-    build_cmd = (
-        f"DOCKER_BUILDKIT=1 docker build {args.build_args} "
-        f"-t {info.tag} -f {definition_file_path} ."
-    )
-    print(f"Running: {build_cmd}")
-    subprocess.run(build_cmd, shell=True)
-    inspect_out = subprocess.check_output(
-        f"docker inspect {info.tag} | grep Id", shell=True
-    ).decode(sys.stdout.encoding)
-    image_id = re.search("sha256:(\w*)", inspect_out).group(1)
-    image_id_short = image_id[0:12]
-    if args.upload:
-        subprocess.run(f"docker push {info.tag}", shell=True)
-    if args.sif_file:
-        image_file = f"{info.images_out_dir}/{args.sif_file}"
-    else:
-        image_file = f"{info.images_out_dir}/{info.img_file}-{image_id_short}.sif"
-    if args.convert and not os.path.exists(image_file):
-        subprocess.run(
-            f"cd {cwd} && singularity build --force {image_file} docker-daemon:{info.tag}",
-            shell=True,
-        )
+    _builder = builder(args=args, definition_file=definition_file_path, info=info)
+    _builder.build()
 
     # Deploy image
     if not args.deploy:
         exit(0)
 
-    deploy_config_filename = f"{cwd}/config/deploy_hosts.yml"
+    deploy_config_filename = f"{info.cwd}/config/deploy_hosts.yml"
     if not os.path.isfile(deploy_config_filename):
         print(f"ERROR: {deploy_config_filename} not found but required for deploying!")
         exit(1)
