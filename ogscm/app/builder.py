@@ -7,7 +7,6 @@ import os
 class builder(object):
     def __init__(self, **kwargs):
         self.__format = kwargs.get("format", "docker")
-        self.__definition_file = kwargs.get("definition_file")
         self.__info = kwargs.get("info")
         self.__args = kwargs.get("args")
 
@@ -21,7 +20,7 @@ class builder(object):
         sif_file = f"{self.__info.images_out_dir}/{self.__info.img_file}.sif"
         subprocess.run(
             f"sudo `which singularity` build --force {sif_file}"
-            f"{self.__definition_file}",
+            f"{self.__info.definition_file_path}",
             shell=True,
         )
         subprocess.run(
@@ -34,7 +33,7 @@ class builder(object):
     def build_docker(self):
         build_cmd = (
             f"DOCKER_BUILDKIT=1 docker build {self.__args.build_args} "
-            f"-t {self.__info.tag} -f {self.__definition_file} ."
+            f"-t {self.__info.tag} -f {self.__info.definition_file_path} ."
         )
         print(f"Running: {build_cmd}")
         subprocess.run(build_cmd, shell=True)

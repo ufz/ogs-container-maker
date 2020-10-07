@@ -20,16 +20,18 @@ from ogscm import config
 class container_info:
     def __init__(self, args):
         """Initialize container info"""
-        self.ogsdir = False
-        self.outdir = ""
+        self.branch = ""
+        self.commit_hash = ""
+        self.cwd = os.getcwd()
         self.definition_file = ""
+        self.definition_file_path = ""
+        self.git_version = ""
         self.images_out_dir = ""
         self.img_file = ""
-        self.commit_hash = ""
+        self.ogsdir = False
+        self.outdir = ""
         self.repo = ""
-        self.branch = ""
-        self.git_version = ""
-        self.cwd = os.getcwd()
+        self.scif_file = ""
 
         name_start = "gcc"
         branch_is_release = False
@@ -139,6 +141,16 @@ class container_info:
             self.definition_file = "Dockerfile"
             if args.format == "singularity":
                 self.definition_file = "Singularity.def"
+
+        if self.ogsdir:
+            context_path_size = len(self.ogsdir)
+            scif_file = f"{self.out_dir[context_path_size+1:]}/ogs.scif"
+            self.definition_file_path = (
+                f"{self.out_dir[context_path_size+1:]}/{self.definition_file}"
+            )
+        else:
+            self.scif_file = f"{self.out_dir}/ogs.scif"
+            self.definition_file_path = os.path.join(self.out_dir, self.definition_file)
 
     def make_dirs(self):
         if not os.path.exists(self.out_dir):

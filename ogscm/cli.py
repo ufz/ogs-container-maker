@@ -512,7 +512,6 @@ def main():  # pragma: no cover
         )
         Stage0 += environment(variables={"TFELHOME": "/usr/local/tfel"})
 
-    definition_file_path = os.path.join(info.out_dir, info.definition_file)
     if args.ccache:
         Stage0 += ccache(cache_size="15G")
     if args.ogs != "off" and args.ogs != "clean":
@@ -528,18 +527,12 @@ def main():  # pragma: no cover
 
         Stage0 += raw(docker=f"ARG OGS_COMMIT_HASH={info.commit_hash}")
 
-        scif_file = f"{info.out_dir}/ogs.scif"
         if info.ogsdir:
-            context_path_size = len(args.ogs)
             print(f"chdir to {args.ogs}")
             os.chdir(args.ogs)
             mount_args = f"{mount_args} --mount=type=bind,target=/scif/apps/ogs/src,rw"
-            scif_file = f"{info.out_dir[context_path_size+1:]}/ogs.scif"
-            definition_file_path = (
-                f"{info.out_dir[context_path_size+1:]}/{info.definition_file}"
-            )
 
-        ogs_app = scif(_arguments=mount_args, name="ogs", file=scif_file)
+        ogs_app = scif(_arguments=mount_args, name="ogs", file=info.scif_file)
         ogs_app += ogs(
             repo=info.repo,
             branch=info.branch,
@@ -563,18 +556,18 @@ def main():  # pragma: no cover
         stages_string += "\n\n" + str(Stage1)
 
     # ---------------------------- recipe end -----------------------------
-    with open(definition_file_path, "w") as f:
+    with open(info.definition_file_path, "w") as f:
         print(stages_string, file=f)
     if args.print:
         print(stages_string)
     else:
-        print(f"Created definition {os.path.abspath(definition_file_path)}")
+        print(f"Created definition {os.path.abspath(info.definition_file_path)}")
 
     # Create image
     if not args.build:
         exit(0)
 
-    _builder = builder(args=args, definition_file=definition_file_path, info=info)
+    _builder = builder(args=args, info=info)
     _builder.build()
 
     # Deploy image
