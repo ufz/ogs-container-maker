@@ -40,47 +40,53 @@ class Cli_Args(argparse.ArgumentParser):
                           dest='print',
                           action='store_true',
                           help='Print the definition to stdout')
-        options_g = self.add_argument_group(
-            'Combinatorial options',
-            'All combinations of the given options will '
-            'be generated')
-        options_g.add_argument('--format',
-                               nargs='*',
+        general_g = self.add_argument_group('General image config')
+        general_g.add_argument('--format',
                                type=str,
                                choices=['docker', 'singularity'],
-                               default=['docker'])
-        options_g.add_argument('--pm',
-                               nargs='*',
+                               default='docker')
+        general_g.add_argument(
+            '--base_image',
+            type=str,
+            default='ubuntu:20.04',
+            help='The base image. (centos:8 is supported too)')
+        general_g.add_argument(
+            '--compiler',
+            type=str,
+            default='gcc',
+            help='The compiler to use. Possible options: off, gcc, clang')
+        general_g.add_argument('--compiler_version',
+                                type=str,
+                                default='',
+                                help='Compiler version.')
+        general_g.add_argument('--pm',
                                type=str,
                                choices=['system', 'conan', 'off'],
-                               default=['conan'],
+                               default='conan',
                                help='Package manager to install third-party '
                                'dependencies')
-        options_g.add_argument(
+        general_g.add_argument(
             '--ompi',
-            nargs='*',
             type=str,
-            default=['off'],
+            default='off',
             help='OpenMPI version, e.g. 2.1.1, 2.1.5, 3.0.1, 3.1.2')
-        options_g.add_argument(
+        general_g.add_argument(
             '--ogs',
-            nargs='*',
             type=str,
-            default=['ogs/ogs@master'],
+            default='ogs/ogs@master',
             help=
             'OGS repo on gitlab.opengeosys.org in the form \'user/repo@branch\' '
             'OR \'user/repo@@commit\' to checkout a specific commit '
             'OR a path to a local subdirectory to the git cloned OGS sources '
             'OR \'off\' to disable OGS building '
             'OR \'clean\' to disable OGS and all its dev dependencies')
-        options_g.add_argument(
+        general_g.add_argument(
             '--cmake_args',
-            nargs='*',
             type=str,
-            default=[''],
-            help='CMake argument sets have to be quoted and **must**'
+            default='',
+            help='CMake argument set has to be quoted and **must**'
             ' start with a space. e.g. --cmake_args \' -DFIRST='
-            'TRUE -DFOO=BAR\' \' -DSECOND=TRUE\'')
+            'TRUE -DFOO=BAR\'')
         build_g = self.add_argument_group('Image build options')
         build_g.add_argument('--build',
                              '-B',
@@ -132,20 +138,6 @@ class Cli_Args(argparse.ArgumentParser):
             default=math.ceil(multiprocessing.cpu_count() / 2),
             help='The number of cores to use for compilation.')
         switches_g = self.add_argument_group('Additional options')
-        switches_g.add_argument(
-            '--base_image',
-            type=str,
-            default='ubuntu:20.04',
-            help='The base image. (centos:8 is supported too)')
-        switches_g.add_argument(
-            '--compiler',
-            type=str,
-            default='gcc',
-            help='The compiler to use. Possible options: off, gcc, clang')
-        switches_g.add_argument('--compiler_version',
-                                type=str,
-                                default='',
-                                help='Compiler version.')
         switches_g.add_argument('--gui',
                                 dest='gui',
                                 action='store_true',

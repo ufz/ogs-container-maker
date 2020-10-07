@@ -18,7 +18,7 @@ from ogscm import config
 
 
 class container_info():
-    def __init__(self, args_iter, args):
+    def __init__(self, args):
         """Initialize container info"""
         self.ogsdir = False
         self.outdir = ''
@@ -30,10 +30,10 @@ class container_info():
         self.branch = ''
         self.git_version = ''
 
-        container_format = args_iter[0]
-        ogs_version = args_iter[1]
-        ompi = args_iter[3]
-        cmake_args = args_iter[4].strip().split(' ')
+        container_format = args.format
+        ogs_version = args.ogs
+        ompi = args.ompi
+        cmake_args = args.cmake_args
         name_start = 'gcc'
 
         branch_is_release = False
