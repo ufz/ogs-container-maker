@@ -67,7 +67,7 @@ class ogs_recipe(object):
                 Stage0 += environment(variables={"BOOST_ROOT": "/usr/local/boost"})
                 vtk_cmake_args = [
                     "-DModule_vtkIOXML=ON",
-                    "-DVTK_Group_Rendering=OFF",
+                    "-DModule_vtkIOXdmf3=ON" "-DVTK_Group_Rendering=OFF",
                     "-DVTK_Group_StandAlone=OFF",
                 ]
                 if args.gui:
