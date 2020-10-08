@@ -1,0 +1,282 @@
+#!/usr/bin/env python3
+import argparse
+import math
+import multiprocessing
+import os
+import sys
+
+import hpccm
+from hpccm.building_blocks import (
+    packages,
+    pip,
+)
+from hpccm.primitives import (
+    baseimage,
+    comment,
+    raw,
+)
+
+import ogscm
+from ogscm.cli_args import Cli_Args
+from ogscm.container_info import container_info
+from ogscm.version import __version__
+from ogscm.building_blocks import ogs
+from ogscm.app import builder
+from ogscm.recipes import compiler_recipe, mpi_recipe
+from ogscm.recipes.ogs import ogs_recipe
+from ogscm.app.deployer import deployer
+import shutil
+
+
+def main():  # pragma: no cover
+
+    recipe_args_parser = argparse.ArgumentParser(add_help=False)
+    parser = argparse.ArgumentParser(add_help=False)
+    recipe_args_parser.add_argument("recipe", nargs="+")
+    parser.add_argument("recipe", nargs="+")
+
+    # General args
+    parser.add_argument(
+        "--version",
+        action="version",
+        version="%(prog)s {version}".format(version=__version__),
+    )
+    parser.add_argument("--out", type=str, default="_out", help="Output directory")
+    parser.add_argument(
+        "--file", type=str, default="", help="Overwrite output recipe file name"
+    )
+    parser.add_argument(
+        "--sif_file",
+        type=str,
+        default="",
+        help="Overwrite output singularity image file name",
+    )
+    parser.add_argument(
+        "--print",
+        "-P",
+        dest="print",
+        action="store_true",
+        help="Print the definition to stdout",
+    )
+    general_g = parser.add_argument_group("General image config")
+    general_g.add_argument(
+        "--format", type=str, choices=["docker", "singularity"], default="docker"
+    )
+    general_g.add_argument(
+        "--base_image",
+        type=str,
+        default="ubuntu:20.04",
+        help="The base image. (centos:8 is supported too)",
+    )
+    general_g.add_argument(
+        "--compiler",
+        type=str,
+        default="gcc",
+        help="The compiler to use. Possible options: off, gcc, clang",
+    )
+    general_g.add_argument(
+        "--compiler_version", type=str, default="", help="Compiler version."
+    )
+    general_g.add_argument(
+        "--ompi",
+        type=str,
+        default="off",
+        help="OpenMPI version, e.g. 2.1.1, 2.1.5, 3.0.1, 3.1.2",
+    )
+    build_g = parser.add_argument_group("Image build options")
+    build_g.add_argument(
+        "--build",
+        "-B",
+        dest="build",
+        action="store_true",
+        help="Build the images from the definition files",
+    )
+    build_g.add_argument(
+        "--build_args",
+        type=str,
+        default="",
+        help="Arguments to the build command. Have to be "
+        "quoted and **must** start with a space. E.g. "
+        "--build_args ' --no-cache'",
+    )
+    build_g.add_argument(
+        "--upload",
+        "-U",
+        dest="upload",
+        action="store_true",
+        help="Upload Docker image to registry",
+    )
+    build_g.add_argument(
+        "--registry",
+        type=str,
+        default="registry.opengeosys.org/ogs/ogs",
+        help="The docker registry the image is tagged and " "uploaded to.",
+    )
+    build_g.add_argument(
+        "--tag",
+        type=str,
+        default="",
+        help="The full docker image tag. Overwrites --registry.",
+    )
+    build_g.add_argument(
+        "--convert",
+        "-C",
+        dest="convert",
+        action="store_true",
+        help="Convert Docker image to Singularity image",
+    )
+    build_g.add_argument(
+        "--runtime-only",
+        "-R",
+        dest="runtime_only",
+        action="store_true",
+        help="Generate multi-stage Dockerfiles for small runtime " "images",
+    )
+    build_g.add_argument(
+        "--ccache",
+        dest="ccache",
+        action="store_true",
+        help="Enables ccache build caching.",
+    )
+    build_g.add_argument(
+        "--parallel",
+        "-j",
+        type=str,
+        default=math.ceil(multiprocessing.cpu_count() / 2),
+        help="The number of cores to use for compilation.",
+    )
+    maint_g = parser.add_argument_group("Maintenance")
+    maint_g.add_argument(
+        "--clean",
+        dest="cleanup",
+        action="store_true",
+        help="Cleans up generated files in default directories.",
+    )
+    deploy_g = parser.add_argument_group("Image deployment")
+    deploy_g.add_argument(
+        "--deploy",
+        "-D",
+        nargs="?",
+        const="ALL",
+        type=str,
+        default="",
+        help="Deploys to all configured hosts (in config/deploy_hosts.yml) with no additional arguments or to the specified host. Implies --build and --convert arguments.",
+    )
+
+    args = parser.parse_known_args()[0]
+
+    Stage0 = hpccm.Stage()
+    Stage0 += raw(docker="# syntax=docker/dockerfile:experimental")
+
+    if args.runtime_only:
+        Stage0.name = "build"
+    Stage0 += baseimage(image=args.base_image, _as="build")
+
+    Stage0 += comment(
+        f"Generated with ogs-container-maker {__version__}", reformat=False
+    )
+
+    # Prepare runtime stage
+    Stage1 = hpccm.Stage()
+    Stage1.baseimage(image=args.base_image)
+
+    cwd = os.getcwd()
+    out_dir = args.out
+
+    for recipe in recipe_args_parser.parse_known_args()[0].recipe:
+        if not os.path.exists(recipe):
+            print(f"{recipe} does not exist!")
+            exit(1)
+
+        with open(recipe, "r") as reader:
+            # https://stackoverflow.com/a/1463370/80480
+            ldict = {"filename": recipe}
+            exec(compile(reader.read(), recipe, "exec"), locals(), ldict)
+            if "out_dir" in ldict:
+                out_dir = ldict["out_dir"]
+            if not "img_file" in ldict:
+                print(f"img_file variable has to be set in {recipe}!")
+                exit(1)
+            img_file = ldict["img_file"]
+
+    # Workaround to get the full help message
+    help_parser = argparse.ArgumentParser(parents=[parser])
+    help_parser.parse_args()
+
+    # Finally parse
+    args = parser.parse_args()
+
+    ### container_info ###
+    images_out_dir = f"{args.out}/images"
+    definition_file = "Dockerfile"
+    if args.format == "singularity":
+        definition_file = "Singularity.def"
+    definition_file_path = os.path.join(out_dir, definition_file)
+    if args.tag != "":
+        tag = args.tag
+    else:
+        tag = f"{args.registry}/{img_file}:latest"
+    # TODO:
+    # context_path_size = len(self.ogsdir)
+    # "{self.out_dir[context_path_size+1:]}/{self.definition_file}"
+    ### end container_info ###
+
+    # info = container_info(args)
+    if args.cleanup:
+        shutil.rmtree(out_dir, ignore_errors=True)
+        print("Cleaned up!")
+        exit(0)
+    if not os.path.exists(out_dir):
+        os.makedirs(out_dir)  # For .scif files
+    if not os.path.exists(images_out_dir):
+        os.makedirs(images_out_dir)
+
+    if args.ompi != "off":
+        if args.base_image == "ubuntu:20.04":
+            args.base_image = "centos:8"
+            print(
+                "Setting base_image to 'centos:8'. OpenMPI is supported on CentOS only."
+            )
+
+    # Create definition
+    hpccm.config.set_container_format(args.format)
+
+    stages_string = str(Stage0)
+
+    if args.runtime_only:
+        Stage1 += Stage0.runtime(exclude=["boost"])
+        if args.compiler == "gcc" and args.compiler_version != None:
+            Stage1 += packages(apt=["libstdc++6"])
+        stages_string += "\n\n" + str(Stage1)
+
+    # ---------------------------- recipe end -----------------------------
+    with open(definition_file_path, "w") as f:
+        print(stages_string, file=f)
+    if args.print:
+        print(stages_string)
+    else:
+        print(f"Created definition {os.path.abspath(definition_file_path)}")
+
+    # Create image
+    if not args.build:
+        exit(0)
+
+    b = builder(
+        args,
+        images_out_dir,
+        img_file,
+        definition_file_path,
+        tag,
+        cwd,
+    )
+    b.build()
+
+    # Deploy image
+    if not args.deploy:
+        exit(0)
+
+    deployer(args.deploy, cwd, b.image_file)
+
+
+if __name__ == "__main__":  # pragma: no cover
+    main()
