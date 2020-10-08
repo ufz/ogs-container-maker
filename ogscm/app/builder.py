@@ -46,11 +46,11 @@ class builder(object):
         if self.__args.upload:
             subprocess.run(f"docker push {self.__info.tag}", shell=True)
         if self.__args.sif_file:
-            image_file = f"{self.__info.images_out_dir}/{self.__args.sif_file}"
+            self.image_file = f"{self.__info.images_out_dir}/{self.__args.sif_file}"
         else:
-            image_file = f"{self.__info.images_out_dir}/{self.__info.img_file}-{image_id_short}.sif"
-        if self.__args.convert and not os.path.exists(image_file):
+            self.image_file = f"{self.__info.images_out_dir}/{self.__info.img_file}-{image_id_short}.sif"
+        if self.__args.convert and not os.path.exists(self.image_file):
             subprocess.run(
-                f"cd {self.__info.cwd} && singularity build --force {image_file} docker-daemon:{self.__info.tag}",
+                f"cd {self.__info.cwd} && singularity build --force {self.image_file} docker-daemon:{self.__info.tag}",
                 shell=True,
             )

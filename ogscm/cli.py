@@ -8,9 +8,7 @@
 # easybuild toolchain: 2017b (2.1.1), 2018a (2.1.2), 2018b (3.1.1)
 import argparse
 import os
-import subprocess
 import sys
-import yaml
 
 import hpccm
 from hpccm.building_blocks import (
@@ -31,6 +29,7 @@ from ogscm.building_blocks import ogs
 from ogscm.app import builder
 from ogscm.recipes import compiler_recipe, mpi_recipe
 from ogscm.recipes.ogs import ogs_recipe
+from ogscm.app.deployer import deployer
 
 
 def main():  # pragma: no cover
@@ -129,43 +128,14 @@ def main():  # pragma: no cover
     if not args.build:
         exit(0)
 
-    builder(args=args, info=info).build()
+    b = builder(args=args, info=info)
+    b.build()
 
     # Deploy image
     if not args.deploy:
         exit(0)
 
-    deploy_config_filename = f"{info.cwd}/config/deploy_hosts.yml"
-    if not os.path.isfile(deploy_config_filename):
-        print(f"ERROR: {deploy_config_filename} not found but required for deploying!")
-        exit(1)
-
-    with open(deploy_config_filename, "r") as ymlfile:
-        deploy_config = yaml.load(ymlfile, Loader=yaml.FullLoader)
-    if not args.deploy == "ALL" and not args.deploy in deploy_config:
-        print(f'ERROR: Deploy host "{args.deploy}" not found in config!')
-        exit(1)
-    deploy_hosts = {}
-    if args.deploy == "ALL":
-        deploy_hosts = deploy_config
-    else:
-        deploy_hosts[args.deploy] = deploy_config[args.deploy]
-    for deploy_host in deploy_hosts:
-        deploy_info = deploy_hosts[deploy_host]
-        print(f"Deploying to {deploy_info} ...")
-        proxy_cmd = ""
-        user_cmd = ""
-        if "user" in deploy_info:
-            user_cmd = f"{deploy_info['user']}@"
-        if "proxy" in deploy_info:
-            proxy_cmd = f"-e 'ssh -A -J {user_cmd}{deploy_info['proxy']}'"
-            print(proxy_cmd)
-        print(
-            subprocess.check_output(
-                f"rsync -c -v {proxy_cmd} {image_file} {user_cmd}{deploy_info['host']}:{deploy_info['dest_dir']}",
-                shell=True,
-            ).decode(sys.stdout.encoding)
-        )
+    deployer(args.deploy, info.cwd, b.image_file)
 
 
 if __name__ == "__main__":  # pragma: no cover
