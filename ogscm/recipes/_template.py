@@ -2,6 +2,7 @@
 # Have a look and change statements with ### SET comment
 
 ### SET imports
+from hpccm.primitives import comment
 from hpccm.building_blocks import xx
 
 print(f"Evaluating {filename}")
@@ -22,4 +23,8 @@ img_file = f"someName-{local_args.my_arg}"
 out_dir = f"{local_args.out}/{local_args.format}/someName/{local_args.my_arg}"
 
 # Implement recipe
+Stage0 += comment(f"Begin {filename}")
+
 Stage0 += xx(arg="value")
+
+Stage0 += comment(f"--- End {filename} ---")

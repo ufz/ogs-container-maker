@@ -22,7 +22,7 @@ from ogscm.container_info import container_info
 from ogscm.version import __version__
 from ogscm.building_blocks import ogs
 from ogscm.app import builder
-from ogscm.recipes import compiler_recipe, mpi_recipe
+from ogscm.recipes import mpi_recipe
 from ogscm.recipes.ogs import ogs_recipe
 from ogscm.app.deployer import deployer
 import shutil
@@ -67,15 +67,6 @@ def main():  # pragma: no cover
         type=str,
         default="ubuntu:20.04",
         help="The base image. (centos:8 is supported too)",
-    )
-    general_g.add_argument(
-        "--compiler",
-        type=str,
-        default="gcc",
-        help="The compiler to use. Possible options: off, gcc, clang",
-    )
-    general_g.add_argument(
-        "--compiler_version", type=str, default="", help="Compiler version."
     )
     general_g.add_argument(
         "--ompi",
@@ -182,6 +173,7 @@ def main():  # pragma: no cover
 
     cwd = os.getcwd()
     out_dir = args.out
+    toolchain = None
 
     for recipe in recipe_args_parser.parse_known_args()[0].recipe:
         if not os.path.exists(recipe):
@@ -194,6 +186,8 @@ def main():  # pragma: no cover
             exec(compile(reader.read(), recipe, "exec"), locals(), ldict)
             if "out_dir" in ldict:
                 out_dir = ldict["out_dir"]
+            if "toolchain" in ldict:
+                toolchain = ldict["toolchain"]
             if not "img_file" in ldict:
                 print(f"img_file variable has to be set in {recipe}!")
                 exit(1)

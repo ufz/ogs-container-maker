@@ -1,4 +1,5 @@
 from hpccm.building_blocks import pip
+from hpccm.primitives import comment
 
 print(f"Evaluating {filename}")
 
@@ -16,4 +17,8 @@ img_file = f"vtk-{local_args.vtk_version}"
 out_dir = f"{local_args.out}/{local_args.format}/vtk/{local_args.vtk_version}"
 
 # Implement recipe
+Stage0 += comment(f"Begin {filename}")
+
 Stage0 += pip(pip="pip3", packages=[f"vtk=={local_args.vtk_version}"])
+
+Stage0 += comment(f"--- End {filename} ---")
