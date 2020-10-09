@@ -26,7 +26,7 @@ parse_g.add_argument(
 local_args = parser.parse_known_args()[0]
 
 # set image file name
-img_file += f"-{local_args.ompi}"
+img_file += f"-openmpi-{local_args.ompi}"
 
 # Optionally set out_dir
 out_dir += f"/openmpi/{local_args.ompi}"

@@ -47,6 +47,7 @@ class ogs(bb_base, hpccm.templates.CMakeBuild, hpccm.templates.rm):
         self.__branch = kwargs.get("branch", "master")
         self.__commit = kwargs.get("commit")
         self.__git_version = kwargs.get("git_version")
+        self.__conan = kwargs.get("conan", False)
 
         if self.__repo == "local":
             self.__skip_clone = True
@@ -83,8 +84,6 @@ class ogs(bb_base, hpccm.templates.CMakeBuild, hpccm.templates.rm):
     def __setup(self):
         """Construct the series of shell commands, i.e., fill in
         self.__commands"""
-        conan = ogscm.config.g_package_manager == package_manager.CONAN
-
         # Get the source
         if self.__skip_clone:
             self.__cmake_args.append("-DOGS_VERSION={}".format(self.__git_version))
@@ -117,9 +116,9 @@ class ogs(bb_base, hpccm.templates.CMakeBuild, hpccm.templates.rm):
         )
         if self.__toolchain.CC == "mpicc":
             self.__cmake_args.append("-DOGS_USE_PETSC=ON")
-            if conan:
+            if self.__conan:
                 self.__cmake_args.append("-DOGS_CONAN_USE_SYSTEM_OPENMPI=ON")
-        if not conan:
+        if not self.__conan:
             self.__cmake_args.append("-DOGS_USE_CONAN=OFF")
 
         # Configure and build

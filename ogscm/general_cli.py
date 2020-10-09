@@ -115,19 +115,6 @@ def main():  # pragma: no cover
         action="store_true",
         help="Generate multi-stage Dockerfiles for small runtime " "images",
     )
-    build_g.add_argument(
-        "--ccache",
-        dest="ccache",
-        action="store_true",
-        help="Enables ccache build caching.",
-    )
-    build_g.add_argument(
-        "--parallel",
-        "-j",
-        type=str,
-        default=math.ceil(multiprocessing.cpu_count() / 2),
-        help="The number of cores to use for compilation.",
-    )
     maint_g = parser.add_argument_group("Maintenance")
     maint_g.add_argument(
         "--clean",
@@ -146,6 +133,24 @@ def main():  # pragma: no cover
         help="Deploys to all configured hosts (in config/deploy_hosts.yml) with no additional arguments or to the specified host. Implies --build and --convert arguments.",
     )
 
+    install_g = parser.add_argument_group("Packages to install")
+    install_g.add_argument(
+        "--pip",
+        nargs="*",
+        type=str,
+        default=[],
+        metavar="package",
+        help="Install additional Python packages",
+    )
+    install_g.add_argument(
+        "--packages",
+        nargs="*",
+        type=str,
+        default=[],
+        metavar="packages",
+        help="Install additional OS packages",
+    )
+
     args = parser.parse_known_args()[0]
 
     Stage0 = hpccm.Stage()
@@ -158,6 +163,7 @@ def main():  # pragma: no cover
     Stage0 += comment(
         f"Generated with ogs-container-maker {__version__}", reformat=False
     )
+    Stage0 += packages(ospackages=["wget", "tar", "curl", "make", "unzip"])
 
     # Prepare runtime stage
     Stage1 = hpccm.Stage()
@@ -204,7 +210,9 @@ def main():  # pragma: no cover
     if args.tag != "":
         tag = args.tag
     else:
-        tag = f"{args.registry}/{img_file}:latest"
+        if img_file[0] == "-":
+            img_file = img_file[1:]
+        tag = f"{args.registry}/{img_file.lower()}:latest"
     # TODO:
     # context_path_size = len(self.ogsdir)
     # "{self.out_dir[context_path_size+1:]}/{self.definition_file}"
@@ -220,12 +228,20 @@ def main():  # pragma: no cover
     if not os.path.exists(images_out_dir):
         os.makedirs(images_out_dir)
 
-    if args.ompi != "off":
+    if "ompi" in args and args.ompi != "off":
         if args.base_image == "ubuntu:20.04":
             args.base_image = "centos:8"
             print(
                 "Setting base_image to 'centos:8'. OpenMPI is supported on CentOS only."
             )
+
+    # General args
+    if args.pip:
+        Stage0 += pip(packages=args.pip, pip="pip3")
+        Stage1 += pip(packages=args.pip, pip="pip3")
+
+    if args.packages:
+        Stage0 += packages(ospackages=args.packages)
 
     # Create definition
     hpccm.config.set_container_format(args.format)
