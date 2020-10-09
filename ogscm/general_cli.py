@@ -22,8 +22,6 @@ from ogscm.container_info import container_info
 from ogscm.version import __version__
 from ogscm.building_blocks import ogs
 from ogscm.app import builder
-from ogscm.recipes import mpi_recipe
-from ogscm.recipes.ogs import ogs_recipe
 from ogscm.app.deployer import deployer
 import shutil
 
@@ -67,12 +65,6 @@ def main():  # pragma: no cover
         type=str,
         default="ubuntu:20.04",
         help="The base image. (centos:8 is supported too)",
-    )
-    general_g.add_argument(
-        "--ompi",
-        type=str,
-        default="off",
-        help="OpenMPI version, e.g. 2.1.1, 2.1.5, 3.0.1, 3.1.2",
     )
     build_g = parser.add_argument_group("Image build options")
     build_g.add_argument(
@@ -172,7 +164,8 @@ def main():  # pragma: no cover
     Stage1.baseimage(image=args.base_image)
 
     cwd = os.getcwd()
-    out_dir = args.out
+    img_file = ""
+    out_dir = f"{args.out}/{args.format}"
     toolchain = None
 
     for recipe in recipe_args_parser.parse_known_args()[0].recipe:
@@ -188,13 +181,15 @@ def main():  # pragma: no cover
                 out_dir = ldict["out_dir"]
             if "toolchain" in ldict:
                 toolchain = ldict["toolchain"]
-            if not "img_file" in ldict:
+            if "img_file" not in ldict:
                 print(f"img_file variable has to be set in {recipe}!")
                 exit(1)
             img_file = ldict["img_file"]
 
     # Workaround to get the full help message
-    help_parser = argparse.ArgumentParser(parents=[parser])
+    help_parser = argparse.ArgumentParser(
+        parents=[parser], formatter_class=argparse.ArgumentDefaultsHelpFormatter
+    )
     help_parser.parse_args()
 
     # Finally parse

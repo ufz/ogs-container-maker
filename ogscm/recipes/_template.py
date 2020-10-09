@@ -16,11 +16,11 @@ parse_g.add_argument("--my_arg", type=str, default="default_value")
 # Parse local args
 local_args = parser.parse_known_args()[0]
 
-### SET image file name, e.g.:
-img_file = f"someName-{local_args.my_arg}"
+### SET append to image file name, e.g.:
+img_file += f"-someName-{local_args.my_arg}"
 
-### Optionally SET out_dir, e.g.:
-out_dir = f"{local_args.out}/{local_args.format}/someName/{local_args.my_arg}"
+### SET Append to out_dir, e.g.:
+out_dir += f"/someName/{local_args.my_arg}"
 
 # Implement recipe
 Stage0 += comment(f"Begin {filename}")

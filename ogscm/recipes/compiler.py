@@ -30,10 +30,10 @@ if local_args.compiler_version == "":
             local_args.compiler_version = None  # Use default
 
 # set image file name
-img_file = f"{local_args.compiler}-{local_args.compiler_version}"
+img_file += f"-{local_args.compiler}-{local_args.compiler_version}"
 
 # Optionally set out_dir
-out_dir = f"{local_args.out}/{local_args.format}/{local_args.compiler}/{local_args.compiler_version}"
+out_dir += f"/{local_args.compiler}/{local_args.compiler_version}"
 
 # Implement recipe
 Stage0 += comment(f"--- Begin {filename} ---")
