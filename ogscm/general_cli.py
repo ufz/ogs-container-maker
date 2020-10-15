@@ -228,13 +228,6 @@ def main():  # pragma: no cover
     if not os.path.exists(images_out_dir):
         os.makedirs(images_out_dir)
 
-    if "ompi" in args and args.ompi != "off":
-        if args.base_image == "ubuntu:20.04":
-            args.base_image = "centos:8"
-            print(
-                "Setting base_image to 'centos:8'. OpenMPI is supported on CentOS only."
-            )
-
     # General args
     if args.pip:
         Stage0 += pip(packages=args.pip, pip="pip3")
