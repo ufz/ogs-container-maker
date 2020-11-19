@@ -175,22 +175,29 @@ def main():  # pragma: no cover
     toolchain = None
 
     for recipe in recipe_args_parser.parse_known_args()[0].recipe:
-        if not os.path.exists(recipe):
-            print(f"{recipe} does not exist!")
-            exit(1)
+        import importlib.resources as pkg_resources
+        from ogscm import recipes
 
-        with open(recipe, "r") as reader:
-            # https://stackoverflow.com/a/1463370/80480
-            ldict = {"filename": recipe}
-            exec(compile(reader.read(), recipe, "exec"), locals(), ldict)
-            if "out_dir" in ldict:
-                out_dir = ldict["out_dir"]
-            if "toolchain" in ldict:
-                toolchain = ldict["toolchain"]
-            if "img_file" not in ldict:
-                print(f"img_file variable has to be set in {recipe}!")
+        # https://stackoverflow.com/a/1463370/80480
+        ldict = {"filename": recipe}
+        try:
+            recipe_builtin = pkg_resources.read_text(recipes, recipe)
+            exec(compile(recipe_builtin, recipe, "exec"), locals(), ldict)
+        except:
+            if not os.path.exists(recipe):
+                print(f"{recipe} does not exist!")
                 exit(1)
-            img_file = ldict["img_file"]
+
+            with open(recipe, "r") as reader:
+                exec(compile(reader.read(), recipe, "exec"), locals(), ldict)
+        if "out_dir" in ldict:
+            out_dir = ldict["out_dir"]
+        if "toolchain" in ldict:
+            toolchain = ldict["toolchain"]
+        if "img_file" not in ldict:
+            print(f"img_file variable has to be set in {recipe}!")
+            exit(1)
+        img_file = ldict["img_file"]
 
     # Workaround to get the full help message
     help_parser = argparse.ArgumentParser(

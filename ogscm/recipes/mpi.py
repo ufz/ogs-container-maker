@@ -174,7 +174,9 @@ Stage1 += environment(
 )
 
 # Entrypoint
-Stage1 += copy(src="ogscm/recipes/mpi-entrypoint.sh", dest="/usr/local/bin/entrypoint.sh")
+Stage1 += copy(
+    src="ogscm/recipes/mpi-entrypoint.sh", dest="/usr/local/bin/entrypoint.sh"
+)
 Stage1 += runscript(commands=["/usr/local/bin/entrypoint.sh"])
 
 # Performance and compatibility tuning
