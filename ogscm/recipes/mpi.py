@@ -1,10 +1,8 @@
 from copy import copy
-from packaging import version
 
 import hpccm
 from hpccm import linux_distro
 from hpccm.building_blocks import (
-    ofed,
     openmpi,
     generic_autotools,
     pmix,
@@ -16,9 +14,6 @@ from hpccm.building_blocks import (
     mlnx_ofed,
 )
 from hpccm.primitives import comment, copy, label, shell, environment, runscript
-
-# from ogscm.building_blocks.osu_benchmarks import osu_benchmarks
-
 
 if hpccm.config.g_linux_distro != linux_distro.CENTOS:
     print(
@@ -174,8 +169,10 @@ Stage1 += environment(
 )
 
 # Entrypoint
-Stage1 += copy(
-    src="ogscm/recipes/mpi-entrypoint.sh", dest="/usr/local/bin/entrypoint.sh"
+Stage1 += shell(
+    commands=[
+        "curl -o /usr/local/bin/entrypoint.sh https://gitlab.opengeosys.org/ogs/container-maker/-/raw/refactor-cli-to-api/ogscm/recipes/mpi-entrypoint.sh"
+    ]
 )
 Stage1 += runscript(commands=["/usr/local/bin/entrypoint.sh"])
 
