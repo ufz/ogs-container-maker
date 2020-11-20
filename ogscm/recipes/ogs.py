@@ -4,7 +4,6 @@ import multiprocessing
 import re
 import requests
 
-import ogscm
 from ogscm.building_blocks.ogs_base import ogs_base
 from hpccm.building_blocks import (
     boost,
@@ -225,7 +224,6 @@ if local_args.gui:
         yum=["mesa-libOSMesa", "mesa-libGL", "mesa-libGLU", "libXt"],
     )
 if local_args.ogs != "clean":
-    print(local_args.pm)
     if local_args.pm == "conan":
         Stage0 += cmake(eula=True, version="3.16.6")
         conan_user_home = "/opt/conan"
