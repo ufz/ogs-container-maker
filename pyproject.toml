@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "ogscm"
-version = "1.6.1"
+version = "2.0.0"
 description = "OGS Container Maker"
 authors = ["Lars Bilke <lars.bilke@ufz.de>"]
 license = "BSD 3-clause"
@@ -9,7 +9,7 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.7"
-hpccm = "^20.9.0"
+hpccm = "^20.10.0"
 requests = "^2.24.0"
 PyYAML = "^5.3.1"
 packaging = "^20.4"

@@ -279,6 +279,7 @@ if local_args.ogs != "clean":
                 ],
             )
             vtk_cmake_args = [
+                "-DModule_vtkIOXdmf3=ON",
                 "-DVTK_BUILD_QT_DESIGNER_PLUGIN=OFF",
                 "-DVTK_Group_Qt=ON",
                 "-DVTK_QT_VERSION=5",
