@@ -126,7 +126,8 @@ if local_args.ogs not in ["off", "clean"]:  # != "off" and local_args.ogs != "cl
                 branch = os.environ["CI_COMMIT_BRANCH"]
             elif "CI_MERGE_REQUEST_SOURCE_BRANCH_NAME" in os.environ:
                 branch = os.environ["CI_MERGE_REQUEST_SOURCE_BRANCH_NAME"]
-            git_version = os.getenv("args.ogs", "x.x.x")  # TODO: ??
+            if "OGS_VERSION" in os.environ:
+                git_version = os.environ["OGS_VERSION"]
         else:
             branch = subprocess.run(
                 [
