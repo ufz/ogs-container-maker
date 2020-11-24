@@ -10,6 +10,7 @@ from hpccm.building_blocks import (
     cmake,
     generic_autotools,
     generic_cmake,
+    hdf5,
     packages,
     pip,
     scif,
@@ -17,10 +18,10 @@ from hpccm.building_blocks import (
 from ogscm.building_blocks.pm_conan import pm_conan
 
 import hpccm
-from hpccm import linux_distro
-from hpccm.primitives import comment, environment, raw
 from ogscm.building_blocks.paraview import paraview
 from ogscm.building_blocks.ccache import ccache
+from hpccm.primitives import comment, environment, raw
+from hpccm import linux_distro
 import os
 from ogscm.building_blocks.ogs import ogs
 import subprocess
@@ -351,6 +352,7 @@ if local_args.ogs != "clean":
             prefix="/usr/local/eigen",
             url="https://gitlab.com/libeigen/eigen/-/archive/3.3.7/eigen-3.3.7.tar.gz",
         )
+        Stage0 += hdf5(configure_opts=["--enable-cxx"], toolchain=toolchain)
 if local_args.cvode:
     Stage0 += generic_cmake(
         cmake_opts=[
