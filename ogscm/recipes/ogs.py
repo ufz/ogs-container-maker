@@ -239,6 +239,7 @@ if local_args.ogs != "clean":
         Stage0 += environment(variables={"BOOST_ROOT": "/usr/local/boost"})
         vtk_cmake_args = [
             "-DModule_vtkIOXML=ON",
+            "-DModule_vtkIOLegacy=ON",
             "-DVTK_Group_Rendering=OFF",
             "-DVTK_Group_StandAlone=OFF",
         ]
