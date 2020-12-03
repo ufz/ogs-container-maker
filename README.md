@@ -1,5 +1,7 @@
 # OGS Container Maker
 
+[![PyPI version](https://badge.fury.io/py/ogscm.svg)](https://badge.fury.io/py/ogscm)
+
 ## General usage
 
 ### Installation
