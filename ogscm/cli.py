@@ -146,6 +146,10 @@ def main():  # pragma: no cover
 
     args = parser.parse_known_args()[0]
 
+    images_out_dir = os.path.abspath(f"{args.out}/images")
+    if not os.path.exists(images_out_dir):
+        os.makedirs(images_out_dir)
+
     Stage0 = hpccm.Stage()
     Stage0 += raw(docker="# syntax=docker/dockerfile:experimental")
 
@@ -202,7 +206,6 @@ def main():  # pragma: no cover
     args = parser.parse_args()
 
     ### container_info ###
-    images_out_dir = f"{args.out}/images"
     definition_file = "Dockerfile"
     if args.format == "singularity":
         definition_file = "Singularity.def"
@@ -225,8 +228,6 @@ def main():  # pragma: no cover
         exit(0)
     if not os.path.exists(out_dir):
         os.makedirs(out_dir)  # For .scif files
-    if not os.path.exists(images_out_dir):
-        os.makedirs(images_out_dir)
 
     # General args
     if args.pip:
