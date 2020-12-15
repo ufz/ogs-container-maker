@@ -15,6 +15,7 @@ PyYAML = "^5.3.1"
 packaging = "^20.4"
 
 [tool.poetry.dev-dependencies]
+black = {version = "^20.8b1", allow-prereleases = true}
 
 [tool.poetry.scripts]
 ogscm = "ogscm.cli:main"

@@ -171,7 +171,7 @@ Stage1 += environment(
 # Entrypoint
 Stage1 += shell(
     commands=[
-        "curl -o /usr/local/bin/entrypoint.sh https://gitlab.opengeosys.org/ogs/container-maker/-/raw/refactor-cli-to-api/ogscm/recipes/mpi-entrypoint.sh"
+        "curl -o /usr/local/bin/entrypoint.sh https://gitlab.opengeosys.org/ogs/container-maker/-/raw/main/ogscm/recipes/mpi-entrypoint.sh"
     ]
 )
 Stage1 += runscript(commands=["/usr/local/bin/entrypoint.sh"])
