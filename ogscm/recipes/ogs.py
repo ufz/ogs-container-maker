@@ -350,9 +350,9 @@ if local_args.ogs != "clean":
                 "Eigen3_ROOT": "/usr/local/eigen",
                 "Eigen3_DIR": "/usr/local/eigen",
             },
-            directory="eigen-3.3.7",
+            directory="eigen-3.3.9",
             prefix="/usr/local/eigen",
-            url="https://gitlab.com/libeigen/eigen/-/archive/3.3.7/eigen-3.3.7.tar.gz",
+            url="https://gitlab.com/libeigen/eigen/-/archive/3.3.9/eigen-3.3.9.tar.gz",
         )
         Stage0 += hdf5(configure_opts=["--enable-cxx"], toolchain=toolchain)
 if local_args.cvode:
