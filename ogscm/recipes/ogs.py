@@ -235,7 +235,7 @@ if local_args.ogs != "clean":
         Stage0 += environment(variables={"CONAN_SYSREQUIRES_SUDO": 0})
     elif local_args.pm == "system":
         Stage0 += cmake(eula=True, version="3.16.6")
-        Stage0 += boost(version="1.66.0", bootstrap_opts=["headers"])
+        Stage0 += boost(version="1.67.0", bootstrap_opts=["headers"])
         Stage0 += environment(variables={"BOOST_ROOT": "/usr/local/boost"})
         Stage0 += packages(apt=["libxml2-dev"], yum=["libxml2-devel"])
         vtk_cmake_args = [
