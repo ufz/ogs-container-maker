@@ -169,7 +169,7 @@ if local_args.ogs not in ["off", "clean"]:  # != "off" and local_args.ogs != "cl
         else:
             name_start = f"ogs-{commit_hash[:8]}"
 
-folder = f"/{name_start}/{local_args.pm}"
+folder = f"/{name_start}/{local_args.pm}".replace("//", "/")
 
 if len(local_args.cmake_args) > 0:
     cmake_args_hash = hashlib.md5(
