@@ -210,11 +210,11 @@ def main():  # pragma: no cover
     if args.format == "singularity":
         definition_file = "Singularity.def"
     definition_file_path = os.path.join(out_dir, definition_file)
+    if img_file[0] == "-":
+        img_file = img_file[1:]
     if args.tag != "":
         tag = args.tag
     else:
-        if img_file[0] == "-":
-            img_file = img_file[1:]
         tag = f"{args.registry}/{img_file.lower()}:latest"
     # TODO:
     # context_path_size = len(self.ogsdir)
