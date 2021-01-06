@@ -221,7 +221,6 @@ def main():  # pragma: no cover
     # "{self.out_dir[context_path_size+1:]}/{self.definition_file}"
     ### end container_info ###
 
-    # info = container_info(args)
     if args.cleanup:
         shutil.rmtree(out_dir, ignore_errors=True)
         print("Cleaned up!")
