@@ -1,3 +1,5 @@
+from copy import copy
+
 import json
 import math
 import multiprocessing
@@ -20,7 +22,7 @@ from ogscm.building_blocks.pm_conan import pm_conan
 import hpccm
 from ogscm.building_blocks.paraview import paraview
 from ogscm.building_blocks.ccache import ccache
-from hpccm.primitives import comment, environment, raw
+from hpccm.primitives import comment, copy, environment, raw, shell
 from hpccm import linux_distro
 import os
 from ogscm.building_blocks.ogs import ogs
@@ -250,17 +252,11 @@ if local_args.ogs != "clean":
                     "libgeotiff-dev",
                     "libshp-dev",
                     "libnetcdf-c++4-dev",
-                    "libqt5x11extras5-dev",
-                    "libqt5xmlpatterns5-dev",
-                    "qt5-default",
                 ],
                 yum=[
                     "libgeotiff-devel",
                     "shapelib-devel",
                     "netcdf-devel",
-                    "qt5-qtbase-devel",
-                    "qt5-qtxmlpatterns-devel",
-                    "qt5-qtx11extras-devel",
                 ],
             )
             Stage1 += packages(
@@ -268,19 +264,50 @@ if local_args.ogs != "clean":
                     "geotiff-bin",
                     "shapelib",
                     "libnetcdf-c++4",
-                    "libqt5x11extras5",
-                    "libqt5xmlpatterns5",
-                    "qt5-default",
+                    "libglib2.0-0",
+                    "libdbus-1-3",
+                    "libexpat1",
+                    "libfontconfig1",
+                    "libfreetype6",
+                    "libgl1-mesa-glx",
+                    "libglib2.0-0",
+                    "libx11-6",
+                    "libx11-xcb1",
+                    "libxkbcommon-x11-0",
                 ],
+                # TODO: Add runtime packages for centos
                 yum=[
                     "libgeotiff",
                     "shapelib",
                     "netcdf",
-                    "qt5-qtbase",
-                    "qt5-qtxmlpatterns",
-                    "qt5-qtx11extras",
                 ],
             )
+            # TODO: will not work with clang
+            qt_install_dir = "/opt/qt"
+            qt_version = "5.14.2"
+            qt_dir = f"{qt_install_dir}/{qt_version}/gcc_64"
+            Stage0 += pip(pip="pip3", packages=["aqtinstall"])
+            Stage0 += shell(
+                commands=[
+                    f"aqt install --outputdir {qt_install_dir} {qt_version} linux desktop -m xmlpatterns,x11extras"
+                ]
+            )
+            Stage1 += copy(_from="0", src=qt_install_dir, dest=qt_install_dir)
+            Stage0 += environment(
+                variables={
+                    "LD_LIBRARY_PATH": f"{qt_dir}/lib:$LD_LIBRARY_PATH",
+                    "PATH": f"{qt_dir}/bin:$PATH",
+                    "QTDIR": qt_dir,
+                }
+            )
+            Stage1 += environment(
+                variables={
+                    "LD_LIBRARY_PATH": f"{qt_dir}/lib:$LD_LIBRARY_PATH",
+                    "PATH": f"{qt_dir}/bin:$PATH",
+                    "QTDIR": qt_dir,
+                }
+            )
+
             vtk_cmake_args = [
                 "-DVTK_BUILD_QT_DESIGNER_PLUGIN=OFF",
                 "-DVTK_Group_Qt=ON",
