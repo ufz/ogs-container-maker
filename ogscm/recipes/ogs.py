@@ -229,14 +229,14 @@ if local_args.gui:
     )
 if local_args.ogs != "clean":
     if local_args.pm == "conan":
-        Stage0 += cmake(eula=True, version="3.16.6")
+        Stage0 += cmake(eula=True, version="3.19.4")
         conan_user_home = "/opt/conan"
         if local_args.dev:
             conan_user_home = ""
         Stage0 += pm_conan(user_home=conan_user_home)
         Stage0 += environment(variables={"CONAN_SYSREQUIRES_SUDO": 0})
     elif local_args.pm == "system":
-        Stage0 += cmake(eula=True, version="3.16.6")
+        Stage0 += cmake(eula=True, version="3.19.4")
         Stage0 += boost(version="1.67.0", bootstrap_opts=["headers"])
         Stage0 += environment(variables={"BOOST_ROOT": "/usr/local/boost"})
         Stage0 += packages(apt=["libxml2-dev"], yum=["libxml2-devel"])
