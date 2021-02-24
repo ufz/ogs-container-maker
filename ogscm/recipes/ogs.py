@@ -284,7 +284,7 @@ if local_args.ogs != "clean":
             )
             # TODO: will not work with clang
             qt_install_dir = "/opt/qt"
-            qt_version = "5.14.2"
+            qt_version = "5.15.2"
             qt_dir = f"{qt_install_dir}/{qt_version}/gcc_64"
             Stage0 += pip(pip="pip3", packages=["aqtinstall"])
             Stage0 += shell(
@@ -309,9 +309,7 @@ if local_args.ogs != "clean":
             )
 
             vtk_cmake_args = [
-                "-DVTK_BUILD_QT_DESIGNER_PLUGIN=OFF",
-                "-DVTK_Group_Qt=ON",
-                "-DVTK_QT_VERSION=5",
+                "-DVTK_GROUP_ENABLE_Qt=YES",
             ]
         if hpccm.config.g_linux_distro == linux_distro.CENTOS:
             # otherwise linker error, maybe due to gcc 10?
