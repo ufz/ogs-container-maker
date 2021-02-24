@@ -241,10 +241,12 @@ if local_args.ogs != "clean":
         Stage0 += environment(variables={"BOOST_ROOT": "/usr/local/boost"})
         Stage0 += packages(apt=["libxml2-dev"], yum=["libxml2-devel"])
         vtk_cmake_args = [
-            "-DModule_vtkIOXML=ON",
-            "-DModule_vtkIOLegacy=ON",
-            "-DVTK_Group_Rendering=OFF",
-            "-DVTK_Group_StandAlone=OFF",
+            "-DVTK_BUILD_TESTING=OFF",
+            "-DVTK_BUILD_EXAMPLES=OFF",
+            "-DVTK_MODULE_ENABLE_VTK_IOXML=YES",
+            "-DVTK_MODULE_ENABLE_VTK_IOLegacy=YES",
+            "-DVTK_GROUP_ENABLE_Rendering=DONT_WANT",
+            "-DVTK_GROUP_ENABLE_StandAlone=DONT_WANT",
         ]
         if local_args.gui:
             Stage0 += packages(
@@ -334,18 +336,18 @@ if local_args.ogs != "clean":
             if toolchain.CC == "mpicc":
                 vtk_cmake_args.extend(
                     [
-                        "-DModule_vtkIOParallelXML=ON",
-                        "-DModule_vtkParallelMPI=ON",
+                        "-DVTK_MODULE_ENABLE_VTK_IOParallelXML=YES",
+                        "-DVTK_MODULE_ENABLE_VTK_ParallelMPI=YES",
                     ]
                 )
             Stage0 += generic_cmake(
                 cmake_opts=vtk_cmake_args,
                 devel_environment={"VTK_ROOT": "/usr/local/vtk"},
-                directory="VTK-8.2.0",
+                directory="VTK-9.0.1",
                 ldconfig=True,
                 prefix="/usr/local/vtk",
                 toolchain=toolchain,
-                url="https://www.vtk.org/files/release/8.2/VTK-8.2.0.tar.gz",
+                url="https://www.vtk.org/files/release/9.0/VTK-9.0.1.tar.gz",
             )
         if toolchain.CC == "mpicc":
             Stage0 += packages(yum=["diffutils"])
