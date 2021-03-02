@@ -7,7 +7,7 @@ variables:
   PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
   BUILDKIT_PROGRESS: "plain"
   OGSCM_ARGUMENTS:
-    value: "compiler.py ogs.py --pm system --ogs ogs/ogs@master --cmake_args ' -DOGS_CPU_ARCHITECTURE=sandybridge -DBUILD_TESTING=OFF'"
+    value: "compiler.py ogs.py --pm system --ogs ogs/ogs@master --cmake_args ' -DOGS_CPU_ARCHITECTURE=sandybridge -DBUILD_TESTING=OFF' --sif_file ogs-dgr.sif"
     description: "Arguments to ogscm. -B -C -R --ccache are always passed automatically. For more args see README.md!"
 
 dev images:
