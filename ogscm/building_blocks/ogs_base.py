@@ -86,10 +86,13 @@ class ogs_base(bb_base):
             self.__ospackages.append("python3-venv")
         else:
             self.__ospackages.append("python3-virtualenv")
-        self.__commands.append(
-            """curl -sSL \
-               https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py \
-               | POETRY_HOME=/usr/local/poetry POETRY_VERSION=1.1.2 python3"""
+        self.__commands.extend(
+            [
+                """curl -sSL \
+                https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py \
+                | POETRY_HOME=/usr/local/poetry POETRY_VERSION=1.1.2 python3""",
+                "chmod +x /usr/local/poetry/bin/poetry",
+            ]
         )
 
     def runtime(self, _from="0"):
