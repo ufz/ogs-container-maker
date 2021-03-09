@@ -235,6 +235,7 @@ def main():  # pragma: no cover
 
     if args.packages:
         Stage0 += packages(ospackages=args.packages)
+        Stage1 += packages(ospackages=args.packages)
 
     # Create definition
     hpccm.config.set_container_format(args.format)
