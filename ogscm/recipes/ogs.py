@@ -38,7 +38,7 @@ parse_g.add_argument(
     "--pm",
     type=str,
     choices=["system", "conan", "off"],
-    default="conan",
+    default="system",
     help="Package manager to install third-party " "dependencies",
 )
 parse_g.add_argument(
