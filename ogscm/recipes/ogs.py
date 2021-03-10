@@ -195,6 +195,12 @@ if local_args.ogs not in ["off", "clean"]:  # != "off" and local_args.ogs != "cl
 if local_args.version_file:
     with open(local_args.version_file) as fp:
         versions = json.load(fp)
+if versions == None:
+    versions = json.loads(
+        requests.get(
+            f"https://gitlab.opengeosys.org/ogs/ogs/-/raw/master/web/data/versions.json"
+        ).text
+    )
 
 folder = f"/{name_start}/{local_args.pm}".replace("//", "/")
 
