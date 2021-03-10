@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 import argparse
 import os
+import traceback
+import sys
 
 import hpccm
 from hpccm.building_blocks import (
@@ -180,7 +182,12 @@ def main():  # pragma: no cover
         try:
             recipe_builtin = pkg_resources.read_text(recipes, recipe)
             exec(compile(recipe_builtin, recipe, "exec"), locals(), ldict)
-        except:
+        except Exception as err:
+            error_class = err.__class__.__name__
+            detail = err.args[0]
+            cl, exc, tb = sys.exc_info()
+            line_number = traceback.extract_tb(tb)[-1][1]
+            print(f"{error_class} at line {line_number}: {detail}")
             if not os.path.exists(recipe):
                 print(f"{recipe} does not exist!")
                 exit(1)
