@@ -13,6 +13,7 @@ from hpccm.building_blocks import (
     generic_autotools,
     generic_cmake,
     hdf5,
+    mkl,
     packages,
     pip,
     scif,
@@ -106,6 +107,7 @@ parse_g.add_argument(
     action="store_true",
     help="Installs development tools (vim, gdb)",
 )
+parse_g.add_argument("--mkl", dest="mkl", action="store_true", help="Use MKL. By setting this option, you agree to the [Intel End User License Agreement](https://software.intel.com/en-us/articles/end-user-license-agreement).")
 
 # Parse local args
 local_args = parser.parse_known_args()[0]
@@ -422,6 +424,10 @@ if local_args.tfel:
         prefix="/usr/local/tfel",
     )
     Stage0 += environment(variables={"TFELHOME": "/usr/local/tfel"})
+
+if local_args.mkl:
+    Stage0 += mkl(eula=True)
+    cmake_args.append("-DOGS_USE_MKL=ON")
 
 if local_args.ccache:
     Stage0 += ccache(cache_size="15G")
