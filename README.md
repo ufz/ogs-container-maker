@@ -103,13 +103,10 @@ $ ogscm compiler.py mpi.py ogs.py --base_image 'centos:8' --help
 Evaluating compiler.py
 Evaluating mpi.py
 Evaluating ogs.py
-usage: ogscm [-h] [--version] [--out OUT] [--file FILE] [--sif_file SIF_FILE] [--print] [--format {docker,singularity}]
-             [--base_image BASE_IMAGE] [--build] [--build_args BUILD_ARGS] [--upload] [--registry REGISTRY] [--tag TAG]
-             [--convert] [--runtime-only] [--clean] [--deploy [DEPLOY]] [--pip [package [package ...]]]
-             [--packages [packages [packages ...]]] [--compiler COMPILER] [--compiler_version COMPILER_VERSION]
-             [--iwyy] [--ompi OMPI] [--mpi_benchmarks] [--pm {system,conan,off}] [--ogs OGS] [--cmake_args CMAKE_ARGS]
-             [--ccache] [--parallel PARALLEL] [--gui] [--docs] [--cvode] [--cppcheck] [--gcovr] [--tfel] [--insitu]
-             [--dev]
+usage: ogscm [-h] [--version] [--out OUT] [--file FILE] [--sif_file SIF_FILE] [--print] [--format {docker,singularity}] [--base_image BASE_IMAGE] [--build] [--build_args BUILD_ARGS] [--upload]
+             [--registry REGISTRY] [--tag TAG] [--convert] [--runtime-only] [--clean] [--deploy [DEPLOY]] [--pip [package ...]] [--packages [packages ...]] [--compiler COMPILER]
+             [--compiler_version COMPILER_VERSION] [--iwyy] [--ompi OMPI] [--mpi_benchmarks] [--pm {system,conan,off}] [--ogs OGS] [--cmake_args CMAKE_ARGS] [--ccache] [--parallel PARALLEL] [--gui] [--docs]
+             [--cvode] [--cppcheck] [--gcovr] [--tfel] [--insitu] [--dev] [--mkl] [--version_file VERSION_FILE]
              recipe [recipe ...]
 
 positional arguments:
@@ -131,11 +128,9 @@ General image config:
 Image build options:
   --build, -B           Build the images from the definition files (default: False)
   --build_args BUILD_ARGS
-                        Arguments to the build command. Have to be quoted and **must** start with a space. E.g.
-                        --build_args ' --no-cache' (default: )
+                        Arguments to the build command. Have to be quoted and **must** start with a space. E.g. --build_args ' --no-cache' (default: )
   --upload, -U          Upload Docker image to registry (default: False)
-  --registry REGISTRY   The docker registry the image is tagged and uploaded to. (default:
-                        registry.opengeosys.org/ogs/ogs)
+  --registry REGISTRY   The docker registry the image is tagged and uploaded to. (default: registry.opengeosys.org/ogs/ogs)
   --tag TAG             The full docker image tag. Overwrites --registry. (default: )
   --convert, -C         Convert Docker image to Singularity image (default: False)
   --runtime-only, -R    Generate multi-stage Dockerfiles for small runtime images (default: False)
@@ -145,13 +140,11 @@ Maintenance:
 
 Image deployment:
   --deploy [DEPLOY], -D [DEPLOY]
-                        Deploys to all configured hosts (in config/deploy_hosts.yml) with no additional arguments or to
-                        the specified host. Implies --build and --convert arguments. (default: )
+                        Deploys to all configured hosts (in config/deploy_hosts.yml) with no additional arguments or to the specified host. Implies --build and --convert arguments. (default: )
 
 Packages to install:
-  --pip [package [package ...]]
-                        Install additional Python packages (default: [])
-  --packages [packages [packages ...]]
+  --pip [package ...]   Install additional Python packages (default: [])
+  --packages [packages ...]
                         Install additional OS packages (default: [])
 
 compiler.py:
@@ -166,17 +159,14 @@ mpi.py:
 
 ogs.py:
   --pm {system,conan,off}
-                        Package manager to install third-party dependencies (default: conan)
-  --ogs OGS             OGS repo on gitlab.opengeosys.org in the form 'user/repo@branch' OR 'user/repo@@commit' to
-                        checkout a specific commit OR a path to a local subdirectory to the git cloned OGS sources OR
-                        'off' to disable OGS building OR 'clean' to disable OGS and all its dev dependencies (default:
-                        ogs/ogs@master)
+                        Package manager to install third-party dependencies (default: system)
+  --ogs OGS             OGS repo on gitlab.opengeosys.org in the form 'user/repo@branch' OR 'user/repo@@commit' to checkout a specific commit OR a path to a local subdirectory to the git cloned OGS sources OR
+                        'off' to disable OGS building OR 'clean' to disable OGS and all its dev dependencies (default: ogs/ogs@master)
   --cmake_args CMAKE_ARGS
-                        CMake argument set has to be quoted and **must** start with a space. e.g. --cmake_args '
-                        -DFIRST=TRUE -DFOO=BAR' (default: )
+                        CMake argument set has to be quoted and **must** start with a space. e.g. --cmake_args ' -DFIRST=TRUE -DFOO=BAR' (default: )
   --ccache              Enables ccache build caching. (default: False)
   --parallel PARALLEL, -j PARALLEL
-                        The number of cores to use for compilation. (default: 4)
+                        The number of cores to use for compilation. (default: 32)
   --gui                 Builds the GUI (Data Explorer) (default: False)
   --docs                Setup documentation requirements (Doxygen) (default: False)
   --cvode               Install and configure with cvode (default: False)
@@ -185,6 +175,9 @@ ogs.py:
   --tfel                Install tfel (default: False)
   --insitu              Builds with insitu capabilities (default: False)
   --dev                 Installs development tools (vim, gdb) (default: False)
+  --mkl                 Use MKL. By setting this option, you agree to the [Intel End User License Agreement](https://software.intel.com/en-us/articles/end-user-license-agreement). (default: False)
+  --version_file VERSION_FILE
+                        OGS versions.json file (default: None)
 ```
 
 ## Advanced usage
@@ -197,7 +190,7 @@ You can use the ogs-container-maker to build multiple container images from your
 virtualenv .venv
 source .venv/bin/activate
 pip install ogscm
-ogscm compiler.py ogs.py -B -C -R --ogs [path to ogs sources] --pm system
+ogscm compiler.py ogs.py -B -C -R --ogs [path to ogs sources]
 ```
 
 ### Deploy image files
