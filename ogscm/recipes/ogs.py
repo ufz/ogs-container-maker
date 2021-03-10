@@ -107,7 +107,13 @@ parse_g.add_argument(
     action="store_true",
     help="Installs development tools (vim, gdb)",
 )
-parse_g.add_argument("--mkl", dest="mkl", action="store_true", help="Use MKL. By setting this option, you agree to the [Intel End User License Agreement](https://software.intel.com/en-us/articles/end-user-license-agreement).")
+parse_g.add_argument(
+    "--mkl",
+    dest="mkl",
+    action="store_true",
+    help="Use MKL. By setting this option, you agree to the [Intel End User License Agreement](https://software.intel.com/en-us/articles/end-user-license-agreement).",
+)
+parse_g.add_argument("--version_file", type=str, help="OGS versions.json file")
 
 # Parse local args
 local_args = parser.parse_known_args()[0]
