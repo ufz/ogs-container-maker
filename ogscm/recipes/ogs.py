@@ -122,6 +122,7 @@ branch_is_release = False
 git_version = ""
 name_start = ""
 repo = None
+versions = None
 
 if local_args.ogs not in ["off", "clean"]:  # != "off" and local_args.ogs != "clean":
     if os.path.isdir(local_args.ogs):
@@ -132,6 +133,8 @@ if local_args.ogs not in ["off", "clean"]:  # != "off" and local_args.ogs != "cl
             text=True,
             shell=True,
         ).stdout.rstrip()
+        with open(f"{local_args.ogs}/web/data/versions.json") as fp:
+            versions = json.load(fp)
         if "GITLAB_CI" in os.environ:
             if "CI_COMMIT_BRANCH" in os.environ:
                 branch = os.environ["CI_COMMIT_BRANCH"]
@@ -163,6 +166,11 @@ if local_args.ogs not in ["off", "clean"]:  # != "off" and local_args.ogs != "cl
             commit_hash = commit[0]
             if branch == "":
                 branch = "master"
+            versions = json.loads(
+                requests.get(
+                    f"https://gitlab.opengeosys.org/{repo}/-/raw/{commit_hash}/web/data/versions.json"
+                ).text
+            )
         else:
             if re.search(r"[\d.]+", branch):
                 branch_is_release = True
@@ -173,11 +181,26 @@ if local_args.ogs not in ["off", "clean"]:  # != "off" and local_args.ogs != "cl
             response_data = json.loads(response.text)
             commit_hash = response_data[0]["id"]
             # ogs_tag = args.ogs.replace('/', '.').replace('@', '.')
+            versions = json.loads(
+                requests.get(
+                    f"https://gitlab.opengeosys.org/{repo}/-/raw/{branch}/web/data/versions.json"
+                ).text
+            )
 
         if branch_is_release:
             name_start = f"ogs-{branch}"
         else:
             name_start = f"ogs-{commit_hash[:8]}"
+
+if local_args.version_file:
+    with open(local_args.version_file) as fp:
+        versions = json.load(fp)
+if versions == None:
+    versions = json.loads(
+        requests.get(
+            f"https://gitlab.opengeosys.org/ogs/ogs/-/raw/master/web/data/versions.json"
+        ).text
+    )
 
 folder = f"/{name_start}/{local_args.pm}".replace("//", "/")
 
@@ -241,11 +264,15 @@ if local_args.ogs != "clean":
         conan_user_home = "/opt/conan"
         if local_args.dev:
             conan_user_home = ""
-        Stage0 += pm_conan(user_home=conan_user_home)
+        Stage0 += pm_conan(
+            user_home=conan_user_home, version=versions["minimum_version"]["conan"]
+        )
         Stage0 += environment(variables={"CONAN_SYSREQUIRES_SUDO": 0})
     elif local_args.pm == "system":
         Stage0 += cmake(eula=True, version="3.19.4")
-        Stage0 += boost(version="1.67.0", bootstrap_opts=["headers"])
+        Stage0 += boost(
+            version=versions["minimum_version"]["boost"], bootstrap_opts=["headers"]
+        )
         Stage0 += environment(variables={"BOOST_ROOT": "/usr/local/boost"})
         Stage0 += packages(apt=["libxml2-dev"], yum=["libxml2-devel"])
         vtk_cmake_args = [
@@ -292,7 +319,7 @@ if local_args.ogs != "clean":
             )
             # TODO: will not work with clang
             qt_install_dir = "/opt/qt"
-            qt_version = "5.14.2"
+            qt_version = versions["minimum_version"]["qt"]
             qt_dir = f"{qt_install_dir}/{qt_version}/gcc_64"
             Stage0 += pip(pip="pip3", packages=["aqtinstall"])
             Stage0 += shell(
@@ -348,17 +375,19 @@ if local_args.ogs != "clean":
                         "-DModule_vtkParallelMPI=ON",
                     ]
                 )
+            vtk_version = versions["tested_version"]["vtk"]
             Stage0 += generic_cmake(
                 cmake_opts=vtk_cmake_args,
                 devel_environment={"VTK_ROOT": "/usr/local/vtk"},
-                directory="VTK-8.2.0",
+                directory=f"VTK-{vtk_version}",
                 ldconfig=True,
                 prefix="/usr/local/vtk",
                 toolchain=toolchain,
-                url="https://www.vtk.org/files/release/8.2/VTK-8.2.0.tar.gz",
+                url=f"https://www.vtk.org/files/release/{vtk_version[:-2]}/VTK-{vtk_version}.tar.gz",
             )
         if toolchain.CC == "mpicc":
             Stage0 += packages(yum=["diffutils"])
+            petsc_version = versions["minimum_version"]["petsc"]
             Stage0 += generic_autotools(
                 configure_opts=[
                     f"CC={toolchain.CC}",
@@ -371,26 +400,31 @@ if local_args.ogs != "clean":
                     "--download-f2cblaslapack=1",
                 ],
                 devel_environment={"PETSC_DIR": "/usr/local/petsc"},
-                directory="petsc-3.11.3",
+                directory=f"petsc-{petsc_version}",
                 ldconfig=True,
                 preconfigure=["sed -i -- 's/python/python3/g' configure"],
                 prefix="/usr/local/petsc",
                 toolchain=toolchain,
-                url="http://ftp.mcs.anl.gov/pub/petsc/release-snapshots/"
-                "petsc-lite-3.11.3.tar.gz",
+                url=f"http://ftp.mcs.anl.gov/pub/petsc/release-snapshots/petsc-lite-{petsc_version}.tar.gz",
             )
 
+        eigen_version = versions["minimum_version"]["eigen"]
         Stage0 += generic_cmake(
             devel_environment={
                 "Eigen3_ROOT": "/usr/local/eigen",
                 "Eigen3_DIR": "/usr/local/eigen",
             },
-            directory="eigen-3.3.9",
+            directory=f"eigen-{eigen_version}",
             prefix="/usr/local/eigen",
-            url="https://gitlab.com/libeigen/eigen/-/archive/3.3.9/eigen-3.3.9.tar.gz",
+            url=f"https://gitlab.com/libeigen/eigen/-/archive/{eigen_version}/eigen-{eigen_version}.tar.gz",
         )
-        Stage0 += hdf5(configure_opts=["--enable-cxx"], toolchain=toolchain)
+        Stage0 += hdf5(
+            configure_opts=["--enable-cxx"],
+            toolchain=toolchain,
+            version=versions["minimum_version"]["hdf5"],
+        )
 if local_args.cvode:
+    # TODO version
     Stage0 += generic_cmake(
         cmake_opts=[
             "-D EXAMPLES_INSTALL=OFF",

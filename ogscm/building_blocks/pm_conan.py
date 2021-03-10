@@ -25,6 +25,7 @@ class pm_conan(bb_base):
         super(pm_conan, self).__init__()
 
         self.__user_home = kwargs.get("user_home", "")
+        self.__version = kwargs.get("version", "")
 
         self.__commands = []
 
@@ -38,16 +39,15 @@ class pm_conan(bb_base):
         self += packages(ospackages=["pkg-config"])
         # For building curl:
         self += packages(ospackages=["autoconf-archive", "libtool"])
-        conan_version = "1.33.0"
 
-        self += pip(pip="pip3", packages=["conan=={}".format(conan_version)])
+        self += pip(pip="pip3", packages=[f"conan=={self.__version}"])
         self += shell(commands=self.__commands)
         if self.__user_home != "":
             self += environment(variables={"CONAN_USER_HOME": self.__user_home})
         self += label(
             metadata={
                 "org.opengeosys.pm": "conan",
-                "org.opengeosys.pm.conan.version": conan_version,
+                "org.opengeosys.pm.conan.version": self.__version,
             }
         )
         if self.__user_home != "":
