@@ -7,7 +7,7 @@ variables:
   PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
   BUILDKIT_PROGRESS: "plain"
   OGSCM_ARGUMENTS:
-    value: "compiler.py ogs.py --pm system --ogs ogs/ogs@master --cmake_args ' -DOGS_CPU_ARCHITECTURE=sandybridge -DBUILD_TESTING=OFF' --sif_file ogs-dgr.sif"
+    value: "compiler.py ogs.py --ogs ogs/ogs@master --cmake_args ' -DOGS_CPU_ARCHITECTURE=sandybridge -DBUILD_TESTING=OFF' --sif_file ogs-dgr.sif"
     description: "Arguments to ogscm. -B -C -R --ccache are always passed automatically. For more args see README.md!"
 
 dev images:
@@ -22,8 +22,8 @@ dev images:
   script:
     - black --check ogscm
     - poetry install
-    - poetry run ogscm compiler.py ogs.py -B -C --sif_file ubuntu-dev.sif --pm system --ogs off
-    - poetry run ogscm compiler.py ogs.py -B -C --sif_file centos-dev.sif --base_image centos:8 --pm system --ogs off
+    - poetry run ogscm compiler.py ogs.py -B -C --sif_file ubuntu-dev.sif --ogs off
+    - poetry run ogscm compiler.py ogs.py -B -C --sif_file centos-dev.sif --base_image centos:8 --ogs off
   artifacts:
     # example URL:
     # https://gitlab.opengeosys.org/ogs/container-maker/-/jobs/artifacts/master/raw/_out/images/ubuntu-dev.sif?job=dev+images
