@@ -94,7 +94,12 @@ parse_g.add_argument(
     "--cppcheck", dest="cppcheck", action="store_true", help="Install cppcheck"
 )
 parse_g.add_argument("--gcovr", dest="gcovr", action="store_true", help="Install gcovr")
-parse_g.add_argument("--tfel", dest="tfel", action="store_true", help="Install tfel")
+parse_g.add_argument(
+    "--mfront",
+    dest="mfront",
+    action="store_true",
+    help="Install tfel and build OGS with -DOGS_USE_MFRONT=ON",
+)
 parse_g.add_argument(
     "--insitu",
     dest="insitu",
@@ -456,7 +461,7 @@ if local_args.dev:
         ospackages=["neovim", "gdb", "silversearcher-ag", "ssh-client", "less"]
     )
 
-if local_args.tfel:
+if local_args.mfront:
     Stage0 += generic_cmake(
         directory="tfel-TFEL-3.3.0",
         ldconfig=True,
@@ -464,6 +469,7 @@ if local_args.tfel:
         prefix="/usr/local/tfel",
     )
     Stage0 += environment(variables={"TFELHOME": "/usr/local/tfel"})
+    cmake_args.append("-DOGS_USE_MFRONT=ON")
 
 if local_args.mkl:
     Stage0 += mkl(eula=True)
