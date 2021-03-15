@@ -276,7 +276,9 @@ if local_args.ogs != "clean":
     elif local_args.pm == "system":
         Stage0 += cmake(eula=True, version="3.19.4")
         Stage0 += boost(
-            version=versions["minimum_version"]["boost"], bootstrap_opts=["headers"]
+            version=versions["minimum_version"]["boost"],
+            bootstrap_opts=["--with-toolset=clang"] if toolchain.CC == "clang" else [],
+            b2_opts=["headers"],
         )
         Stage0 += environment(variables={"BOOST_ROOT": "/usr/local/boost"})
         Stage0 += packages(apt=["libxml2-dev"], yum=["libxml2-devel"])
