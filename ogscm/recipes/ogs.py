@@ -380,7 +380,7 @@ if local_args.ogs != "clean":
                         "-DModule_vtkParallelMPI=ON",
                     ]
                 )
-            vtk_version = versions["tested_version"]["vtk"]
+            vtk_version = versions["minimum_version"]["vtk"]
             Stage0 += generic_cmake(
                 cmake_opts=vtk_cmake_args,
                 devel_environment={"VTK_ROOT": "/usr/local/vtk"},
