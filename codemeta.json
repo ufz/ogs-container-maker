@@ -10,7 +10,7 @@
   "downloadUrl": "https://pypi.org/project/ogscm",
   "issueTracker": "https://gitlab.opengeosys.org/ogs/container-maker/-/issues",
   "name": "ogs-container-maker",
-  "version": "2.1.1",
+  "version": "2.1.2",
   "description": "An extension of hpc-container-maker to generate container definition files for the OpenGeoSys software.",
   "developmentStatus": "active",
   "isPartOf": "https://www.opengeosys.org",
