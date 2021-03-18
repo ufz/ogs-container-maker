@@ -474,7 +474,7 @@ if local_args.mfront:
     cmake_args.append("-DOGS_USE_MFRONT=ON")
 
 if local_args.mkl:
-    Stage0 += mkl(eula=True)
+    Stage0 += mkl(eula=True, mklvars=False)
     cmake_args.append("-DOGS_USE_MKL=ON")
 
 if local_args.ccache:
