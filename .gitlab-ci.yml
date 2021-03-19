@@ -18,6 +18,8 @@ dev images:
       when: never
     - if: $CI_PIPELINE_SOURCE == "web"
       when: never
+    - if: $CI_PIPELINE_SOURCE == "trigger"
+      when: never
     - if: $CI_COMMIT_BRANCH == "main"
   script:
     - black --check ogscm
@@ -55,10 +57,10 @@ manual build:
   tags: ['docker-shell']
   stage: build
   rules:
-    - if: $CI_PIPELINE_SOURCE != "web"
-      when: never
-    - if: $CI_COMMIT_BRANCH
+    - if: $CI_PIPELINE_SOURCE == "web"
+    - if: $CI_PIPELINE_SOURCE == "trigger"
   script:
+    - echo $OGSCM_ARGUMENTS
     - poetry install
     - eval poetry run ogscm -B -C -R --ccache $OGSCM_ARGUMENTS
   artifacts:
