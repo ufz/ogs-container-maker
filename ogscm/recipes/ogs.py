@@ -141,7 +141,9 @@ if local_args.ogs not in ["off", "clean"]:  # != "off" and local_args.ogs != "cl
         with open(f"{local_args.ogs}/web/data/versions.json") as fp:
             versions = json.load(fp)
         if "GITLAB_CI" in os.environ:
-            if "CI_COMMIT_BRANCH" in os.environ:
+            if "CI_COMMIT_TAG" in os.environ:
+                branch = "master"
+            elif "CI_COMMIT_BRANCH" in os.environ:
                 branch = os.environ["CI_COMMIT_BRANCH"]
             elif "CI_MERGE_REQUEST_SOURCE_BRANCH_NAME" in os.environ:
                 branch = os.environ["CI_MERGE_REQUEST_SOURCE_BRANCH_NAME"]
