@@ -51,14 +51,24 @@ class builder(object):
 
         if self.__args.upload:
             subprocess.run(f"docker push {self.__tag}", shell=True)
+        image_base_name = f"{self.__images_out_dir}/{self.__img_file}-{image_id_short}"
         if self.__args.sif_file:
             self.image_file = f"{self.__images_out_dir}/{self.__args.sif_file}"
         else:
-            self.image_file = (
-                f"{self.__images_out_dir}/{self.__img_file}-{image_id_short}.sif"
-            )
+            self.image_file = f"{image_base_name}.sif"
         if self.__args.convert and not os.path.exists(self.image_file):
             subprocess.run(
                 f"cd {self.__cwd} && singularity build --force {self.image_file} docker-daemon:{self.__tag}",
                 shell=True,
             )
+
+        if self.__args.enroot_file:
+            self.image_file = f"{self.__images_out_dir}/{self.__args.enroot_file}"
+        else:
+            self.image_file = f"{image_base_name}.sqsh"
+        if self.__args.convert_enroot and not os.path.exists(self.image_file):
+            subprocess.run(
+                f"cd {self.__cwd} && ENROOT_SQUASH_OPTIONS='-comp lz4 -noD' enroot import -o {self.image_file} dockerd://{self.__tag}",
+                shell=True,
+            )
+            print(f"Wrote image file {self.image_file}")
