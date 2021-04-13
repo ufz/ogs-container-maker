@@ -103,10 +103,10 @@ $ ogscm compiler.py mpi.py ogs.py --base_image 'centos:8' --help
 Evaluating compiler.py
 Evaluating mpi.py
 Evaluating ogs.py
-usage: ogscm [-h] [--version] [--out OUT] [--file FILE] [--sif_file SIF_FILE] [--print] [--format {docker,singularity}] [--base_image BASE_IMAGE] [--build] [--build_args BUILD_ARGS] [--upload]
-             [--registry REGISTRY] [--tag TAG] [--convert] [--runtime-only] [--clean] [--deploy [DEPLOY]] [--pip [package ...]] [--packages [packages ...]] [--compiler COMPILER]
+usage: ogscm [-h] [--version] [--out OUT] [--file FILE] [--print] [--format {docker,singularity}] [--base_image BASE_IMAGE] [--build] [--build_args BUILD_ARGS] [--upload] [--registry REGISTRY] [--tag TAG]
+             [--convert] [--sif_file SIF_FILE] [--convert-enroot] [--enroot_file ENROOT_FILE] [--runtime-only] [--clean] [--deploy [DEPLOY]] [--pip [package ...]] [--packages [packages ...]] [--compiler COMPILER]
              [--compiler_version COMPILER_VERSION] [--iwyy] [--ompi OMPI] [--mpi_benchmarks] [--pm {system,conan,off}] [--ogs OGS] [--cmake_args CMAKE_ARGS] [--ccache] [--parallel PARALLEL] [--gui] [--docs]
-             [--cvode] [--cppcheck] [--gcovr] [--tfel] [--insitu] [--dev] [--mkl] [--version_file VERSION_FILE]
+             [--cvode] [--cppcheck] [--gcovr] [--mfront] [--insitu] [--dev] [--mkl] [--version_file VERSION_FILE]
              recipe [recipe ...]
 
 positional arguments:
@@ -117,7 +117,6 @@ optional arguments:
   --version             show program's version number and exit
   --out OUT             Output directory (default: _out)
   --file FILE           Overwrite output recipe file name (default: )
-  --sif_file SIF_FILE   Overwrite output singularity image file name (default: )
   --print, -P           Print the definition to stdout (default: False)
 
 General image config:
@@ -133,6 +132,10 @@ Image build options:
   --registry REGISTRY   The docker registry the image is tagged and uploaded to. (default: registry.opengeosys.org/ogs/ogs)
   --tag TAG             The full docker image tag. Overwrites --registry. (default: )
   --convert, -C         Convert Docker image to Singularity image (default: False)
+  --sif_file SIF_FILE   Overwrite output singularity image file name (default: )
+  --convert-enroot, -E  Convert Docker image to enroot image (default: False)
+  --enroot_file ENROOT_FILE
+                        Overwrite output enroot image file name (default: )
   --runtime-only, -R    Generate multi-stage Dockerfiles for small runtime images (default: False)
 
 Maintenance:
@@ -155,7 +158,7 @@ compiler.py:
 
 mpi.py:
   --ompi OMPI           OpenMPI version, e.g. 2.1.1, 2.1.5, 3.0.1, 3.1.2 (default: 4.0.5)
-  --mpi_benchmarks      Installs OSU MPI benchmarks as scif app and mpi_bw, mpi_ring,mpi_hello (default: False)
+  --mpi_benchmarks      Installs OSU MPI benchmarks and mpi_bw, mpi_ring, mpi_hello (default: False)
 
 ogs.py:
   --pm {system,conan,off}
@@ -172,7 +175,7 @@ ogs.py:
   --cvode               Install and configure with cvode (default: False)
   --cppcheck            Install cppcheck (default: False)
   --gcovr               Install gcovr (default: False)
-  --tfel                Install tfel (default: False)
+  --mfront              Install tfel and build OGS with -DOGS_USE_MFRONT=ON (default: False)
   --insitu              Builds with insitu capabilities (default: False)
   --dev                 Installs development tools (vim, gdb) (default: False)
   --mkl                 Use MKL. By setting this option, you agree to the [Intel End User License Agreement](https://software.intel.com/en-us/articles/end-user-license-agreement). (default: False)
