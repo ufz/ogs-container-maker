@@ -22,13 +22,14 @@ dev images:
   script:
     - black --check ogscm
     - poetry install
-    - poetry run ogscm compiler.py ogs.py -B -C --sif_file ubuntu-dev.sif --ogs off
-    - poetry run ogscm compiler.py ogs.py -B -C --sif_file centos-dev.sif --base_image centos:8 --ogs off
+    - poetry run ogscm compiler.py ogs.py -B -C --sif_file ubuntu-dev.sif -E --enroot_file ubuntu-dev.sqsh --ogs off
+    - poetry run ogscm compiler.py ogs.py -B -C --sif_file centos-dev.sif -E --enroot_file centos-dev.sqsh --base_image centos:8 --ogs off
   artifacts:
     # example URL:
     # https://gitlab.opengeosys.org/ogs/container-maker/-/jobs/artifacts/master/raw/_out/images/ubuntu-dev.sif?job=dev+images
     paths:
       - _out/images/*.sif
+      - _out/images/*.sqsh
 
 release:
   stage: release

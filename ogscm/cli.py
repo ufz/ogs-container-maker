@@ -39,12 +39,6 @@ def main():  # pragma: no cover
         "--file", type=str, default="", help="Overwrite output recipe file name"
     )
     parser.add_argument(
-        "--sif_file",
-        type=str,
-        default="",
-        help="Overwrite output singularity image file name",
-    )
-    parser.add_argument(
         "--print",
         "-P",
         dest="print",
@@ -102,6 +96,25 @@ def main():  # pragma: no cover
         dest="convert",
         action="store_true",
         help="Convert Docker image to Singularity image",
+    )
+    build_g.add_argument(
+        "--sif_file",
+        type=str,
+        default="",
+        help="Overwrite output singularity image file name",
+    )
+    build_g.add_argument(
+        "--convert-enroot",
+        "-E",
+        dest="convert_enroot",
+        action="store_true",
+        help="Convert Docker image to enroot image",
+    )
+    build_g.add_argument(
+        "--enroot_file",
+        type=str,
+        default="",
+        help="Overwrite output enroot image file name",
     )
     build_g.add_argument(
         "--runtime-only",

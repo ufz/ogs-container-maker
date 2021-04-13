@@ -48,10 +48,14 @@ class ogs(bb_base, hpccm.templates.CMakeBuild, hpccm.templates.rm):
         self.__commit = kwargs.get("commit")
         self.__git_version = kwargs.get("git_version")
         self.__conan = kwargs.get("conan", False)
+        self.__shell_args = ""
 
         if self.__repo == "local":
             self.__skip_clone = True
             self.__remove_source = False
+            self.__shell_args = "--mount=type=bind,target={}/src,rw".format(
+                self.__prefix
+            )
 
         # Filled in by __setup():
         self.__commands = []
@@ -72,7 +76,7 @@ class ogs(bb_base, hpccm.templates.CMakeBuild, hpccm.templates.rm):
         self += packages(ospackages=self.__ospackages)
         self += shell(
             commands=self.__commands,
-            _arguments="--mount=type=bind,target=/scif/apps/ogs/src,rw",
+            _arguments=self.__shell_args,
         )
         self += runscript(commands=["ogs"])
 
@@ -154,7 +158,7 @@ class ogs(bb_base, hpccm.templates.CMakeBuild, hpccm.templates.rm):
         if self.__repo == "local":
             self.__labels["version"] = self.__git_version
         else:
-            self.__labels["version"] = "{0}@{1} ({2})".format(
+            self.__labels["version"] = "'{0}@{1} ({2})'".format(
                 self.__repo, self.__branch, self.__commit
             )
         self.__labels["cmake_args"] = "'" + " ".join(self.__cmake_args) + "'"
