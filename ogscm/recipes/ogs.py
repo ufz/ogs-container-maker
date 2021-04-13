@@ -16,7 +16,6 @@ from hpccm.building_blocks import (
     mkl,
     packages,
     pip,
-    scif,
 )
 from ogscm.building_blocks.pm_conan import pm_conan
 
@@ -228,11 +227,6 @@ if local_args.ogs != "off" and not args.runtime_only:
 
 # Optionally set out_dir
 out_dir += folder
-
-if repo == "local":
-    scif_file = f"{out_dir}/ogs.scif"  # TODO
-else:
-    scif_file = f"{out_dir}/ogs.scif"
 
 # Implement recipe
 Stage0 += comment(f"--- Begin {filename} ---")
@@ -497,23 +491,16 @@ if local_args.ogs != "off" and local_args.ogs != "clean":
     if repo == "local":
         print(f"chdir to {local_args.ogs}")
         os.chdir(local_args.ogs)
-        mount_args += f" --mount=type=bind,target=/scif/apps/ogs/src,rw"
 
-    ogs_app = scif(_arguments=mount_args, name="ogs", file=scif_file)
-    ogs_app += ogs(
+    Stage0 += ogs(
         repo=repo,
         branch=branch,
         commit=commit_hash,
         conan=(True if local_args.pm == "conan" else False),
         git_version=git_version,
         toolchain=toolchain,
-        prefix="/scif/apps/ogs",
         cmake_args=cmake_args,
         parallel=local_args.parallel,
         remove_build=True,
         remove_source=True,
     )
-    # Install scif in all stages
-    Stage0 += pip(packages=["scif"], pip="pip3")
-    Stage1 += pip(packages=["scif"], pip="pip3")
-    Stage0 += ogs_app
