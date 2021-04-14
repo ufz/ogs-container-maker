@@ -68,7 +68,8 @@ class builder(object):
             self.image_file = f"{image_base_name}.sqsh"
         if self.__args.convert_enroot and not os.path.exists(self.image_file):
             subprocess.run(
-                f"cd {self.__cwd} && ENROOT_SQUASH_OPTIONS='-comp lz4 -noD' enroot import -o {self.image_file} dockerd://{self.__tag}",
+                # See https://www.mankier.com/1/mksquashfs for options.
+                f"cd {self.__cwd} && rm -f {self.image_file} && ENROOT_SQUASH_OPTIONS='-comp xz -b 512K' enroot import -o {self.image_file} dockerd://{self.__tag}",
                 shell=True,
             )
             print(f"Wrote image file {self.image_file}")
