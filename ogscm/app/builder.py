@@ -56,7 +56,9 @@ class builder(object):
             self.image_file = f"{self.__images_out_dir}/{self.__args.sif_file}"
         else:
             self.image_file = f"{image_base_name}.sif"
-        if self.__args.convert and not os.path.exists(self.image_file):
+        if self.__args.convert and (
+            not os.path.exists(self.image_file) or self.__args.force
+        ):
             subprocess.run(
                 f"cd {self.__cwd} && singularity build --force {self.image_file} docker-daemon:{self.__tag}",
                 shell=True,
@@ -66,7 +68,9 @@ class builder(object):
             self.image_file = f"{self.__images_out_dir}/{self.__args.enroot_file}"
         else:
             self.image_file = f"{image_base_name}.sqsh"
-        if self.__args.convert_enroot and not os.path.exists(self.image_file):
+        if self.__args.convert_enroot and (
+            not os.path.exists(self.image_file) or self.__args.force
+        ):
             subprocess.run(
                 # See https://www.mankier.com/1/mksquashfs for options.
                 f"cd {self.__cwd} && rm -f {self.image_file} && ENROOT_SQUASH_OPTIONS='-comp xz -b 512K' enroot import -o {self.image_file} dockerd://{self.__tag}",

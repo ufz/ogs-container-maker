@@ -117,6 +117,12 @@ def main():  # pragma: no cover
         help="Overwrite output enroot image file name",
     )
     build_g.add_argument(
+        "--force",
+        dest="force",
+        action="store_true",
+        help="Forces overwriting of image files!",
+    )
+    build_g.add_argument(
         "--runtime-only",
         "-R",
         dest="runtime_only",

@@ -78,7 +78,6 @@ class ogs(bb_base, hpccm.templates.CMakeBuild, hpccm.templates.rm):
             commands=self.__commands,
             _arguments=self.__shell_args,
         )
-        self += runscript(commands=["ogs"])
 
         if self.__environment_variables:
             self += environment(variables=self.__environment_variables)
