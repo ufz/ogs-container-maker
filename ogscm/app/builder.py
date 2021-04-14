@@ -77,3 +77,13 @@ class builder(object):
                 shell=True,
             )
             print(f"Wrote image file {self.image_file}")
+
+        bundle_file = f"{self.image_file[:-5]}.run"
+        if self.__args.enroot_bundle and (
+            not os.path.exists(bundle_file) or self.__args.force
+        ):
+            subprocess.run(
+                f"cd {self.__cwd} && rm -f {bundle_file} && enroot bundle -o {bundle_file} {self.image_file}",
+                shell=True,
+            )
+            print(f"Wrote bundle file {bundle_file}")

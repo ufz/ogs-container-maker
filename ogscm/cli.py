@@ -111,6 +111,12 @@ def main():  # pragma: no cover
         help="Convert Docker image to enroot image",
     )
     build_g.add_argument(
+        "--enroot-bundle",
+        dest="enroot_bundle",
+        action="store_true",
+        help="Convert enroot image to enroot bundle",
+    )
+    build_g.add_argument(
         "--enroot_file",
         type=str,
         default="",
