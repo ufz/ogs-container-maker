@@ -28,11 +28,9 @@ class builder(object):
             f"sudo `which singularity` build --force {sif_file}"
             f"{self.__definition_file_path}",
             shell=True,
+            check=True,
         )
-        subprocess.run(
-            f"sudo chown $USER:$USER {sif_file}",
-            shell=True,
-        )
+        subprocess.run(f"sudo chown $USER:$USER {sif_file}", shell=True, check=True)
         # TODO: adapt this
         exit(0)
 
@@ -42,7 +40,7 @@ class builder(object):
             f"-t {self.__tag} -f {self.__definition_file_path} ."
         )
         print(f"Running: {build_cmd}")
-        subprocess.run(build_cmd, shell=True)
+        subprocess.run(build_cmd, shell=True, check=True)
         inspect_out = subprocess.check_output(
             f"docker inspect {self.__tag} | grep Id", shell=True
         ).decode(sys.stdout.encoding)
@@ -50,7 +48,7 @@ class builder(object):
         image_id_short = image_id[0:12]
 
         if self.__args.upload:
-            subprocess.run(f"docker push {self.__tag}", shell=True)
+            subprocess.run(f"docker push {self.__tag}", shell=True, check=True)
         image_base_name = f"{self.__images_out_dir}/{self.__img_file}-{image_id_short}"
         if self.__args.sif_file:
             self.image_file = f"{self.__images_out_dir}/{self.__args.sif_file}"
@@ -62,6 +60,7 @@ class builder(object):
             subprocess.run(
                 f"cd {self.__cwd} && singularity build --force {self.image_file} docker-daemon:{self.__tag}",
                 shell=True,
+                check=True,
             )
 
         if self.__args.enroot_file:
@@ -75,6 +74,7 @@ class builder(object):
                 # See https://www.mankier.com/1/mksquashfs for options.
                 f"cd {self.__cwd} && rm -f {self.image_file} && ENROOT_SQUASH_OPTIONS='-comp xz -b 512K' enroot import -o {self.image_file} dockerd://{self.__tag}",
                 shell=True,
+                check=True,
             )
             print(f"Wrote image file {self.image_file}")
 
@@ -85,5 +85,6 @@ class builder(object):
             subprocess.run(
                 f"cd {self.__cwd} && rm -f {bundle_file} && enroot bundle -o {bundle_file} {self.image_file}",
                 shell=True,
+                check=True,
             )
             print(f"Wrote bundle file {bundle_file}")
