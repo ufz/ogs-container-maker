@@ -277,7 +277,9 @@ if local_args.ogs != "clean":
             b2_opts=["headers"],
         )
         Stage0 += environment(variables={"BOOST_ROOT": "/usr/local/boost"})
-        Stage0 += packages(apt=["libxml2-dev"], yum=["libxml2-devel"])
+        Stage0 += packages(
+            apt=["libxml2-dev", "xsltproc"], yum=["libxml2-devel", "libxslt"]
+        )
         vtk_cmake_args = [
             "-DModule_vtkIOXML=ON",
             "-DModule_vtkIOLegacy=ON",
