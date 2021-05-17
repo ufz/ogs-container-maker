@@ -272,6 +272,7 @@ if local_args.ogs != "clean":
     elif local_args.pm == "system":
         Stage0 += cmake(eula=True, version="3.20.1")
         Stage0 += boost(
+            baseurl=f"https://boostorg.jfrog.io/artifactory/main/release/{versions['minimum_version']['boost']}/source",
             version=versions["minimum_version"]["boost"],
             bootstrap_opts=["--with-toolset=clang"] if toolchain.CC == "clang" else [],
             b2_opts=["headers"],
