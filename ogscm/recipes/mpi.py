@@ -121,7 +121,7 @@ Stage0 += shell(
 )
 
 # PMI support
-Stage0 += slurm_pmi2(prefix="/usr/local/pmi")
+Stage0 += slurm_pmi2(prefix="/usr/local/pmi", version="20.11.7")
 Stage0 += pmix()
 
 # OpenMPI
