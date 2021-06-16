@@ -9,13 +9,13 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.7"
-hpccm = "^21.4.0"
+hpccm = "^21.5.0"
 requests = "^2.24.0"
 PyYAML = "^5.3.1"
 packaging = "^20.4"
 
 [tool.poetry.dev-dependencies]
-black = { version = "^20.8b1", allow-prereleases = true }
+black = { version="^20.8b1", allow-prereleases=true }
 
 [tool.poetry.scripts]
 ogscm = "ogscm.cli:main"
