@@ -463,10 +463,11 @@ if local_args.dev:
     )
 
 if local_args.mfront:
+    tfel_version = versions["minimum_version"]["tfel-rliv"]
     Stage0 += generic_cmake(
-        directory="tfel-TFEL-3.3.0",
+        directory=f"tfel-rliv-{tfel_version}",
         ldconfig=True,
-        url="https://github.com/thelfer/tfel/archive/TFEL-3.3.0.tar.gz",
+        url=f"https://github.com/thelfer/tfel/archive/refs/heads/rliv-{tfel_version}.zip",
         prefix="/usr/local/tfel",
     )
     Stage0 += environment(variables={"TFELHOME": "/usr/local/tfel"})
