@@ -1,7 +1,7 @@
 import argparse
+import functools
 import os
 import pathlib
-import ipywidgets as widgets
 import importlib.resources as pkg_resources
 
 def on_button_recipe_clicked(b):
@@ -15,9 +15,10 @@ def on_button_recipe_clicked(b):
         b.owner.description = "Disabled"
         b.owner.button_style=''
 
-def setup_ui():
+def setup_ui(run_cmd):
     from ogscm.args import setup_args_parser
     from ogscm import recipes
+    import ipywidgets as widgets
 
     parser = setup_args_parser()
 
@@ -54,9 +55,17 @@ def setup_ui():
     for idx, val in enumerate(tab_names):
         tab.set_title(idx, val)
     display(tab)
-    return args_dict
+
+    button = widgets.Button(description="CREATE CONTAINER", button_style="primary", layout=widgets.Layout(width='100%', height='35px'))
+    out = widgets.Output(layout={'border': '1px solid black'})
+    display(button, out)
+
+    button.on_click(functools.partial(on_button_clicked, out=out, args_dict=args_dict, run_cmd=run_cmd))
+
+    return out
 
 def setup_args(actions, args_dict):
+    import ipywidgets as widgets
     items = []
     for arg in actions:
         name = arg.option_strings[0]
@@ -79,3 +88,27 @@ def setup_args(actions, args_dict):
             grid_gap='10px 10px'))
 
     return gridbox
+
+def create_cli(items):
+    cli_string = ""
+    recipes = ""
+    for (k, v) in items:
+        value = v.value
+        if value == False:
+            continue
+        if k.endswith(".py"):
+            recipes += f" {k}"
+            continue
+        if value != "":
+            cli_string += f" {k}"
+            if isinstance(value, str):
+                cli_string += f" {value}"
+
+    return f"{recipes}{cli_string}"
+
+def on_button_clicked(b, out, args_dict, run_cmd):
+    with out:
+        out.clear_output()
+        cli_string = create_cli(args_dict.items())
+        cmd = f"poetry run ogscm {cli_string}"
+        run_cmd(cmd)
