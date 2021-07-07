@@ -218,4 +218,44 @@ poetry shell
 # Register Jupyter kernel:
 python -m ipykernel install --user --name=container-maker
 ```
+## Jupyter interface
 
+### Requirements:
+
+- Docker
+- Singularity
+
+### Setup
+
+Create a kernel with `ogscm` installed and in the `PATH`:
+
+```bash
+virtualenv ogscm-venv
+cd ogscm-venv
+source bin/activate
+pip install ogscm
+python -m ipykernel install --user --name=ogscm --env PATH $PWD/bin:$PATH`
+```
+
+### Usage
+
+In a notebook run this cell:
+
+```py
+from ogscm.jupyter import setup_ui
+
+def run_cmd(cmd):
+    print(f"Executing: {cmd}")
+    !poetry run {cmd}
+
+out = setup_ui(run_cmd)
+```
+
+Options `--build` and `--convert` are enabeld per default, then click on button `CREATE CONTAINER`. Optionally run a second cell to get a download link to the image file:
+
+```py
+from ogscm.jupyter import display_download_link
+display_download_link(out.outputs[0]['text'])
+```
+
+Output is stored in `[notebook-location]/_out`. UI state is preserved when notebook was saved. Enable recipes from the tab widget by clicking on the `Disabled`-button (`compiley.py`-recipe is enabled by default).

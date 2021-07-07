@@ -41,10 +41,18 @@ def setup_ui(run_cmd):
             recipe_builtin = pkg_resources.read_text(recipes, filename)
             exec(compile(recipe_builtin, filename, "exec"), locals(), ldict)
 
-            button = widgets.ToggleButton(
-                value=False,
-                description='Disabled',
-            )
+            if filename == "compiler.py":
+                button = widgets.ToggleButton(
+                    value=True,
+                    description='Enabled',
+                    button_style='success',
+                    icon = "check"
+                )
+            else:
+                button = widgets.ToggleButton(
+                    value=False,
+                    description='Disabled',
+                )
             button.observe(on_button_recipe_clicked, 'value')
             args_dict[filename] = button
             grid = setup_args(parser._actions, args_dict)
@@ -57,6 +65,7 @@ def setup_ui(run_cmd):
     display(tab)
 
     button = widgets.Button(description="CREATE CONTAINER", button_style="primary", layout=widgets.Layout(width='100%', height='35px'))
+    global out
     out = widgets.Output(layout={'border': '1px solid black'})
     display(button, out)
 
@@ -71,7 +80,10 @@ def setup_args(actions, args_dict):
         name = arg.option_strings[0]
         help = arg.help or ""
         if arg.type == None:
-            widget = widgets.Checkbox(description=help)
+            value = False
+            if name in ["--build", "--convert"]:
+                value = True
+            widget = widgets.Checkbox(description=help, value=value)
         else:
             default_value = ""
             if name == "--build_args":
@@ -110,5 +122,53 @@ def on_button_clicked(b, out, args_dict, run_cmd):
     with out:
         out.clear_output()
         cli_string = create_cli(args_dict.items())
-        cmd = f"poetry run ogscm {cli_string}"
+        cmd = f"ogscm {cli_string}"
         run_cmd(cmd)
+
+from IPython.display import FileLink
+import os
+class DownloadFileLink(FileLink):
+    html_link_str = "<a href='{link}' download={file_name}>{link_text}</a>"
+
+    def __init__(self, path, file_name=None, link_text=None, *args, **kwargs):
+        super(DownloadFileLink, self).__init__(path, *args, **kwargs)
+
+        self.file_name = file_name or os.path.split(path)[1]
+        self.link_text = link_text or self.file_name
+
+    def _format_path(self):
+        from html import escape
+        fp = ''.join([self.url_prefix, escape(self.path)])
+        return ''.join([self.result_html_prefix,
+                        self.html_link_str.format(link=fp, file_name=self.file_name, link_text=self.link_text),
+                        self.result_html_suffix])
+
+def display_download_link(output):
+    from pygments import highlight
+    from pygments.lexers import DockerLexer
+    from pygments.formatters import HtmlFormatter
+    import IPython
+    import re
+
+    # Sif
+    p = re.compile('.*Build.*: (.*\.sif)')
+    m = p.search(output)
+    print("Download container:")
+    if m:
+        sif_file = m.group(1)
+        from ogscm.jupyter import DownloadFileLink
+        import os
+        display(DownloadFileLink(os.path.relpath(sif_file)))
+
+    # Dockerfile
+    p = re.compile('Created definition (.*)')
+    m = p.search(output)
+    dockerfile = m.group(1)
+
+    with open(dockerfile) as f:
+        code = f.read()
+
+    formatter = HtmlFormatter()
+    IPython.display.HTML('<style type="text/css">{}</style>{}'.format(
+        formatter.get_style_defs('.highlight'),
+        highlight(code, DockerLexer(), formatter)))

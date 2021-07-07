@@ -54,14 +54,15 @@ class builder(object):
             self.image_file = f"{self.__images_out_dir}/{self.__args.sif_file}"
         else:
             self.image_file = f"{image_base_name}.sif"
-        if self.__args.convert and (
-            not os.path.exists(self.image_file) or self.__args.force
-        ):
-            subprocess.run(
-                f"cd {self.__cwd} && singularity build --force {self.image_file} docker-daemon:{self.__tag}",
-                shell=True,
-                check=True,
-            )
+        if self.__args.convert:
+            if os.path.exists(self.image_file) and not self.__args.force:
+                print(f"Build already done: {self.image_file}")
+            else:
+                subprocess.run(
+                    f"cd {self.__cwd} && singularity build --force {self.image_file} docker-daemon:{self.__tag}",
+                    shell=True,
+                    check=True,
+                )
 
         if self.__args.enroot_file:
             self.image_file = f"{self.__images_out_dir}/{self.__args.enroot_file}"
