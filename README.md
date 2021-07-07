@@ -203,9 +203,19 @@ ogscm compiler.py ogs.py -B -C -R --ogs [path to ogs sources]
 - `host` has to be a SSH host to which you have passwordless access
 - Deploy to the host with `... -D myhost`
 
-
 ## PyPi Publication
 
 - Bump version in `pyproject.py` and `version.py`
 - Create tag
 - Push to GitLab (`git push --tags`)
+
+## Developer setup
+
+```bash
+poetry install
+poetry shell
+
+# Register Jupyter kernel:
+python -m ipykernel install --user --name=container-maker
+```
+
