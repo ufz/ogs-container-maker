@@ -8,7 +8,6 @@ class builder(object):
     def __init__(
         self, args, images_out_dir, img_file, definition_file_path, tag, cwd, **kwargs
     ):
-        self.__format = kwargs.get("format", "docker")
         self.__args = args
         self.__images_out_dir = images_out_dir
         self.__img_file = img_file
@@ -17,21 +16,20 @@ class builder(object):
         self.__cwd = cwd
 
     def build(self):
-        if self.__format == "singularity":
+        if self.__args.format == "singularity":
             self.build_singularity()
         else:
             self.build_docker()
 
     def build_singularity(self):
         sif_file = f"{self.__images_out_dir}/{self.__img_file}.sif"
+        print(f"sudo `which singularity` build --force {sif_file} "
+            f"{self.__definition_file_path}")
         subprocess.run(
-            f"sudo `which singularity` build --force {sif_file}"
-            f"{self.__definition_file_path}",
+            f"sudo `which singularity` build --force {sif_file} {self.__definition_file_path}",
             shell=True,
             check=True,
         )
-        subprocess.run(f"sudo chown $USER:$USER {sif_file}", shell=True, check=True)
-        # TODO: adapt this
         exit(0)
 
     def build_docker(self):
