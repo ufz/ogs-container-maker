@@ -248,14 +248,15 @@ def run_cmd(cmd):
     print(f"Executing: {cmd}")
     !poetry run {cmd}
 
-out = setup_ui(run_cmd)
+user_recipes = ["user_recipes/my_recipe.py"] # optional user recipes
+out = setup_ui(run_cmd, user_recipes)
 ```
 
 Options `--build` and `--convert` are enabeld per default, then click on button `CREATE CONTAINER`. Optionally run a second cell to get a download link to the image file:
 
 ```py
-from ogscm.jupyter import display_download_link
-display_download_link(out.outputs[0]['text'])
+from ogscm.jupyter import display_download_link, display_source
+display_source(display_download_link(out.outputs[0]['text']), "docker")
 ```
 
 Output is stored in `[notebook-location]/_out`. UI state is preserved when notebook was saved. Enable recipes from the tab widget by clicking on the `Disabled`-button (`compiley.py`-recipe is enabled by default).
