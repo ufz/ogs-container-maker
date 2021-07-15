@@ -260,8 +260,8 @@ if local_args.gui:
         yum=["mesa-libOSMesa", "mesa-libGL", "mesa-libGLU", "libXt"],
     )
 if local_args.ogs != "clean":
+    Stage0 += cmake(eula=True, version="3.21.0")
     if local_args.pm == "conan":
-        Stage0 += cmake(eula=True, version="3.19.4")
         conan_user_home = "/opt/conan"
         if local_args.dev:
             conan_user_home = ""
@@ -270,7 +270,6 @@ if local_args.ogs != "clean":
         )
         Stage0 += environment(variables={"CONAN_SYSREQUIRES_SUDO": 0})
     elif local_args.pm == "system":
-        Stage0 += cmake(eula=True, version="3.20.1")
         Stage0 += boost(
             baseurl=f"https://boostorg.jfrog.io/artifactory/main/release/{versions['minimum_version']['boost']}/source",
             version=versions["minimum_version"]["boost"],
