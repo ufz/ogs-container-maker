@@ -423,8 +423,11 @@ if local_args.ogs != "clean":
             prefix="/usr/local/eigen",
             url=f"https://gitlab.com/libeigen/eigen/-/archive/{eigen_version}/eigen-{eigen_version}.tar.gz",
         )
+        hdf5_cofigure_opts = ["--enable-cxx"]
+        if toolchain.CC == "mpicc":
+            hdf5_cofigure_opts = ["--enable-parallel", "--enable-shared"]
         Stage0 += hdf5(
-            configure_opts=["--enable-cxx"],
+            configure_opts=hdf5_cofigure_opts,
             toolchain=toolchain,
             version=versions["minimum_version"]["hdf5"],
         )
