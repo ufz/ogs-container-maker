@@ -9,11 +9,7 @@ from hpccm.building_blocks import (
     packages,
     pip,
 )
-from hpccm.primitives import (
-    baseimage,
-    comment,
-    raw,
-)
+from hpccm.primitives import baseimage, comment, raw, shell
 
 from ogscm.version import __version__
 from ogscm.app import builder
@@ -201,6 +197,8 @@ def main():  # pragma: no cover
         Stage1.baseimage(image=args.base_image)
     else:
         Stage1.baseimage(image=args.runtime_base_image)
+        if args.runtime_base_image == "jupyter/base-notebook":
+            Stage1 += raw(docker="USER root")
 
     cwd = os.getcwd()
     img_file = ""
@@ -287,6 +285,14 @@ def main():  # pragma: no cover
         Stage1 += Stage0.runtime(exclude=["boost"])
         if args.compiler == "gcc" and args.compiler_version != None:
             Stage1 += packages(apt=["libstdc++6"])
+        if args.runtime_base_image == "jupyter/base-notebook":
+            Stage1 += shell(
+                commands=[
+                    'fix-permissions "${CONDA_DIR}"',
+                    'fix-permissions "/home/${NB_USER}"',
+                ]
+            )
+            Stage1 += raw(docker="USER ${NB_USER}")
         stages_string += "\n\n" + str(Stage1)
 
     # ---------------------------- recipe end -----------------------------
