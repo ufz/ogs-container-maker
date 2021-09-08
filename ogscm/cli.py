@@ -55,6 +55,12 @@ def main():  # pragma: no cover
         default="ubuntu:20.04",
         help="The base image. (centos:8 is supported too)",
     )
+    general_g.add_argument(
+        "--runtime_base_image",
+        type=str,
+        default="",
+        help="The runtime base image.",
+    )
     build_g = parser.add_argument_group("Image build options")
     build_g.add_argument(
         "--build",
@@ -191,7 +197,10 @@ def main():  # pragma: no cover
 
     # Prepare runtime stage
     Stage1 = hpccm.Stage()
-    Stage1.baseimage(image=args.base_image)
+    if args.runtime_base_image == "":
+        Stage1.baseimage(image=args.base_image)
+    else:
+        Stage1.baseimage(image=args.runtime_base_image)
 
     cwd = os.getcwd()
     img_file = ""
