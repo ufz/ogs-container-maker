@@ -286,12 +286,6 @@ def main():  # pragma: no cover
         if args.compiler == "gcc" and args.compiler_version != None:
             Stage1 += packages(apt=["libstdc++6"])
         if args.runtime_base_image == "jupyter/base-notebook":
-            Stage1 += shell(
-                commands=[
-                    'fix-permissions "${CONDA_DIR}"',
-                    'fix-permissions "/home/${NB_USER}"',
-                ]
-            )
             Stage1 += raw(docker="USER ${NB_USER}")
         stages_string += "\n\n" + str(Stage1)
 
