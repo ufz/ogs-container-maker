@@ -164,7 +164,7 @@ if local_args.ogs not in ["off", "clean"]:  # != "off" and local_args.ogs != "cl
                 capture_output=True,
                 text=True,
                 shell=True,
-            ).stdout[0]
+            ).stdout
     else:
         # Get git commit hash and construct image tag name
         repo, branch, *commit = local_args.ogs.split("@")
