@@ -35,6 +35,7 @@ Stage1 += packages(
         "libxrender1",
         "libfontconfig1",
         "xvfb",  # for offscreen display server
+        "git",  # for nbdime
     ]
 )
 
@@ -43,6 +44,7 @@ Stage1 += shell(
         "pip install ogs6py "
         "https://github.com/joergbuchwald/VTUinterface/archive/refs/heads/master.zip "
         "pyvista pythreejs "
+        "nbconvert nbdime "
     ]
 )
 
