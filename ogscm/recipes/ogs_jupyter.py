@@ -1,4 +1,4 @@
-from hpccm.primitives import comment, raw, shell
+from hpccm.primitives import comment, environment, raw, shell
 from hpccm.building_blocks import packages
 
 if not parser.parse_args().runtime_base_image.startswith("jupyter/"):
@@ -34,14 +34,26 @@ Stage1 += packages(
         "libsm6",
         "libxrender1",
         "libfontconfig1",
+        "xvfb",  # for offscreen display server
     ]
 )
 
 Stage1 += shell(
     commands=[
         "pip install ogs6py "
-        "https://github.com/joergbuchwald/VTUinterface/archive/refs/heads/master.zip"
+        "https://github.com/joergbuchwald/VTUinterface/archive/refs/heads/master.zip "
+        "pyvista pythreejs "
     ]
+)
+
+# Setup adapted from https://github.com/pyvista/pyvista/blob/main/docker/Dockerfile
+Stage1 += environment(
+    variables={
+        "DISPLAY": ":99.0",
+        "PYVISTA_OFF_SCREEN": True,
+        "PYVISTA_JUPYTER_BACKEND": "pythreejs",
+        "JUPYTER_ENABLE_LAB": True,
+    }
 )
 
 Stage1 += shell(
@@ -49,6 +61,10 @@ Stage1 += shell(
         'fix-permissions "${CONDA_DIR}"',
         'fix-permissions "/home/${NB_USER}"',
     ]
+)
+
+Stage1 += raw(
+    docker='CMD /bin/bash -c "Xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1 &" && sleep 2 && start-notebook.sh'
 )
 
 Stage1 += comment(f"--- End {filename} ---")
