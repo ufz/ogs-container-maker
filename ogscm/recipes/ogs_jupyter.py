@@ -46,6 +46,7 @@ Stage1 += shell(
         "https://github.com/joergbuchwald/VTUinterface/archive/refs/heads/master.zip "
         "pyvista pythreejs "
         "nbconvert nbdime "
+        "https://github.com/bilke/nb2hugo/archive/e27dc02df2be1ce19e4a6f52d197c2e2a6ca520c.zip "
     ]
 )
 
