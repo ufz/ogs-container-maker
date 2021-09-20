@@ -47,6 +47,7 @@ Stage1 += shell(
         "pyvista pythreejs "
         "nbconvert nbdime "
         "https://github.com/bilke/nb2hugo/archive/e27dc02df2be1ce19e4a6f52d197c2e2a6ca520c.zip "
+        "h5py "
     ]
 )
 
