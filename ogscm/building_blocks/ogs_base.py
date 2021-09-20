@@ -89,8 +89,8 @@ class ogs_base(bb_base):
         self.__commands.extend(
             [
                 """curl -sSL \
-                https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py \
-                | POETRY_HOME=/usr/local/poetry POETRY_VERSION=1.1.2 python3""",
+                https://raw.githubusercontent.com/python-poetry/poetry/master/install-poetry.py \
+                | POETRY_HOME=/usr/local/poetry POETRY_VERSION=1.1.8 python3""",
                 "chmod +x /usr/local/poetry/bin/poetry",
             ]
         )
