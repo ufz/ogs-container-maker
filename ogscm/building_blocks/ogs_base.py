@@ -83,9 +83,10 @@ class ogs_base(bb_base):
 
         # Poetry
         if hpccm.config.g_linux_distro == linux_distro.UBUNTU:
-            self.__ospackages.append("python3-venv")
+            self.__ospackages.extend(["python3-venv", "python-is-python3"])
         else:
             self.__ospackages.append("python3-virtualenv")
+            self.__commands.append("alternatives --set python /usr/bin/python3")
         self.__commands.extend(
             [
                 """curl -sSL \
