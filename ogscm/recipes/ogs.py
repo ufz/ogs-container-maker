@@ -270,10 +270,16 @@ if local_args.ogs != "clean":
         )
         Stage0 += environment(variables={"CONAN_SYSREQUIRES_SUDO": 0})
     elif local_args.pm == "system":
+        boost_bootsrap_opts = []
+        if local_args.mfront:
+            # for mfront python bindings
+            boost_bootsrap_opts = ['--with-python=python3']
+        if toolchain.CC == "clang":
+            boost_bootsrap_opts.append("--with-toolset=clang")
         Stage0 += boost(
             baseurl=f"https://boostorg.jfrog.io/artifactory/main/release/{versions['minimum_version']['boost']}/source",
             version=versions["minimum_version"]["boost"],
-            bootstrap_opts=["--with-toolset=clang"] if toolchain.CC == "clang" else [],
+            bootstrap_opts=boost_bootsrap_opts,
             b2_opts=["headers"],
         )
         Stage0 += environment(variables={"BOOST_ROOT": "/usr/local/boost"})
@@ -467,12 +473,23 @@ if local_args.dev:
 if local_args.mfront:
     tfel_version = versions["minimum_version"]["tfel-rliv"]
     Stage0 += generic_cmake(
+        cmake_opts=['-Denable-python-bindings=ON'],
         directory=f"tfel-rliv-{tfel_version}",
         ldconfig=True,
         url=f"https://github.com/thelfer/tfel/archive/refs/heads/rliv-{tfel_version}.zip",
         prefix="/usr/local/tfel",
+        runtime_environment={"PATH": "/usr/local/tfel/bin:$PATH"},
+        devel_environment={"PATH": "/usr/local/tfel/bin:$PATH"},
     )
-    Stage0 += environment(variables={"TFELHOME": "/usr/local/tfel"})
+    tfel_env = environment(
+        variables={
+            "TFELHOME": "/usr/local/tfel",
+            # TODO: Don't hard-code python version
+            "PYTHONPATH": "/usr/local/tfel/lib/python3.8/site-packages:$PYTHONPATH"
+        }
+    )
+    Stage0 += tfel_env
+    Stage1 += tfel_env
     cmake_args.append("-DOGS_USE_MFRONT=ON")
 
 if local_args.mkl:

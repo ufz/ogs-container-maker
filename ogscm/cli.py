@@ -282,7 +282,10 @@ def main():  # pragma: no cover
     stages_string = str(Stage0)
 
     if args.runtime_only:
-        Stage1 += Stage0.runtime(exclude=["boost"])
+        runtime_exclude = []
+        if not args.mfront:
+            runtime_exclude.append("boost")
+        Stage1 += Stage0.runtime(exclude=runtime_exclude)
         if args.compiler == "gcc" and args.compiler_version != None:
             Stage1 += packages(apt=["libstdc++6"])
         if args.runtime_base_image == "jupyter/base-notebook":
