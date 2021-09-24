@@ -1,23 +1,28 @@
 from hpccm.primitives import comment, environment, raw, shell
 from hpccm.building_blocks import packages
 
-if not parser.parse_args().runtime_base_image.startswith("jupyter/"):
-    print(
-        "The ogs_jupyter.py recipe requires a Jupyter base image for the "
-        "runtime stage! E.g. --runtime_base_image jupyter/base-notebook"
-    )
-    exit(1)
-
 print(f"Evaluating {filename}")
 
 # Add cli arguments to args_parser
 parse_g = parser.add_argument_group(filename)
 
 ### SET arguments, e.g:
-# parse_g.add_argument("--my_arg", type=str, default="default_value")
+parse_g.add_argument(
+    "--snakemake",
+    dest="snakemake",
+    action="store_true",
+    help="Adds snakemake to Jupyter Lab.",
+)
 
 # Parse local args
 local_args = parser.parse_known_args()[0]
+
+if not local_args.runtime_base_image.startswith("jupyter/"):
+    print(
+        "The ogs_jupyter.py recipe requires a Jupyter base image for the "
+        "runtime stage! E.g. --runtime_base_image jupyter/base-notebook"
+    )
+    exit(1)
 
 img_file += f"-jupyter"
 out_dir += f"/jupyter"
@@ -48,6 +53,7 @@ Stage1 += shell(
         "nbconvert nbdime "
         "https://github.com/bilke/nb2hugo/archive/e27dc02df2be1ce19e4a6f52d197c2e2a6ca520c.zip "
         "h5py "
+        "jupyterlab-gitlab "
     ]
 )
 
@@ -60,6 +66,17 @@ Stage1 += environment(
         "JUPYTER_ENABLE_LAB": True,
     }
 )
+
+if local_args.snakemake:
+    Stage1 += shell(
+        commands=[
+            "mamba create --yes --quiet -c bioconda -c conda-forge -n snakemake snakemake-minimal",
+            # add as kernel, not needed as snakemake is just an executable,
+            # install ipykernel in above command too
+            # "conda run -n snakemake python -m ipykernel install --name=snakemake",
+        ]
+    )
+    Stage1 += environment(variables={"PATH": "/opt/conda/envs/snakemake/bin:$PATH"})
 
 Stage1 += shell(
     commands=[

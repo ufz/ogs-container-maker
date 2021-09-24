@@ -283,7 +283,7 @@ def main():  # pragma: no cover
 
     if args.runtime_only:
         runtime_exclude = []
-        if not args.mfront:
+        if hasattr(args, "mfront") and not args.mfront:
             runtime_exclude.append("boost")
         Stage1 += Stage0.runtime(exclude=runtime_exclude)
         if args.compiler == "gcc" and args.compiler_version != None:
