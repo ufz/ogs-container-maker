@@ -1,0 +1,6 @@
+{
+  "jupyterlab-gitlab:drive": {
+    "baseUrl": "https://gitlab.opengeosys.org",
+    "defaultRepo": "ogs/ogs"
+  }
+}

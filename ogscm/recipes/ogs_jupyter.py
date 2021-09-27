@@ -1,4 +1,4 @@
-from hpccm.primitives import comment, environment, raw, shell
+from hpccm.primitives import comment, copy, environment, raw, shell
 from hpccm.building_blocks import packages
 
 print(f"Evaluating {filename}")
@@ -87,6 +87,24 @@ Stage1 += shell(
 
 Stage1 += raw(
     docker='CMD /bin/bash -c "Xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1 &" && sleep 2 && start-notebook.sh'
+)
+
+lab_overrides = """\\n\
+{\\n\
+  "jupyterlab-gitlab:drive": {\\n\
+    "baseUrl": "https://gitlab.opengeosys.org",\\n\
+    "defaultRepo": "ogs/ogs"\\n\
+  }\\n\
+}\\n\
+"""
+
+# GitLab extension config, points to OGS GitLab and ogs/ogs as default repo
+Stage1 += shell(
+    commands=[
+        "echo $'c.GitLabConfig.url = \"https://gitlab.opengeosys.org\"\\n' >> /etc/jupyter/jupyter_server_config.py",
+        "mkdir -p /opt/conda/share/jupyter/lab/settings",
+        f"echo $'{lab_overrides}' > /opt/conda/share/jupyter/lab/settings/overrides.json",
+    ]
 )
 
 Stage1 += comment(f"--- End {filename} ---")
