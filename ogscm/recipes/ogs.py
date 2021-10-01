@@ -260,7 +260,7 @@ if local_args.gui:
         yum=["mesa-libOSMesa", "mesa-libGL", "mesa-libGLU", "libXt"],
     )
 if local_args.ogs != "clean":
-    Stage0 += cmake(eula=True, version="3.21.0")
+    Stage0 += cmake(eula=True, version=versions["tested_version"]["cmake"])
     if local_args.pm == "conan":
         conan_user_home = "/opt/conan"
         if local_args.dev:
