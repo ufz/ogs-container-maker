@@ -123,6 +123,10 @@ General image config:
   --format {docker,singularity}
   --base_image BASE_IMAGE
                         The base image. (centos:8 is supported too) (default: ubuntu:20.04)
+  --runtime_base_image RUNTIME_BASE_IMAGE
+                        The runtime base image. (default: )
+  --cpu-target {a64fx,aarch64,arm,broadwell,bulldozer,cannonlake,cascadelake,core2,excavator,haswell,i686,icelake,ivybridge,k10,mic_knl,nehalem,nocona,pentium2,pentium3,pentium4,piledriver,power7,power8,power8le,power9,power9le,ppc,ppc64,ppc64le,ppcle,prescott,sandybridge,skylake,skylake_avx512,sparc,sparc64,steamroller,thunderx2,westmere,x86,x86_64,zen,zen2}
+                        The CPU microarchitecture to optimize for. (default: None)
 
 Image build options:
   --build, -B           Build the images from the definition files (default: False)
