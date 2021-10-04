@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import archspec.cpu
 import argparse
 import os
 import traceback
@@ -56,6 +57,13 @@ def main():  # pragma: no cover
         type=str,
         default="",
         help="The runtime base image.",
+    )
+    general_g.add_argument(
+        "--cpu-target",
+        type=str,
+        default=None,
+        choices=[a for a in sorted(archspec.cpu.TARGETS)],
+        help="The CPU microarchitecture to optimize for.",
     )
     build_g = parser.add_argument_group("Image build options")
     build_g.add_argument(
@@ -179,6 +187,7 @@ def main():  # pragma: no cover
     if not os.path.exists(images_out_dir):
         os.makedirs(images_out_dir)
 
+    hpccm.config.set_cpu_target(args.cpu_target)
     Stage0 = hpccm.Stage()
     Stage0 += raw(docker="# syntax=docker/dockerfile:experimental")
 

@@ -6,8 +6,9 @@ stages:
 variables:
   PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
   BUILDKIT_PROGRESS: "plain"
+  CPU_TARGET: ivybridge
   OGSCM_ARGUMENTS:
-    value: "compiler.py ogs.py --ogs ogs/ogs@master --cmake_args ' -DOGS_CPU_ARCHITECTURE=sandybridge -DBUILD_TESTING=OFF'"
+    value: "compiler.py ogs.py --ogs ogs/ogs@master --cmake_args ' -DOGS_CPU_ARCHITECTURE=OFF -DBUILD_TESTING=OFF'"
     description: "Arguments to ogscm. -B -C -R --ccache are always passed automatically. For more args see README.md!"
 
 dev images:
@@ -22,8 +23,8 @@ dev images:
   script:
     - black --check ogscm
     - poetry install
-    - poetry run ogscm compiler.py ogs.py -B -C --sif_file ubuntu-dev.sif -E --enroot_file ubuntu-dev.sqsh --ogs off
-    - poetry run ogscm compiler.py ogs.py -B -C --sif_file centos-dev.sif -E --enroot_file centos-dev.sqsh --base_image centos:8 --ogs off
+    - poetry run ogscm compiler.py ogs.py -B -C --sif_file ubuntu-dev.sif -E --enroot_file ubuntu-dev.sqsh --ogs off --cpu-target $CPU_TARGET
+    - poetry run ogscm compiler.py ogs.py -B -C --sif_file centos-dev.sif -E --enroot_file centos-dev.sqsh --base_image centos:8 --ogs off --cpu-target $CPU_TARGET
   artifacts:
     # example URL:
     # https://gitlab.opengeosys.org/ogs/container-maker/-/jobs/artifacts/master/raw/_out/images/ubuntu-dev.sif?job=dev+images
@@ -61,7 +62,7 @@ manual build:
     - if: $CI_COMMIT_BRANCH
   script:
     - poetry install
-    - eval poetry run ogscm -B -C -R --ccache $OGSCM_ARGUMENTS
+    - eval poetry run ogscm -B -C -R --ccache --cpu-target $CPU_TARGET $OGSCM_ARGUMENTS
   artifacts:
     paths:
       - _out/images/*.sif

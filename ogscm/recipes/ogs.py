@@ -273,7 +273,7 @@ if local_args.ogs != "clean":
         boost_bootsrap_opts = []
         if local_args.mfront:
             # for mfront python bindings
-            boost_bootsrap_opts = ['--with-python=python3']
+            boost_bootsrap_opts = ["--with-python=python3"]
         if toolchain.CC == "clang":
             boost_bootsrap_opts.append("--with-toolset=clang")
         Stage0 += boost(
@@ -427,6 +427,7 @@ if local_args.ogs != "clean":
             },
             directory=f"eigen-{eigen_version}",
             prefix="/usr/local/eigen",
+            toolchain=toolchain,
             url=f"https://gitlab.com/libeigen/eigen/-/archive/{eigen_version}/eigen-{eigen_version}.tar.gz",
         )
         hdf5_cofigure_opts = ["--enable-cxx"]
@@ -448,6 +449,7 @@ if local_args.cvode:
         devel_environment={"CVODE_ROOT": "/usr/local/cvode"},
         directory="cvode-2.8.2",
         prefix="/usr/local/cvode",
+        toolchain=toolchain,
         url="https://github.com/ufz/cvode/archive/2.8.2.tar.gz",
     )
 
@@ -457,6 +459,7 @@ if local_args.cppcheck:
         directory="cppcheck-809a769c690d8ab6fef293e41a29c8490512866e",
         prefix="/usr/local/cppcheck",
         runtime_environment={"PATH": "/usr/local/cppcheck/bin:$PATH"},
+        toolchain=toolchain,
         url="https://github.com/danmar/cppcheck/archive/809a769c690d8ab6fef293e41a29c8490512866e.tar.gz",
     )
 
@@ -473,19 +476,20 @@ if local_args.dev:
 if local_args.mfront:
     tfel_version = versions["minimum_version"]["tfel-rliv"]
     Stage0 += generic_cmake(
-        cmake_opts=['-Denable-python-bindings=ON'],
+        cmake_opts=["-Denable-python-bindings=ON"],
         directory=f"tfel-rliv-{tfel_version}",
         ldconfig=True,
         url=f"https://github.com/thelfer/tfel/archive/refs/heads/rliv-{tfel_version}.zip",
         prefix="/usr/local/tfel",
         runtime_environment={"PATH": "/usr/local/tfel/bin:$PATH"},
         devel_environment={"PATH": "/usr/local/tfel/bin:$PATH"},
+        toolchain=toolchain,
     )
     tfel_env = environment(
         variables={
             "TFELHOME": "/usr/local/tfel",
             # TODO: Don't hard-code python version
-            "PYTHONPATH": "/usr/local/tfel/lib/python3.8/site-packages:$PYTHONPATH"
+            "PYTHONPATH": "/usr/local/tfel/lib/python3.8/site-packages:$PYTHONPATH",
         }
     )
     Stage0 += tfel_env
