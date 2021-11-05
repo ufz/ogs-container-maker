@@ -198,7 +198,9 @@ def main():  # pragma: no cover
     Stage0 += comment(
         f"Generated with ogs-container-maker {__version__}", reformat=False
     )
-    Stage0 += packages(ospackages=["wget", "tar", "curl", "make", "unzip"])
+    Stage0 += packages(
+        ospackages=["wget", "tar", "curl", "ca-certificates", "make", "unzip"]
+    )
 
     # Prepare runtime stage
     Stage1 = hpccm.Stage()

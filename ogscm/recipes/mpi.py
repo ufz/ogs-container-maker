@@ -12,14 +12,9 @@ from hpccm.building_blocks import (
     knem,
     multi_ofed,
     mlnx_ofed,
+    packages,
 )
 from hpccm.primitives import comment, copy, label, shell, environment, runscript
-
-if hpccm.config.g_linux_distro != linux_distro.CENTOS:
-    print(
-        "OpenMPI is supported on CentOS only! Please supply --base_image 'centos:8' parameter!"
-    )
-    exit(1)
 
 print(f"Evaluating {filename}")
 
@@ -28,7 +23,7 @@ parse_g = parser.add_argument_group(filename)
 parse_g.add_argument(
     "--ompi",
     type=str,
-    default="4.0.5",
+    default="4.0.6",
     help="OpenMPI version, e.g. 2.1.1, 2.1.5, 3.0.1, 3.1.2",
 )
 parse_g.add_argument(
@@ -36,6 +31,12 @@ parse_g.add_argument(
     dest="mpi_benchmarks",
     action="store_true",
     help="Installs OSU MPI benchmarks and mpi_bw, mpi_ring, mpi_hello",
+)
+parse_g.add_argument(
+    "--mpi_no_entrypoint",
+    dest="mpi_no_entrypoint",
+    action="store_true",
+    help="Disables mpi entrypoint. (Use with ogs_jupyter.py recipe)",
 )
 # parse_g.add_argument(
 #     "--ucx",
@@ -68,76 +69,99 @@ out_dir += f"/openmpi/{local_args.ompi}"
 # Implement recipe
 Stage0 += comment(f"--- Begin {filename} ---")
 
+mpicc = ""
+
 # Begin copy from https://github.com/NVIDIA/hpc-container-maker/blob/master/recipes/osu_benchmarks/common.py
-Stage0 += shell(commands=["ln -s /usr/bin/gcc /usr/bin/cc"])  # Fix for gdrcopy
-Stage0 += gdrcopy(ldconfig=True)
-Stage0 += knem(ldconfig=True)
+if hpccm.config.g_linux_distro == linux_distro.CENTOS:
+    Stage0 += shell(commands=["ln -s /usr/bin/gcc /usr/bin/cc"])  # Fix for gdrcopy
+    Stage0 += gdrcopy(ldconfig=True)
+    Stage0 += knem(ldconfig=True)
 
-# Mellanox legacy OFED support
-mlnx_versions = ["4.6-1.0.1.1", "4.7-3.2.9.0", "4.9-0.1.7.0", "4.9-2.2.4.0"]
-Stage0 += multi_ofed(
-    inbox=False, mlnx_versions=mlnx_versions, prefix="/usr/local/ofed", symlink=False
-)
+    # Mellanox legacy OFED support
+    mlnx_versions = ["4.6-1.0.1.1", "4.7-3.2.9.0", "4.9-0.1.7.0", "4.9-2.2.4.0"]
+    Stage0 += multi_ofed(
+        inbox=False,
+        mlnx_versions=mlnx_versions,
+        prefix="/usr/local/ofed",
+        symlink=False,
+    )
 
-# RDMA-core based OFED support
-Stage0 += mlnx_ofed(version="5.1-0.6.6.0", symlink=False)
+    # RDMA-core based OFED support
+    Stage0 += mlnx_ofed(version="5.1-0.6.6.0", symlink=False)
 
-# UCX default - RDMA-core based OFED
-Stage0 += ucx(
-    version="1.9.0",
-    cuda=False,
-    gdrcopy="/usr/local/gdrcopy",
-    knem="/usr/local/knem",
-    disable_static=True,
-    enable_mt=True,
-)
+    # UCX default - RDMA-core based OFED
+    Stage0 += ucx(
+        version="1.9.0",
+        cuda=False,
+        gdrcopy="/usr/local/gdrcopy",
+        knem="/usr/local/knem",
+        disable_static=True,
+        enable_mt=True,
+    )
 
-# UCX - Mellanox legacy support
-Stage0 += ucx(
-    version="1.9.0",
-    build_environment={
-        "LD_LIBRARY_PATH": "/usr/local/ofed/4.6-1.0.1.1/lib:${LD_LIBRARY_PATH}"
-    },
-    cuda=False,
-    environment=False,
-    gdrcopy="/usr/local/gdrcopy",
-    knem="/usr/local/knem",
-    prefix="/usr/local/ucx-mlnx-legacy",
-    disable_static=True,
-    enable_mt=True,
-    with_verbs="/usr/local/ofed/4.6-1.0.1.1/usr",
-    with_rdmacm="/usr/local/ofed/4.6-1.0.1.1/usr",
-)
+    # UCX - Mellanox legacy support
+    Stage0 += ucx(
+        version="1.9.0",
+        build_environment={
+            "LD_LIBRARY_PATH": "/usr/local/ofed/4.6-1.0.1.1/lib:${LD_LIBRARY_PATH}"
+        },
+        cuda=False,
+        environment=False,
+        gdrcopy="/usr/local/gdrcopy",
+        knem="/usr/local/knem",
+        prefix="/usr/local/ucx-mlnx-legacy",
+        disable_static=True,
+        enable_mt=True,
+        with_verbs="/usr/local/ofed/4.6-1.0.1.1/usr",
+        with_rdmacm="/usr/local/ofed/4.6-1.0.1.1/usr",
+    )
 
-# Symlink legacy UCX into legacy OFED versions
-Stage0 += shell(
-    commands=[
-        "ln -s /usr/local/ucx-mlnx-legacy/{1}/* /usr/local/ofed/{0}/usr/{1}".format(
-            version, directory
-        )
-        for version in mlnx_versions
-        for directory in ["bin", "lib"]
-    ]
-)
+    # Symlink legacy UCX into legacy OFED versions
+    Stage0 += shell(
+        commands=[
+            "ln -s /usr/local/ucx-mlnx-legacy/{1}/* /usr/local/ofed/{0}/usr/{1}".format(
+                version, directory
+            )
+            for version in mlnx_versions
+            for directory in ["bin", "lib"]
+        ]
+    )
 
-# PMI support
-Stage0 += slurm_pmi2(prefix="/usr/local/pmi", version="20.11.7")
-Stage0 += pmix()
+    # PMI support
+    Stage0 += slurm_pmi2(prefix="/usr/local/pmi", version="20.11.7")
+    Stage0 += pmix()
 
-# OpenMPI
-mpicc = openmpi(
-    cuda=False,
-    infiniband=False,
-    ldconfig=True,
-    ucx=True,
-    version=local_args.ompi,
-    disable_oshmem=True,
-    disable_static=True,
-    enable_mca_no_build="btl-uct",
-    with_slurm=False,
-    with_pmi="/usr/local/pmi",
-    with_pmix="/usr/local/pmix",
-)
+    # OpenMPI
+    mpicc = openmpi(
+        cuda=False,
+        infiniband=False,
+        ldconfig=True,
+        ucx=True,
+        version=local_args.ompi,
+        disable_oshmem=True,
+        disable_static=True,
+        enable_mca_no_build="btl-uct",
+        with_slurm=False,
+        with_pmi="/usr/local/pmi",
+        with_pmix="/usr/local/pmix",
+    )
+    Stage1 += environment(
+        variables={
+            "OMPI_MCA_pml": "ucx",
+            "UCX_TLS": "all",
+        }
+    )
+else:
+    mpicc = openmpi(
+        cuda=False,
+        infiniband=False,
+        ldconfig=True,
+        version=local_args.ompi,
+        disable_oshmem=True,
+        disable_static=True,
+        enable_mca_no_build="btl-uct",
+        with_slurm=False,
+    )
 toolchain = mpicc.toolchain
 Stage0 += mpicc
 
@@ -169,20 +193,20 @@ Stage1 += environment(
 )
 
 # Entrypoint
-Stage1 += shell(
-    commands=[
-        "curl -o /usr/local/bin/entrypoint.sh https://gitlab.opengeosys.org/ogs/container-maker/-/raw/main/ogscm/recipes/mpi-entrypoint.sh"
-    ]
-)
-Stage1 += runscript(commands=["/usr/local/bin/entrypoint.sh"])
+if not local_args.mpi_no_entrypoint:
+    Stage1 += packages(ospackages=["curl", "ca-certificates"])
+    Stage1 += shell(
+        commands=[
+            "curl -o /usr/local/bin/entrypoint.sh https://gitlab.opengeosys.org/ogs/container-maker/-/raw/main/ogscm/recipes/mpi-entrypoint.sh"
+        ]
+    )
+    Stage1 += runscript(commands=["/usr/local/bin/entrypoint.sh"])
 
 # Performance and compatibility tuning
 Stage1 += environment(
     variables={
         "CUDA_CACHE_DISABLE": "1",
         "MELLANOX_VISIBLE_DEVICES": "all",  # enroot
-        "OMPI_MCA_pml": "ucx",
-        "UCX_TLS": "all",
     }
 )
 
