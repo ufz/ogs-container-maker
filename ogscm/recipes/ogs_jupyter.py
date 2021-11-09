@@ -70,13 +70,10 @@ Stage1 += environment(
 if local_args.snakemake:
     Stage1 += shell(
         commands=[
-            "mamba create --yes --quiet -c bioconda -c conda-forge -n snakemake snakemake-minimal",
-            # add as kernel, not needed as snakemake is just an executable,
-            # install ipykernel in above command too
-            # "conda run -n snakemake python -m ipykernel install --name=snakemake",
+            # Install snakemake in conda 'base' environment
+            "mamba install --yes --quiet -c bioconda -c conda-forge snakemake-minimal",
         ]
     )
-    Stage1 += environment(variables={"PATH": "/opt/conda/envs/snakemake/bin:$PATH"})
 
 Stage1 += shell(
     commands=[

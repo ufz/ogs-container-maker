@@ -297,7 +297,11 @@ def main():  # pragma: no cover
         if hasattr(args, "mfront") and not args.mfront:
             runtime_exclude.append("boost")
         Stage1 += Stage0.runtime(exclude=runtime_exclude)
-        if args.compiler == "gcc" and args.compiler_version != None:
+        if (
+            hasattr(args, "compiler")
+            and args.compiler == "gcc"
+            and args.compiler_version != None
+        ):
             Stage1 += packages(apt=["libstdc++6"])
         if args.runtime_base_image == "jupyter/base-notebook":
             Stage1 += raw(docker="USER ${NB_USER}")
