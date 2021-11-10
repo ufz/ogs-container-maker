@@ -7,12 +7,6 @@ print(f"Evaluating {filename}")
 parse_g = parser.add_argument_group(filename)
 
 ### SET arguments, e.g:
-parse_g.add_argument(
-    "--snakemake",
-    dest="snakemake",
-    action="store_true",
-    help="Adds snakemake to Jupyter Lab.",
-)
 
 # Parse local args
 local_args = parser.parse_known_args()[0]
@@ -67,13 +61,12 @@ Stage1 += environment(
     }
 )
 
-if local_args.snakemake:
-    Stage1 += shell(
-        commands=[
-            # Install snakemake in conda 'base' environment
-            "mamba install --yes --quiet -c bioconda -c conda-forge snakemake-minimal",
-        ]
-    )
+Stage1 += shell(
+    commands=[
+        # Install snakemake in conda 'base' environment
+        "mamba install --yes --quiet -c bioconda -c conda-forge snakemake-minimal",
+    ]
+)
 
 Stage1 += shell(
     commands=[
