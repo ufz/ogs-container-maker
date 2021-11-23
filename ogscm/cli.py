@@ -279,13 +279,13 @@ def main():  # pragma: no cover
         os.makedirs(out_dir)  # For .scif files
 
     # General args
-    if args.pip:
-        Stage0 += pip(packages=args.pip, pip="pip3")
-        Stage1 += pip(packages=args.pip, pip="pip3")
-
     if args.packages:
         Stage0 += packages(ospackages=args.packages)
         Stage1 += packages(ospackages=args.packages)
+
+    if args.pip:
+        Stage0 += pip(packages=args.pip, pip="pip3")
+        Stage1 += pip(packages=args.pip, pip="pip3")
 
     # Create definition
     hpccm.config.set_container_format(args.format)
