@@ -12,7 +12,7 @@ variables:
     description: "Arguments to ogscm. -B -C -R --ccache are always passed automatically. For more args see README.md!"
 
 dev images:
-  tags: ['docker-shell']
+  tags: ['envinf2-shell']
   stage: build
   rules:
     - if: $CI_COMMIT_TAG
@@ -44,7 +44,7 @@ release:
     description: 'Created using the GitLab release-cli.'
 
 publish:
-  tags: ['docker-shell']
+  tags: ['shell']
   stage: deploy
   rules:
     - if: $CI_COMMIT_TAG
@@ -54,7 +54,7 @@ publish:
     - poetry publish -u $PYPI_USERNAME -p $PYPI_PASSWORD
 
 manual build:
-  tags: ['docker-shell']
+  tags: ['envinf2-shell']
   stage: build
   rules:
     - if: $CI_PIPELINE_SOURCE != "web"
