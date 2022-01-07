@@ -127,6 +127,11 @@ git_version = ""
 name_start = ""
 repo = None
 versions = None
+versions_master = json.loads(
+    requests.get(
+        f"https://gitlab.opengeosys.org/ogs/ogs/-/raw/master/web/data/versions.json?inline=false"
+    ).text
+)
 
 if local_args.ogs not in ["off", "clean"]:  # != "off" and local_args.ogs != "clean":
     if os.path.isdir(local_args.ogs):
@@ -260,7 +265,10 @@ if local_args.gui:
         yum=["mesa-libOSMesa", "mesa-libGL", "mesa-libGLU", "libXt"],
     )
 if local_args.ogs != "clean":
-    Stage0 += cmake(eula=True, version=versions["tested_version"]["cmake"])
+    cmake_version = versions_master["tested_version"]["cmake"]
+    if "cmake" in versions["tested_version"]:
+        cmake_version = versions["tested_version"]["cmake"]
+    Stage0 += cmake(eula=True, version=cmake_version)
     if local_args.pm == "conan":
         conan_user_home = "/opt/conan"
         if local_args.dev:
@@ -433,10 +441,13 @@ if local_args.ogs != "clean":
         hdf5_cofigure_opts = ["--enable-cxx"]
         if toolchain.CC == "mpicc":
             hdf5_cofigure_opts = ["--enable-parallel", "--enable-shared"]
+        hdf5_version = versions_master["minimum_version"]["hdf5"]
+        if "hdf5" in versions["minimum_version"]:
+            hdf5_version = versions["minimum_version"]["hdf5"]
         Stage0 += hdf5(
             configure_opts=hdf5_cofigure_opts,
             toolchain=toolchain,
-            version=versions["minimum_version"]["hdf5"],
+            version=hdf5_version,
         )
 if local_args.cvode:
     # TODO version
@@ -474,7 +485,9 @@ if local_args.dev:
     )
 
 if local_args.mfront:
-    tfel_version = versions["minimum_version"]["tfel-rliv"]
+    tfel_version = versions_master["minimum_version"]["tfel-rliv"]
+    if "tfel-rliv" in versions["minimum_version"]:
+        tfel_version = versions["minimum_version"]["tfel-rliv"]
     Stage0 += generic_cmake(
         cmake_opts=["-Denable-python-bindings=ON"],
         directory=f"tfel-rliv-{tfel_version}",
