@@ -14,7 +14,7 @@ pip install ogscm
 
 ### Generate container definition
 
-OGS Container Maker has builtin recipes. You need to specify the recipes to use as command arguments. Each of recipes adds options to the tool. Typically you want to start with a compiler. Add the `compiler.py` recipe and the `--help`-flag to get more options:
+OGS Container Maker has builtin *recipes*. You need to specify the recipes to use as command arguments. Each of recipes adds options to the tool. Typically you want to start with a compiler. Add the `compiler.py` recipe and the `--help`-flag to get more options:
 
 ```bash
 $ ogscm compiler.py --help
@@ -50,6 +50,8 @@ ogs.py:
                         -DFIRST=TRUE -DFOO=BAR' (default: )
 ...
 ```
+
+Please note that the order of the recipes given on the command line is important. The typical order for the current builtin recipes is `compiler.py mpi.py ogs.py ogs_jupyter.py`.
 
 To generate a Dockerfile with the default parameters:
 
