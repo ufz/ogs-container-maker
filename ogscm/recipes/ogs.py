@@ -544,3 +544,8 @@ if local_args.ogs != "off" and local_args.ogs != "clean":
         remove_build=True,
         remove_source=True,
     )
+
+# Required for vtk from Python (for notebooks, VTUInterface)
+# https://github.com/Kaggle/docker-python/pull/358
+Stage0 += packages(apt=["libgl1"], yum=["mesa-libGL"])
+Stage1 += packages(apt=["libgl1"], yum=["mesa-libGL"])
