@@ -41,7 +41,7 @@ Stage1 += packages(
 Stage1 += shell(
     commands=[
         "pip install "
-        "https://github.com/joergbuchwald/ogs6py/archive/refs/heads/master.zip "
+        "https://github.com/joergbuchwald/ogs6py/archive/0f9e738e2ee469c8bde4204b2151238973417694.zip "
         "https://github.com/joergbuchwald/VTUinterface/archive/refs/heads/master.zip "
         "pyvista pythreejs "
         "nbconvert nbdime "
