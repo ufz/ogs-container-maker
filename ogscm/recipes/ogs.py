@@ -117,6 +117,13 @@ parse_g.add_argument(
     action="store_true",
     help="Use MKL. By setting this option, you agree to the [Intel End User License Agreement](https://software.intel.com/en-us/articles/end-user-license-agreement).",
 )
+if toolchain.CC == "mpicc":
+    parse_g.add_argument(
+        "--petsc_configure_args",
+        type=str,
+        default="--with-fc=0 --download-f2cblaslapack=1",
+        help="PETSc configuration arguments; has to be quoted.",
+    )
 parse_g.add_argument("--version_file", type=str, help="OGS versions.json file")
 
 # Parse local args
@@ -407,17 +414,21 @@ if local_args.ogs != "clean":
         if toolchain.CC == "mpicc":
             Stage0 += packages(yum=["diffutils"])
             petsc_version = versions["minimum_version"]["petsc"]
+            petsc_args = local_args.petsc_configure_args.strip().split(" ")
+            petsc_configure_opts = [
+                f"CC={toolchain.CC}",
+                f"CXX={toolchain.CXX}",
+                f"FC={toolchain.FC}",
+                f"F77={toolchain.F77}",
+                f"F90={toolchain.F90}",
+                "--CFLAGS='-O3'",
+                "--CXXFLAGS='-O3'",
+                "--FFLAGS='-O3'",
+                "--with-debugging=no",
+            ]
+            petsc_configure_opts.extend(petsc_args)
             Stage0 += generic_autotools(
-                configure_opts=[
-                    f"CC={toolchain.CC}",
-                    f"CXX={toolchain.CXX}",
-                    "--CFLAGS='-O3'",
-                    "--CXXFLAGS='-O3'",
-                    "--FFLAGS='-O3'",
-                    "--with-debugging=no",
-                    "--with-fc=0",
-                    "--download-f2cblaslapack=1",
-                ],
+                configure_opts=petsc_configure_opts,
                 devel_environment={"PETSC_DIR": "/usr/local/petsc"},
                 directory=f"petsc-{petsc_version}",
                 ldconfig=True,

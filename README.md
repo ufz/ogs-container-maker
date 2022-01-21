@@ -105,16 +105,18 @@ $ ogscm compiler.py mpi.py ogs.py --base_image 'centos:8' --help
 Evaluating compiler.py
 Evaluating mpi.py
 Evaluating ogs.py
-usage: ogscm [-h] [--version] [--out OUT] [--file FILE] [--print] [--format {docker,singularity}] [--base_image BASE_IMAGE] [--build] [--build_args BUILD_ARGS] [--upload] [--registry REGISTRY] [--tag TAG]
-             [--convert] [--sif_file SIF_FILE] [--convert-enroot] [--enroot_file ENROOT_FILE] [--runtime-only] [--clean] [--deploy [DEPLOY]] [--pip [package ...]] [--packages [packages ...]] [--compiler COMPILER]
-             [--compiler_version COMPILER_VERSION] [--iwyy] [--ompi OMPI] [--mpi_benchmarks] [--pm {system,conan,off}] [--ogs OGS] [--cmake_args CMAKE_ARGS] [--ccache] [--parallel PARALLEL] [--gui] [--docs]
-             [--cvode] [--cppcheck] [--gcovr] [--mfront] [--insitu] [--dev] [--mkl] [--version_file VERSION_FILE]
+usage: ogscm [-h] [--version] [--out OUT] [--file FILE] [--print] [--format {docker,singularity}] [--base_image BASE_IMAGE] [--runtime_base_image RUNTIME_BASE_IMAGE]
+             [--cpu-target {a64fx,aarch64,arm,broadwell,bulldozer,cannonlake,cascadelake,core2,excavator,haswell,i686,icelake,ivybridge,k10,mic_knl,nehalem,nocona,pentium2,pentium3,pentium4,piledriver,power7,power8,power8le,power9,power9le,ppc,ppc64,ppc64le,ppcle,prescott,sandybridge,skylake,skylake_avx512,sparc,sparc64,steamroller,thunderx2,westmere,x86,x86_64,zen,zen2}]
+             [--build] [--build_args BUILD_ARGS] [--upload] [--registry REGISTRY] [--tag TAG] [--convert] [--sif_file SIF_FILE] [--convert-enroot] [--enroot-bundle] [--enroot_file ENROOT_FILE] [--force] [--runtime-only]
+             [--clean] [--deploy [DEPLOY]] [--pip [package ...]] [--packages [packages ...]] [--compiler COMPILER] [--compiler_version COMPILER_VERSION] [--fortran] [--iwyy] [--ompi OMPI] [--mpi_benchmarks]
+             [--mpi_no_entrypoint] [--pm {system,conan,off}] [--ogs OGS] [--cmake_args CMAKE_ARGS] [--ccache] [--parallel PARALLEL] [--gui] [--docs] [--cvode] [--cppcheck] [--gcovr] [--mfront] [--insitu] [--dev] [--mkl]
+             [--petsc_configure_args PETSC_CONFIGURE_ARGS] [--version_file VERSION_FILE]
              recipe [recipe ...]
 
 positional arguments:
   recipe
 
-optional arguments:
+options:
   -h, --help            show this help message and exit
   --version             show program's version number and exit
   --out OUT             Output directory (default: _out)
@@ -140,8 +142,10 @@ Image build options:
   --convert, -C         Convert Docker image to Singularity image (default: False)
   --sif_file SIF_FILE   Overwrite output singularity image file name (default: )
   --convert-enroot, -E  Convert Docker image to enroot image (default: False)
+  --enroot-bundle       Convert enroot image to enroot bundle (default: False)
   --enroot_file ENROOT_FILE
                         Overwrite output enroot image file name (default: )
+  --force               Forces overwriting of image files! (default: False)
   --runtime-only, -R    Generate multi-stage Dockerfiles for small runtime images (default: False)
 
 Maintenance:
@@ -160,22 +164,24 @@ compiler.py:
   --compiler COMPILER   The compiler to use. Possible options: off, gcc, clang (default: gcc)
   --compiler_version COMPILER_VERSION
                         Compiler version. (default: )
+  --fortran             Install fortran compiler. (default: False)
   --iwyy                Install include-what-you-use (requires clang compiler) (default: False)
 
 mpi.py:
-  --ompi OMPI           OpenMPI version, e.g. 2.1.1, 2.1.5, 3.0.1, 3.1.2 (default: 4.0.5)
+  --ompi OMPI           OpenMPI version, e.g. 2.1.1, 2.1.5, 3.0.1, 3.1.2 (default: 4.0.6)
   --mpi_benchmarks      Installs OSU MPI benchmarks and mpi_bw, mpi_ring, mpi_hello (default: False)
+  --mpi_no_entrypoint   Disables mpi entrypoint. (Use with ogs_jupyter.py recipe) (default: False)
 
 ogs.py:
   --pm {system,conan,off}
                         Package manager to install third-party dependencies (default: system)
-  --ogs OGS             OGS repo on gitlab.opengeosys.org in the form 'user/repo@branch' OR 'user/repo@@commit' to checkout a specific commit OR a path to a local subdirectory to the git cloned OGS sources OR
-                        'off' to disable OGS building OR 'clean' to disable OGS and all its dev dependencies (default: ogs/ogs@master)
+  --ogs OGS             OGS repo on gitlab.opengeosys.org in the form 'user/repo@branch' OR 'user/repo@@commit' to checkout a specific commit OR a path to a local subdirectory to the git cloned OGS sources OR 'off' to
+                        disable OGS building OR 'clean' to disable OGS and all its dev dependencies (default: ogs/ogs@master)
   --cmake_args CMAKE_ARGS
                         CMake argument set has to be quoted and **must** start with a space. e.g. --cmake_args ' -DFIRST=TRUE -DFOO=BAR' (default: )
   --ccache              Enables ccache build caching. (default: False)
   --parallel PARALLEL, -j PARALLEL
-                        The number of cores to use for compilation. (default: 32)
+                        The number of cores to use for compilation. (default: 8)
   --gui                 Builds the GUI (Data Explorer) (default: False)
   --docs                Setup documentation requirements (Doxygen) (default: False)
   --cvode               Install and configure with cvode (default: False)
@@ -185,6 +191,8 @@ ogs.py:
   --insitu              Builds with insitu capabilities (default: False)
   --dev                 Installs development tools (vim, gdb) (default: False)
   --mkl                 Use MKL. By setting this option, you agree to the [Intel End User License Agreement](https://software.intel.com/en-us/articles/end-user-license-agreement). (default: False)
+  --petsc_configure_args PETSC_CONFIGURE_ARGS
+                        PETSc configuration arguments; has to be quoted. (default: --with-fc=0 --download-f2cblaslapack=1)
   --version_file VERSION_FILE
                         OGS versions.json file (default: None)
 ```
