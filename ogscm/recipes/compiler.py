@@ -17,6 +17,12 @@ parse_g.add_argument(
     "--compiler_version", type=str, default="", help="Compiler version."
 )
 parse_g.add_argument(
+    "--fortran",
+    dest="fortran",
+    action="store_true",
+    help="Install fortran compiler.",
+)
+parse_g.add_argument(
     "--iwyy",
     dest="iwyy",
     action="store_true",
@@ -55,7 +61,9 @@ if local_args.compiler == "clang":
     )
 else:
     compiler = gnu(
-        fortran=False, extra_repository=True, version=local_args.compiler_version
+        fortran=local_args.fortran,
+        extra_repository=True,
+        version=local_args.compiler_version,
     )
 toolchain = compiler.toolchain
 Stage0 += compiler
