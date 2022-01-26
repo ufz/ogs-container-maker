@@ -292,10 +292,11 @@ if local_args.ogs != "clean":
         if toolchain.CC == "clang":
             boost_bootsrap_opts.append("--with-toolset=clang")
         Stage0 += boost(
-            baseurl=f"https://boostorg.jfrog.io/artifactory/main/release/{versions['minimum_version']['boost']}/source",
-            version=versions["minimum_version"]["boost"],
-            bootstrap_opts=boost_bootsrap_opts,
             b2_opts=["headers"],
+            baseurl=f"https://boostorg.jfrog.io/artifactory/main/release/{versions['minimum_version']['boost']}/source",
+            bootstrap_opts=boost_bootsrap_opts,
+            ldconfig=True,
+            version=versions["minimum_version"]["boost"],
         )
         Stage0 += environment(variables={"BOOST_ROOT": "/usr/local/boost"})
         Stage0 += packages(
@@ -457,6 +458,7 @@ if local_args.ogs != "clean":
             hdf5_version = versions["minimum_version"]["hdf5"]
         Stage0 += hdf5(
             configure_opts=hdf5_cofigure_opts,
+            ldconfig=True,
             toolchain=toolchain,
             version=hdf5_version,
         )
