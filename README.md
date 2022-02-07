@@ -65,7 +65,7 @@ Created definition _out/docker/gcc/default/ogs-d18c786e/conan/Dockerfile
 With some options (and the `mpi.py`-recipe):
 
 ```bash
-$ ogscm compiler.py mpi.py ogs.py --base_image 'centos:8' --ompi 4.0.5 --cmake_args ' -DOGS_BUILD_PROCESSES=LiquidFlow'
+$ ogscm compiler.py mpi.py ogs.py --ompi 4.0.5 --cmake_args ' -DOGS_BUILD_PROCESSES=LiquidFlow'
 Evaluating compiler.py
 Evaluating mpi.py
 Evaluating ogs.py
@@ -101,22 +101,25 @@ singularity exec ogs-ompi-2.1.3.sif ogs local/path/to/square_1e0.prj
 All options for current builtin recipes:
 
 ```
-$ ogscm compiler.py mpi.py ogs.py --base_image 'centos:8' --help
+$ ogscm compiler.py mpi.py ogs.py --help
 Evaluating compiler.py
 Evaluating mpi.py
 Evaluating ogs.py
-usage: ogscm [-h] [--version] [--out OUT] [--file FILE] [--print] [--format {docker,singularity}] [--base_image BASE_IMAGE] [--runtime_base_image RUNTIME_BASE_IMAGE]
+usage: ogscm [-h] [--version] [--out OUT] [--file FILE] [--print] [--format {docker,singularity}] [--base_image BASE_IMAGE]
+             [--runtime_base_image RUNTIME_BASE_IMAGE]
              [--cpu-target {a64fx,aarch64,arm,broadwell,bulldozer,cannonlake,cascadelake,core2,excavator,haswell,i686,icelake,ivybridge,k10,mic_knl,nehalem,nocona,pentium2,pentium3,pentium4,piledriver,power7,power8,power8le,power9,power9le,ppc,ppc64,ppc64le,ppcle,prescott,sandybridge,skylake,skylake_avx512,sparc,sparc64,steamroller,thunderx2,westmere,x86,x86_64,zen,zen2}]
-             [--build] [--build_args BUILD_ARGS] [--upload] [--registry REGISTRY] [--tag TAG] [--convert] [--sif_file SIF_FILE] [--convert-enroot] [--enroot-bundle] [--enroot_file ENROOT_FILE] [--force] [--runtime-only]
-             [--clean] [--deploy [DEPLOY]] [--pip [package ...]] [--packages [packages ...]] [--compiler COMPILER] [--compiler_version COMPILER_VERSION] [--fortran] [--iwyy] [--ompi OMPI] [--mpi_benchmarks]
-             [--mpi_no_entrypoint] [--pm {system,conan,off}] [--ogs OGS] [--cmake_args CMAKE_ARGS] [--ccache] [--parallel PARALLEL] [--gui] [--docs] [--cvode] [--cppcheck] [--gcovr] [--mfront] [--insitu] [--dev] [--mkl]
-             [--petsc_configure_args PETSC_CONFIGURE_ARGS] [--version_file VERSION_FILE]
+             [--build] [--build_args BUILD_ARGS] [--upload] [--registry REGISTRY] [--tag TAG] [--convert] [--sif_file SIF_FILE] [--convert-enroot]
+             [--enroot-bundle] [--enroot_file ENROOT_FILE] [--force] [--runtime-only] [--clean] [--deploy [DEPLOY]] [--pip [package ...]]
+             [--packages [packages ...]] [--compiler COMPILER] [--compiler_version COMPILER_VERSION] [--fortran] [--iwyy] [--ompi OMPI]
+             [--mpi_benchmarks] [--mpi_no_entrypoint] [--pm {system,conan,off}] [--ogs OGS] [--cmake_args CMAKE_ARGS] [--ccache] [--parallel PARALLEL]
+             [--gui] [--docs] [--cvode] [--cppcheck] [--gcovr] [--mfront] [--insitu] [--dev] [--mkl] [--petsc_configure_args PETSC_CONFIGURE_ARGS]
+             [--version_file VERSION_FILE]
              recipe [recipe ...]
 
 positional arguments:
   recipe
 
-options:
+optional arguments:
   -h, --help            show this help message and exit
   --version             show program's version number and exit
   --out OUT             Output directory (default: _out)
@@ -126,7 +129,7 @@ options:
 General image config:
   --format {docker,singularity}
   --base_image BASE_IMAGE
-                        The base image. (centos:8 is supported too) (default: ubuntu:20.04)
+                        The base image. (default: ubuntu:20.04)
   --runtime_base_image RUNTIME_BASE_IMAGE
                         The runtime base image. (default: )
   --cpu-target {a64fx,aarch64,arm,broadwell,bulldozer,cannonlake,cascadelake,core2,excavator,haswell,i686,icelake,ivybridge,k10,mic_knl,nehalem,nocona,pentium2,pentium3,pentium4,piledriver,power7,power8,power8le,power9,power9le,ppc,ppc64,ppc64le,ppcle,prescott,sandybridge,skylake,skylake_avx512,sparc,sparc64,steamroller,thunderx2,westmere,x86,x86_64,zen,zen2}
@@ -153,7 +156,8 @@ Maintenance:
 
 Image deployment:
   --deploy [DEPLOY], -D [DEPLOY]
-                        Deploys to all configured hosts (in config/deploy_hosts.yml) with no additional arguments or to the specified host. Implies --build and --convert arguments. (default: )
+                        Deploys to all configured hosts (in config/deploy_hosts.yml) with no additional arguments or to the specified host. Implies
+                        --build and --convert arguments. (default: )
 
 Packages to install:
   --pip [package ...]   Install additional Python packages (default: [])
@@ -175,8 +179,9 @@ mpi.py:
 ogs.py:
   --pm {system,conan,off}
                         Package manager to install third-party dependencies (default: system)
-  --ogs OGS             OGS repo on gitlab.opengeosys.org in the form 'user/repo@branch' OR 'user/repo@@commit' to checkout a specific commit OR a path to a local subdirectory to the git cloned OGS sources OR 'off' to
-                        disable OGS building OR 'clean' to disable OGS and all its dev dependencies (default: ogs/ogs@master)
+  --ogs OGS             OGS repo on gitlab.opengeosys.org in the form 'user/repo@branch' OR 'user/repo@@commit' to checkout a specific commit OR a
+                        path to a local subdirectory to the git cloned OGS sources OR 'off' to disable OGS building OR 'clean' to disable OGS and all
+                        its dev dependencies (default: ogs/ogs@master)
   --cmake_args CMAKE_ARGS
                         CMake argument set has to be quoted and **must** start with a space. e.g. --cmake_args ' -DFIRST=TRUE -DFOO=BAR' (default: )
   --ccache              Enables ccache build caching. (default: False)
@@ -190,7 +195,8 @@ ogs.py:
   --mfront              Install tfel and build OGS with -DOGS_USE_MFRONT=ON (default: False)
   --insitu              Builds with insitu capabilities (default: False)
   --dev                 Installs development tools (vim, gdb) (default: False)
-  --mkl                 Use MKL. By setting this option, you agree to the [Intel End User License Agreement](https://software.intel.com/en-us/articles/end-user-license-agreement). (default: False)
+  --mkl                 Use MKL. By setting this option, you agree to the [Intel End User License Agreement](https://software.intel.com/en-
+                        us/articles/end-user-license-agreement). (default: False)
   --petsc_configure_args PETSC_CONFIGURE_ARGS
                         PETSc configuration arguments; has to be quoted. (default: --with-fc=0 --download-f2cblaslapack=1)
   --version_file VERSION_FILE

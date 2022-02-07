@@ -24,7 +24,6 @@ dev images:
     - black --check ogscm
     - poetry install
     - poetry run ogscm compiler.py ogs.py -B --ogs off --cpu-target $CPU_TARGET
-    - poetry run ogscm compiler.py ogs.py -B --base_image centos:8 --ogs off --cpu-target $CPU_TARGET
 
 release:
   stage: release

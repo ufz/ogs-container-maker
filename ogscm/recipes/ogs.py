@@ -337,7 +337,7 @@ if local_args.ogs != "clean":
                     "libx11-xcb1",
                     "libxkbcommon-x11-0",
                 ],
-                # TODO: Add runtime packages for centos
+                # TODO: Add runtime packages for yum
                 yum=[
                     "libgeotiff",
                     "shapelib",

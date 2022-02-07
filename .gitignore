@@ -12,5 +12,6 @@ Dockerfile
 build/
 dist/
 /.venv/
+/.direnv/
 
 config/deploy_hosts.yml

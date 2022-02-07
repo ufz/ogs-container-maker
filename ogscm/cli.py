@@ -50,7 +50,7 @@ def main():  # pragma: no cover
         "--base_image",
         type=str,
         default="ubuntu:20.04",
-        help="The base image. (centos:8 is supported too)",
+        help="The base image.",
     )
     general_g.add_argument(
         "--runtime_base_image",
