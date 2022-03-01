@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "ogscm"
-version = "2.3.5"
+version = "2.3.6"
 description = "OGS Container Maker"
 authors = ["Lars Bilke <lars.bilke@ufz.de>"]
 license = "BSD 3-clause"
