@@ -524,6 +524,8 @@ if local_args.mfront:
 
 if local_args.mkl:
     Stage0 += mkl(eula=True, mklvars=False)
+    # For 32-bit mkl_link_tool:
+    Stage0 += packages(apt=["lib32stdc++6"], yum=["libstdc++.i686"])
     cmake_args.append("-DOGS_USE_MKL=ON")
 
 if local_args.ccache:
