@@ -302,12 +302,45 @@ if local_args.ogs != "clean":
         Stage0 += packages(
             apt=["libxml2-dev", "xsltproc"], yum=["libxml2-devel", "libxslt"]
         )
-        vtk_cmake_args = [
-            "-DModule_vtkIOXML=ON",
-            "-DModule_vtkIOLegacy=ON",
-            "-DVTK_Group_Rendering=OFF",
-            "-DVTK_Group_StandAlone=OFF",
-        ]
+        vtk_cmake_args = []
+        if "libraries" in versions:
+            for option in versions["libraries"]["vtk"]["options"]:
+                if (
+                    option["condition"] == "1"
+                    or (
+                        option["condition"] == "OGS_USE_MPI" and toolchain.CC == "mpicc"
+                    )
+                    or (option["condition"] == "OGS_BUILD_GUI" and local_args.gui)
+                    or (
+                        option["condition"] == "OGS_BUILD_TESTING"
+                        and local_args.ogs == "off"
+                    )
+                ):
+                    for cmake_option in option["cmake"]:
+                        vtk_cmake_args.append(f"-D{cmake_option}")
+            # Reverse so the VTK_GROUP_ vars are at the end of the list, otherwise they have no effect.
+            vtk_cmake_args = vtk_cmake_args[::-1]
+        else:
+            vtk_cmake_args = [
+                "-DModule_vtkIOXML=ON",
+                "-DModule_vtkIOLegacy=ON",
+                "-DVTK_Group_Rendering=OFF",
+                "-DVTK_Group_StandAlone=OFF",
+            ]
+            if local_args.gui:
+                vtk_cmake_args = [
+                    "-DVTK_BUILD_QT_DESIGNER_PLUGIN=OFF",
+                    "-DVTK_Group_Qt=ON",
+                    "-DVTK_QT_VERSION=5",
+                ]
+            if toolchain.CC == "mpicc":
+                vtk_cmake_args.extend(
+                    [
+                        "-DModule_vtkIOParallelXML=ON",
+                        "-DModule_vtkParallelMPI=ON",
+                    ]
+                )
+
         if local_args.gui:
             Stage0 += packages(
                 apt=[
@@ -370,11 +403,6 @@ if local_args.ogs != "clean":
                 }
             )
 
-            vtk_cmake_args = [
-                "-DVTK_BUILD_QT_DESIGNER_PLUGIN=OFF",
-                "-DVTK_Group_Qt=ON",
-                "-DVTK_QT_VERSION=5",
-            ]
         if hpccm.config.g_linux_distro == linux_distro.CENTOS:
             # otherwise linker error, maybe due to gcc 10?
             vtk_cmake_args.extend(
@@ -395,13 +423,6 @@ if local_args.ogs != "clean":
                 version="v5.8.1",
             )
         else:
-            if toolchain.CC == "mpicc":
-                vtk_cmake_args.extend(
-                    [
-                        "-DModule_vtkIOParallelXML=ON",
-                        "-DModule_vtkParallelMPI=ON",
-                    ]
-                )
             vtk_version = versions["minimum_version"]["vtk"]
             Stage0 += generic_cmake(
                 cmake_opts=vtk_cmake_args,
