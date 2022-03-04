@@ -305,17 +305,7 @@ if local_args.ogs != "clean":
         vtk_cmake_args = []
         if "libraries" in versions:
             for option in versions["libraries"]["vtk"]["options"]:
-                if (
-                    option["condition"] == "1"
-                    or (
-                        option["condition"] == "OGS_USE_MPI" and toolchain.CC == "mpicc"
-                    )
-                    or (option["condition"] == "OGS_BUILD_GUI" and local_args.gui)
-                    or (
-                        option["condition"] == "OGS_BUILD_TESTING"
-                        and local_args.ogs == "off"
-                    )
-                ):
+                if eval(option["condition"]["ogscm"]):
                     for cmake_option in option["cmake"]:
                         vtk_cmake_args.append(f"-D{cmake_option}")
             # Reverse so the VTK_GROUP_ vars are at the end of the list, otherwise they have no effect.
