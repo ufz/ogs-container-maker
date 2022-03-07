@@ -289,6 +289,7 @@ def main():  # pragma: no cover
 
     # Create definition
     hpccm.config.set_container_format(args.format)
+    hpccm.config.set_singularity_version("3.5")
 
     stages_string = str(Stage0)
 
@@ -319,14 +320,7 @@ def main():  # pragma: no cover
     if not args.build:
         exit(0)
 
-    b = builder(
-        args,
-        images_out_dir,
-        img_file,
-        definition_file_path,
-        tag,
-        cwd,
-    )
+    b = builder(args, images_out_dir, img_file, definition_file_path, tag, cwd)
     b.build()
 
     # Deploy image

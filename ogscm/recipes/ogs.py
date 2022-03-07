@@ -508,7 +508,7 @@ if local_args.dev:
         ospackages=["neovim", "gdb", "silversearcher-ag", "ssh-client", "less"]
     )
 
-if local_args.mfront:
+if local_args.mfront and local_args.pm == "system":
     tfel_version = versions_master["minimum_version"]["tfel-rliv"]
     if "tfel-rliv" in versions["minimum_version"]:
         tfel_version = versions["minimum_version"]["tfel-rliv"]
