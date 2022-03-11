@@ -61,9 +61,11 @@ def main():  # pragma: no cover
     general_g.add_argument(
         "--cpu-target",
         type=str,
-        default=None,
+        # https://github.com/archspec/archspec-json/blob/master/cpu/microarchitectures.json#L94
+        # Enables mmx, sse4_2, implemented by CPUs since around 2010.
+        default="x86_64_v2",
         choices=[a for a in sorted(archspec.cpu.TARGETS)],
-        help="The CPU microarchitecture to optimize for.",
+        help="The CPU microarchitecture to optimize for (archspec).",
     )
     build_g = parser.add_argument_group("Image build options")
     build_g.add_argument(
