@@ -34,6 +34,7 @@ class ogs(bb_base, hpccm.templates.CMakeBuild, hpccm.templates.rm):
         super(ogs, self).__init__(**kwargs)
 
         self.__cmake_args = kwargs.get("cmake_args", [])
+        self.__cmake_preset = kwargs.get("cmake_preset", "release")
         self.__ospackages = []
         self.__parallel = kwargs.get("parallel", 4)
         self.__prefix = kwargs.get("prefix", "/usr/local/ogs")
@@ -110,7 +111,6 @@ class ogs(bb_base, hpccm.templates.CMakeBuild, hpccm.templates.rm):
             [
                 "-G Ninja",
                 "-DCMAKE_INSTALL_PREFIX={}".format(self.__prefix),
-                "-DCMAKE_BUILD_TYPE=Release",
                 "-DOGS_CPU_ARCHITECTURE=OFF",  # optimization handled via --cpu-target argument
             ]
         )
@@ -125,11 +125,16 @@ class ogs(bb_base, hpccm.templates.CMakeBuild, hpccm.templates.rm):
         if not self.__conan:
             self.__cmake_args.append("-DOGS_USE_CONAN=OFF")
 
+        build_directory = "{}/build".format(self.__prefix)
+        self.__cmake_args.extend(
+            [f"--preset={self.__cmake_preset}", "-B", build_directory]
+        )
+
         # Configure and build
         self.__commands.append(
             self.configure_step(
                 directory="{}/src".format(self.__prefix),
-                build_directory="{}/build".format(self.__prefix),
+                build_directory=build_directory,
                 opts=self.__cmake_args,
                 toolchain=self.__toolchain,
             )

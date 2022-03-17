@@ -59,6 +59,12 @@ parse_g.add_argument(
     "TRUE -DFOO=BAR'",
 )
 parse_g.add_argument(
+    "--cmake_preset",
+    type=str,
+    default="release",
+    help="A CMake configuration preset to use.",
+)
+parse_g.add_argument(
     "--ccache",
     dest="ccache",
     action="store_true",
@@ -566,6 +572,7 @@ if local_args.ogs != "off" and local_args.ogs != "clean":
         git_version=git_version,
         toolchain=toolchain,
         cmake_args=cmake_args,
+        cmake_preset=local_args.cmake_preset,
         parallel=local_args.parallel,
         remove_build=True,
         remove_source=True,
