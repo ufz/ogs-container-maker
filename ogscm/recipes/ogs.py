@@ -64,6 +64,12 @@ parse_g.add_argument(
     help="A CMake configuration preset to use.",
 )
 parse_g.add_argument(
+    "--cmake_preset_file",
+    type=str,
+    default=None,
+    help="A CMake (user) presets file as a local file path.",
+)
+parse_g.add_argument(
     "--ccache",
     dest="ccache",
     action="store_true",
@@ -229,6 +235,12 @@ if versions == None:
         requests.get(
             f"https://gitlab.opengeosys.org/ogs/ogs/-/raw/master/web/data/versions.json"
         ).text
+    )
+
+if local_args.cmake_preset_file:
+    # Make path absolute
+    local_args.cmake_preset_file = os.path.abspath(
+        os.path.expanduser(os.path.expandvars(local_args.cmake_preset_file))
     )
 
 folder = f"/{name_start}/{local_args.pm}".replace("//", "/")
@@ -572,6 +584,7 @@ if local_args.ogs != "off" and local_args.ogs != "clean":
         toolchain=toolchain,
         cmake_args=cmake_args,
         cmake_preset=local_args.cmake_preset,
+        cmake_preset_file=local_args.cmake_preset_file,
         parallel=local_args.parallel,
         remove_build=True,
         remove_source=True,

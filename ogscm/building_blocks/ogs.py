@@ -35,6 +35,7 @@ class ogs(bb_base, hpccm.templates.CMakeBuild, hpccm.templates.rm):
 
         self.__cmake_args = kwargs.get("cmake_args", [])
         self.__cmake_preset = kwargs.get("cmake_preset", "release")
+        self.__cmake_preset_file = kwargs.get("cmake_preset_file", None)
         self.__ospackages = []
         self.__parallel = kwargs.get("parallel", 4)
         self.__prefix = kwargs.get("prefix", "/usr/local/ogs")
@@ -104,6 +105,13 @@ class ogs(bb_base, hpccm.templates.CMakeBuild, hpccm.templates.rm):
                     "(cd src && git reset --hard {})".format(self.__commit)
                 )
             self.__commands.append("(cd src && git fetch --tags)")
+        if self.__cmake_preset_file:
+            f = open(self.__cmake_preset_file, "r")
+            contents = f.read()
+            contents = contents.replace("\n", "\\n")
+            self.__commands.append(
+                f"echo '{contents}' >> /usr/local/ogs/src/CMakeUserPresets.json"
+            )
 
         # Default CMake arguments
         self.__cmake_args.extend(
