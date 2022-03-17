@@ -49,12 +49,12 @@ class ogs(bb_base, hpccm.templates.CMakeBuild, hpccm.templates.rm):
         self.__commit = kwargs.get("commit")
         self.__git_version = kwargs.get("git_version")
         self.__conan = kwargs.get("conan", False)
-        self.__shell_args = ""
+        self.__shell_args = kwargs.get("mount_args", "")
 
         if self.__repo == "local":
             self.__skip_clone = True
             self.__remove_source = False
-            self.__shell_args = "--mount=type=bind,target={}/src,rw".format(
+            self.__shell_args += " --mount=type=bind,target={}/src,rw".format(
                 self.__prefix
             )
 

@@ -68,7 +68,13 @@ parse_g.add_argument(
     "--ccache",
     dest="ccache",
     action="store_true",
-    help="Enables ccache build caching.",
+    help="Enables ccache build caching. (Docker-only)",
+)
+parse_g.add_argument(
+    "--cpmcache",
+    dest="cpmcache",
+    action="store_true",
+    help="Enables CPM source caching. (Docker-only)",
 )
 parse_g.add_argument(
     "--parallel",
@@ -550,7 +556,10 @@ if local_args.ccache:
 if local_args.ogs != "off" and local_args.ogs != "clean":
     mount_args = ""
     if local_args.ccache:
-        mount_args += f" --mount=type=cache,target=/opt/ccache,id=ccache"
+        mount_args += f" --mount=type=cache,target=/opt/ccache"
+    if local_args.cpmcache:
+        mount_args += f" --mount=type=cache,target=/opt/cpmcache,sharing=locked"
+        cmake_args.append("-DCPM_SOURCE_CACHE=/opt/cpmcache")
     if local_args.cvode:
         cmake_args.append("-DOGS_USE_CVODE=ON")
     if local_args.gui:
@@ -576,6 +585,7 @@ if local_args.ogs != "off" and local_args.ogs != "clean":
         parallel=local_args.parallel,
         remove_build=True,
         remove_source=True,
+        mount_args=mount_args,
     )
 
 # Required for vtk from Python (for notebooks, VTUInterface)
