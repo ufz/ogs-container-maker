@@ -46,7 +46,6 @@ class ogs_base(bb_base):
         self += environment(
             variables={
                 "CMAKE_GENERATOR": "Ninja",
-                "PATH": "/usr/local/poetry/bin:$PATH",
             }
         )
 
@@ -81,20 +80,12 @@ class ogs_base(bb_base):
         # Common directories
         self.__commands.append("mkdir -p /apps /scratch /lustre /work /projects /data")
 
-        # Poetry
+        # virtualenv
         if hpccm.config.g_linux_distro == linux_distro.UBUNTU:
             self.__ospackages.extend(["python3-venv", "python-is-python3"])
         else:
             self.__ospackages.append("python3-virtualenv")
             self.__commands.append("alternatives --set python /usr/bin/python3")
-        self.__commands.extend(
-            [
-                """curl -sSL \
-                https://raw.githubusercontent.com/python-poetry/poetry/master/install-poetry.py \
-                | POETRY_HOME=/usr/local/poetry POETRY_VERSION=1.1.8 python3""",
-                "chmod +x /usr/local/poetry/bin/poetry",
-            ]
-        )
 
     def runtime(self, _from="0"):
         instructions = [
