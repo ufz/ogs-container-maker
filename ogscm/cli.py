@@ -63,7 +63,7 @@ def main():  # pragma: no cover
         type=str,
         # https://github.com/archspec/archspec-json/blob/master/cpu/microarchitectures.json#L94
         # Enables mmx, sse4_2, implemented by CPUs since around 2010.
-        default="x86_64_v2",
+        default="ivybridge",
         choices=[a for a in sorted(archspec.cpu.TARGETS)],
         help="The CPU microarchitecture to optimize for (archspec).",
     )
