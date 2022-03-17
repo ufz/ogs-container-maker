@@ -34,7 +34,7 @@ After specifying the compiler recipe (and optionally setting a non-default compi
 $ ogscm compiler.py ogs.py --help
 ...
 ogs.py:
-  --pm {system,conan,off}
+  --pm {system,off}
                         Package manager to install third-party dependencies
                         (default: conan)
   --ogs OGS             OGS repo on gitlab.opengeosys.org in the form
@@ -105,14 +105,12 @@ $ ogscm compiler.py mpi.py ogs.py --help
 Evaluating compiler.py
 Evaluating mpi.py
 Evaluating ogs.py
-usage: ogscm [-h] [--version] [--out OUT] [--file FILE] [--print] [--format {docker,singularity}] [--base_image BASE_IMAGE]
-             [--runtime_base_image RUNTIME_BASE_IMAGE]
+usage: ogscm [-h] [--version] [--out OUT] [--file FILE] [--print] [--format {docker,singularity}] [--base_image BASE_IMAGE] [--runtime_base_image RUNTIME_BASE_IMAGE]
              [--cpu-target {a64fx,aarch64,arm,broadwell,bulldozer,cannonlake,cascadelake,core2,excavator,haswell,i686,icelake,ivybridge,k10,mic_knl,nehalem,nocona,pentium2,pentium3,pentium4,piledriver,power7,power8,power8le,power9,power9le,ppc,ppc64,ppc64le,ppcle,prescott,sandybridge,skylake,skylake_avx512,sparc,sparc64,steamroller,thunderx2,westmere,x86,x86_64,zen,zen2}]
-             [--build] [--build_args BUILD_ARGS] [--upload] [--registry REGISTRY] [--tag TAG] [--convert] [--sif_file SIF_FILE] [--convert-enroot]
-             [--enroot-bundle] [--enroot_file ENROOT_FILE] [--force] [--runtime-only] [--clean] [--deploy [DEPLOY]] [--pip [package ...]]
-             [--packages [packages ...]] [--compiler COMPILER] [--compiler_version COMPILER_VERSION] [--fortran] [--iwyy] [--ompi OMPI]
-             [--mpi_benchmarks] [--mpi_no_entrypoint] [--pm {system,conan,off}] [--ogs OGS] [--cmake_args CMAKE_ARGS] [--ccache] [--parallel PARALLEL]
-             [--gui] [--docs] [--cvode] [--cppcheck] [--gcovr] [--mfront] [--insitu] [--dev] [--mkl] [--petsc_configure_args PETSC_CONFIGURE_ARGS]
+             [--build] [--build_args BUILD_ARGS] [--upload] [--registry REGISTRY] [--tag TAG] [--convert] [--sif_file SIF_FILE] [--convert-enroot] [--enroot-bundle] [--enroot_file ENROOT_FILE] [--force]
+             [--runtime-only] [--clean] [--deploy [DEPLOY]] [--pip [package ...]] [--packages [packages ...]] [--compiler COMPILER] [--compiler_version COMPILER_VERSION] [--fortran] [--iwyy] [--ompi OMPI]
+             [--mpi_benchmarks] [--mpi_no_entrypoint] [--pm {system,off}] [--ogs OGS] [--cmake_args CMAKE_ARGS] [--cmake_preset CMAKE_PRESET] [--cmake_preset_file CMAKE_PRESET_FILE] [--ccache]
+             [--cpmcache] [--parallel PARALLEL] [--gui] [--docs] [--cvode] [--cppcheck] [--gcovr] [--mfront] [--insitu] [--dev] [--mkl] [--petsc_configure_args PETSC_CONFIGURE_ARGS]
              [--version_file VERSION_FILE]
              recipe [recipe ...]
 
@@ -133,7 +131,7 @@ General image config:
   --runtime_base_image RUNTIME_BASE_IMAGE
                         The runtime base image. (default: )
   --cpu-target {a64fx,aarch64,arm,broadwell,bulldozer,cannonlake,cascadelake,core2,excavator,haswell,i686,icelake,ivybridge,k10,mic_knl,nehalem,nocona,pentium2,pentium3,pentium4,piledriver,power7,power8,power8le,power9,power9le,ppc,ppc64,ppc64le,ppcle,prescott,sandybridge,skylake,skylake_avx512,sparc,sparc64,steamroller,thunderx2,westmere,x86,x86_64,zen,zen2}
-                        The CPU microarchitecture to optimize for. (default: None)
+                        The CPU microarchitecture to optimize for (archspec). (default: ivybridge)
 
 Image build options:
   --build, -B           Build the images from the definition files (default: False)
@@ -156,8 +154,7 @@ Maintenance:
 
 Image deployment:
   --deploy [DEPLOY], -D [DEPLOY]
-                        Deploys to all configured hosts (in config/deploy_hosts.yml) with no additional arguments or to the specified host. Implies
-                        --build and --convert arguments. (default: )
+                        Deploys to all configured hosts (in config/deploy_hosts.yml) with no additional arguments or to the specified host. Implies --build and --convert arguments. (default: )
 
 Packages to install:
   --pip [package ...]   Install additional Python packages (default: [])
@@ -177,14 +174,17 @@ mpi.py:
   --mpi_no_entrypoint   Disables mpi entrypoint. (Use with ogs_jupyter.py recipe) (default: False)
 
 ogs.py:
-  --pm {system,conan,off}
-                        Package manager to install third-party dependencies (default: system)
-  --ogs OGS             OGS repo on gitlab.opengeosys.org in the form 'user/repo@branch' OR 'user/repo@@commit' to checkout a specific commit OR a
-                        path to a local subdirectory to the git cloned OGS sources OR 'off' to disable OGS building OR 'clean' to disable OGS and all
-                        its dev dependencies (default: ogs/ogs@master)
+  --pm {system,off}     Package manager to install third-party dependencies (default: system)
+  --ogs OGS             OGS repo on gitlab.opengeosys.org in the form 'user/repo@branch' OR 'user/repo@@commit' to checkout a specific commit OR a path to a local subdirectory to the git cloned OGS
+                        sources OR 'off' to disable OGS building OR 'clean' to disable OGS and all its dev dependencies (default: ogs/ogs@master)
   --cmake_args CMAKE_ARGS
                         CMake argument set has to be quoted and **must** start with a space. e.g. --cmake_args ' -DFIRST=TRUE -DFOO=BAR' (default: )
-  --ccache              Enables ccache build caching. (default: False)
+  --cmake_preset CMAKE_PRESET
+                        A CMake configuration preset to use. (default: release)
+  --cmake_preset_file CMAKE_PRESET_FILE
+                        A CMake (user) presets file as a local file path. (default: None)
+  --ccache              Enables ccache build caching. (Docker-only) (default: False)
+  --cpmcache            Enables CPM source caching. (Docker-only) (default: False)
   --parallel PARALLEL, -j PARALLEL
                         The number of cores to use for compilation. (default: 8)
   --gui                 Builds the GUI (Data Explorer) (default: False)
@@ -195,8 +195,7 @@ ogs.py:
   --mfront              Install tfel and build OGS with -DOGS_USE_MFRONT=ON (default: False)
   --insitu              Builds with insitu capabilities (default: False)
   --dev                 Installs development tools (vim, gdb) (default: False)
-  --mkl                 Use MKL. By setting this option, you agree to the [Intel End User License Agreement](https://software.intel.com/en-
-                        us/articles/end-user-license-agreement). (default: False)
+  --mkl                 Use MKL. By setting this option, you agree to the [Intel End User License Agreement](https://software.intel.com/en-us/articles/end-user-license-agreement). (default: False)
   --petsc_configure_args PETSC_CONFIGURE_ARGS
                         PETSc configuration arguments; has to be quoted. (default: --with-fc=0 --download-f2cblaslapack=1)
   --version_file VERSION_FILE
