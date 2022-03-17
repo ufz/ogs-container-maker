@@ -17,7 +17,6 @@ from hpccm.building_blocks import (
     packages,
     pip,
 )
-from ogscm.building_blocks.pm_conan import pm_conan
 
 import hpccm
 from ogscm.building_blocks.paraview import paraview
@@ -36,7 +35,7 @@ parse_g = parser.add_argument_group(filename)
 parse_g.add_argument(
     "--pm",
     type=str,
-    choices=["system", "conan", "off"],
+    choices=["system", "off"],
     default="system",
     help="Package manager to install third-party " "dependencies",
 )
@@ -288,15 +287,7 @@ if local_args.ogs != "clean":
     if "cmake" in versions["tested_version"]:
         cmake_version = versions["tested_version"]["cmake"]
     Stage0 += cmake(eula=True, version=cmake_version)
-    if local_args.pm == "conan":
-        conan_user_home = "/opt/conan"
-        if local_args.dev:
-            conan_user_home = ""
-        Stage0 += pm_conan(
-            user_home=conan_user_home, version=versions["minimum_version"]["conan"]
-        )
-        Stage0 += environment(variables={"CONAN_SYSREQUIRES_SUDO": 0})
-    elif local_args.pm == "system":
+    if local_args.pm == "system":
         boost_bootsrap_opts = []
         if local_args.mfront:
             # for mfront python bindings
@@ -577,7 +568,6 @@ if local_args.ogs != "off" and local_args.ogs != "clean":
         repo=repo,
         branch=branch,
         commit=commit_hash,
-        conan=(True if local_args.pm == "conan" else False),
         git_version=git_version,
         toolchain=toolchain,
         cmake_args=cmake_args,

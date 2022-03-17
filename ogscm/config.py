@@ -12,9 +12,7 @@ g_package_manager = package_manager.SYSTEM
 def set_package_manager(pm):
     this = sys.modules[__name__]
 
-    if pm == "conan":
-        this.g_package_manager = package_manager.CONAN
-    elif pm == "easybuild":
+    if pm == "easybuild":
         this.g_package_manager = package_manager.EASYBUILD
     elif pm == "guix":
         this.g_package_manager = package_manager.GUIX

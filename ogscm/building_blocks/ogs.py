@@ -48,7 +48,6 @@ class ogs(bb_base, hpccm.templates.CMakeBuild, hpccm.templates.rm):
         self.__branch = kwargs.get("branch", "master")
         self.__commit = kwargs.get("commit")
         self.__git_version = kwargs.get("git_version")
-        self.__conan = kwargs.get("conan", False)
         self.__shell_args = kwargs.get("mount_args", "")
 
         if self.__repo == "local":
@@ -120,10 +119,6 @@ class ogs(bb_base, hpccm.templates.CMakeBuild, hpccm.templates.rm):
         )
         if self.__toolchain.CC == "mpicc":
             self.__cmake_args.append("-DOGS_USE_PETSC=ON")
-            if self.__conan:
-                self.__cmake_args.append("-DOGS_CONAN_USE_SYSTEM_OPENMPI=ON")
-        if not self.__conan:
-            self.__cmake_args.append("-DOGS_USE_CONAN=OFF")
 
         build_directory = "{}/build".format(self.__prefix)
         self.__cmake_args.extend(
