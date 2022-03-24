@@ -148,6 +148,18 @@ parse_g.add_argument(
     action="store_true",
     help="Boolean flag to specify whether Boost should be downloaded from SourceForge rather than the current Boost repository.",
 )
+parse_g.add_argument(
+    "--keep-ogs-source",
+    dest="keep_source",
+    action="store_true",
+    help="Boolean flag to specify whether the OGS source directory should be preserved.",
+)
+parse_g.add_argument(
+    "--keep-ogs-build",
+    dest="keep_build",
+    action="store_true",
+    help="Boolean flag to specify whether the OGS build directory should be preserved.",
+)
 
 # Parse local args
 local_args = parser.parse_known_args()[0]
@@ -592,8 +604,8 @@ if local_args.ogs != "off" and local_args.ogs != "clean":
         cmake_preset=local_args.cmake_preset,
         cmake_preset_file=local_args.cmake_preset_file,
         parallel=local_args.parallel,
-        remove_build=True,
-        remove_source=True,
+        remove_build=not local_args.keep_build,
+        remove_source=not local_args.keep_source,
         mount_args=mount_args,
     )
 
