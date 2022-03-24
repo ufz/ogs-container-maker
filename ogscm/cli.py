@@ -195,7 +195,7 @@ def main():  # pragma: no cover
 
     if args.runtime_only:
         Stage0.name = "build"
-    Stage0 += baseimage(image=args.base_image, _as="build")
+    Stage0 += baseimage(image=args.base_image, _as="build", _arch="x86_64")
 
     Stage0 += comment(
         f"Generated with ogs-container-maker {__version__}", reformat=False

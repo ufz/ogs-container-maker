@@ -160,6 +160,12 @@ parse_g.add_argument(
     action="store_true",
     help="Boolean flag to specify whether the OGS build directory should be preserved.",
 )
+parse_g.add_argument(
+    "--run-ctest",
+    dest="run_ctest",
+    action="store_true",
+    help="Boolean flag to specify whether to run the OGS ctest-target.",
+)
 
 # Parse local args
 local_args = parser.parse_known_args()[0]
@@ -177,6 +183,9 @@ versions_master = json.loads(
 
 if local_args.ogs not in ["off", "clean"]:  # != "off" and local_args.ogs != "clean":
     if os.path.isdir(local_args.ogs):
+        if local_args.run_ctest and args.format == "docker":
+            print("`--run_ctest` can not be used with `--ogs local/path`")
+            exit(1)
         repo = "local"
         commit_hash = subprocess.run(
             ["cd {} && git rev-parse HEAD".format(local_args.ogs)],
@@ -607,6 +616,7 @@ if local_args.ogs != "off" and local_args.ogs != "clean":
         remove_build=not local_args.keep_build,
         remove_source=not local_args.keep_source,
         mount_args=mount_args,
+        run_ctest=local_args.run_ctest,
     )
 
 # Required for vtk from Python (for notebooks, VTUInterface)

@@ -37,7 +37,7 @@ class builder(object):
 
     def build_docker(self):
         build_cmd = (
-            f"DOCKER_BUILDKIT=1 docker build {self.__args.build_args} "
+            f"DOCKER_BUILDKIT=1 docker build {self.__args.build_args} --platform linux/amd64 "
             f"-t {self.__tag} -f {self.__definition_file_path} ."
         )
         print(f"Running: {build_cmd}")

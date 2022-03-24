@@ -50,6 +50,7 @@ class ogs(bb_base, hpccm.templates.CMakeBuild, hpccm.templates.rm):
         self.__commit = kwargs.get("commit")
         self.__git_version = kwargs.get("git_version")
         self.__shell_args = kwargs.get("mount_args", "")
+        self.__run_ctest = kwargs.get("run_ctest", False)
 
         if self.__repo == "local":
             self.__skip_clone = True
@@ -143,9 +144,14 @@ class ogs(bb_base, hpccm.templates.CMakeBuild, hpccm.templates.rm):
                 toolchain=self.__toolchain,
             )
         )
+
         self.__commands.append(
             self.build_step(target="install", parallel=self.__parallel)
         )
+
+        # ctest
+        if self.__run_ctest:
+            self.__commands.append(self.build_step(target="ctest"))
 
         # Cleanup
         if self.__remove_build:
