@@ -142,6 +142,12 @@ if toolchain.CC == "mpicc":
         help="PETSc configuration arguments; has to be quoted.",
     )
 parse_g.add_argument("--version_file", type=str, help="OGS versions.json file")
+parse_g.add_argument(
+    "--boost-sourceforge",
+    dest="boost_sourceforge",
+    action="store_true",
+    help="Boolean flag to specify whether Boost should be downloaded from SourceForge rather than the current Boost repository.",
+)
 
 # Parse local args
 local_args = parser.parse_known_args()[0]
@@ -308,9 +314,9 @@ if local_args.ogs != "clean":
             boost_bootsrap_opts.append("--with-toolset=clang")
         Stage0 += boost(
             b2_opts=["headers"],
-            baseurl=f"https://boostorg.jfrog.io/artifactory/main/release/{versions['minimum_version']['boost']}/source",
             bootstrap_opts=boost_bootsrap_opts,
             ldconfig=True,
+            sourceforge=local_args.boost_sourceforge,
             version=versions["minimum_version"]["boost"],
         )
         Stage0 += environment(variables={"BOOST_ROOT": "/usr/local/boost"})
