@@ -111,7 +111,7 @@ usage: ogscm [-h] [--version] [--out OUT] [--file FILE] [--print] [--format {doc
              [--runtime-only] [--clean] [--deploy [DEPLOY]] [--pip [package ...]] [--packages [packages ...]] [--compiler COMPILER] [--compiler_version COMPILER_VERSION] [--fortran] [--iwyy] [--ompi OMPI]
              [--mpi_benchmarks] [--mpi_no_entrypoint] [--pm {system,off}] [--ogs OGS] [--cmake_args CMAKE_ARGS] [--cmake_preset CMAKE_PRESET] [--cmake_preset_file CMAKE_PRESET_FILE] [--ccache]
              [--cpmcache] [--parallel PARALLEL] [--gui] [--docs] [--cvode] [--cppcheck] [--gcovr] [--mfront] [--insitu] [--dev] [--mkl] [--petsc_configure_args PETSC_CONFIGURE_ARGS]
-             [--version_file VERSION_FILE]
+             [--version_file VERSION_FILE] [--boost-sourceforge] [--keep-ogs-source] [--keep-ogs-build]
              recipe [recipe ...]
 
 positional arguments:
@@ -200,6 +200,9 @@ ogs.py:
                         PETSc configuration arguments; has to be quoted. (default: --with-fc=0 --download-f2cblaslapack=1)
   --version_file VERSION_FILE
                         OGS versions.json file (default: None)
+  --boost-sourceforge   Boolean flag to specify whether Boost should be downloaded from SourceForge rather than the current Boost repository. (default: False)
+  --keep-ogs-source     Boolean flag to specify whether the OGS source directory should be preserved. (default: False)
+  --keep-ogs-build      Boolean flag to specify whether the OGS build directory should be preserved. (default: False)
 ```
 
 ## Advanced usage
