@@ -38,18 +38,11 @@ Stage1 += packages(
     ]
 )
 
-Stage1 += shell(
-    commands=[
-        "pip install "
-        "https://github.com/joergbuchwald/ogs6py/archive/0f9e738e2ee469c8bde4204b2151238973417694.zip "
-        "https://github.com/joergbuchwald/VTUinterface/archive/refs/heads/master.zip "
-        "pyvista pythreejs "
-        "nbconvert nbdime "
-        "https://github.com/bilke/nb2hugo/archive/e27dc02df2be1ce19e4a6f52d197c2e2a6ca520c.zip "
-        "h5py "
-        "jupyterlab-gitlab "
-    ]
-)
+pip_packages = ["pyvista", "pythreejs", "nbdime", "h5py", "jupyterlab-gitlab"]
+for package in versions["python"]["notebook_requirements"]:
+    pip_packages.append(package)
+
+Stage1 += shell(commands=[f"pip install {' '.join(pip_packages)}"])
 
 # Setup adapted from https://github.com/pyvista/pyvista/blob/main/docker/Dockerfile
 Stage1 += environment(

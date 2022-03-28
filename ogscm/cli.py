@@ -217,6 +217,7 @@ def main():  # pragma: no cover
     img_file = ""
     out_dir = f"{args.out}/{args.format}"
     toolchain = None
+    versions = None  # versions.json
 
     for recipe in recipe_args_parser.parse_known_args()[0].recipe:
         import importlib.resources as pkg_resources
@@ -247,6 +248,8 @@ def main():  # pragma: no cover
             print(f"img_file variable has to be set in {recipe}!")
             exit(1)
         img_file = ldict["img_file"]
+        if "versions" in ldict:
+            versions = ldict["versions"]
 
     # Workaround to get the full help message
     help_parser = argparse.ArgumentParser(

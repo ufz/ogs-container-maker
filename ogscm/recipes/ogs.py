@@ -174,12 +174,6 @@ branch_is_release = False
 git_version = ""
 name_start = ""
 repo = None
-versions = None
-versions_master = json.loads(
-    requests.get(
-        f"https://gitlab.opengeosys.org/ogs/ogs/-/raw/master/web/data/versions.json?inline=false"
-    ).text
-)
 
 if local_args.ogs not in ["off", "clean"]:  # != "off" and local_args.ogs != "clean":
     if os.path.isdir(local_args.ogs):
@@ -321,6 +315,13 @@ if local_args.gui:
         ],
         yum=["mesa-libOSMesa", "mesa-libGL", "mesa-libGLU", "libXt"],
     )
+
+versions_master = json.loads(
+    requests.get(
+        f"https://gitlab.opengeosys.org/ogs/ogs/-/raw/master/web/data/versions.json?inline=false"
+    ).text
+)
+
 if local_args.ogs != "clean":
     cmake_version = versions_master["tested_version"]["cmake"]
     if "cmake" in versions["tested_version"]:
