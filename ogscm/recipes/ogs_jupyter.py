@@ -38,7 +38,13 @@ Stage1 += packages(
     ]
 )
 
-pip_packages = ["pyvista", "pythreejs", "nbdime", "h5py", "jupyterlab-gitlab"]
+pip_packages = [
+    "pyvista==0.33.3",
+    "pythreejs==2.3.0",
+    "nbdime==3.1.1",
+    "h5py==3.6.0",
+    "jupyterlab-gitlab==3.0.0",
+]
 for package in versions["python"]["notebook_requirements"]:
     pip_packages.append(package)
 
