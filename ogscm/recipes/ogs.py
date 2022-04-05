@@ -468,6 +468,8 @@ if local_args.ogs != "clean":
             )
         if toolchain.CC == "mpicc":
             Stage0 += packages(yum=["diffutils"])
+            if "--download-ptscotch" in local_args.petsc_configure_args:
+                Stage0 += packages(ospackages=["bison", "flex"])
             petsc_version = versions["minimum_version"]["petsc"]
             petsc_args = local_args.petsc_configure_args.strip().split(" ")
             petsc_configure_opts = [
