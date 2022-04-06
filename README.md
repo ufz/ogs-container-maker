@@ -229,6 +229,6 @@ ogscm compiler.py ogs.py -B -C -R --ogs [path to ogs sources]
 
 ## PyPi Publication
 
-- Bump version in `pyproject.py` and `version.py`
+- Bump version in `pyproject.py` and run `poetry install`
 - Create tag
 - Push to GitLab (`git push --tags`)
