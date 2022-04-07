@@ -558,7 +558,7 @@ if local_args.mfront and local_args.pm == "system":
     if "tfel-rliv" in versions["minimum_version"]:
         tfel_version = versions["minimum_version"]["tfel-rliv"]
     Stage0 += generic_cmake(
-        cmake_opts=["-Denable-python-bindings=ON"],
+        cmake_opts=["-Denable-python-bindings=ON", "-Denable-portable-build=ON"],
         directory=f"tfel-rliv-{tfel_version}",
         ldconfig=True,
         url=f"https://github.com/thelfer/tfel/archive/refs/heads/rliv-{tfel_version}.zip",
