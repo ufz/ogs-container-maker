@@ -49,7 +49,7 @@ def main():  # pragma: no cover
     general_g.add_argument(
         "--base_image",
         type=str,
-        default="ubuntu:20.04",
+        default="ubuntu:22.04",
         help="The base image.",
     )
     general_g.add_argument(
@@ -210,7 +210,7 @@ def main():  # pragma: no cover
         Stage1.baseimage(image=args.base_image)
     else:
         Stage1.baseimage(image=args.runtime_base_image)
-        if args.runtime_base_image == "jupyter/base-notebook":
+        if "jupyter/base-notebook" in args.runtime_base_image:
             Stage1 += raw(docker="USER root")
 
     cwd = os.getcwd()
@@ -309,7 +309,7 @@ def main():  # pragma: no cover
             and args.compiler_version != None
         ):
             Stage1 += packages(apt=["libstdc++6"])
-        if args.runtime_base_image == "jupyter/base-notebook":
+        if "jupyter/base-notebook" in args.runtime_base_image:
             Stage1 += raw(docker="USER ${NB_USER}")
         stages_string += "\n\n" + str(Stage1)
 

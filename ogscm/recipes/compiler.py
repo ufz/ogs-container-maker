@@ -34,7 +34,7 @@ local_args = parser.parse_known_args()[0]
 
 if local_args.compiler_version == "":
     if local_args.compiler == "clang":
-        local_args.compiler_version = "8"
+        local_args.compiler_version = "11"
     else:
         if hpccm.config.g_linux_distro == linux_distro.CENTOS:
             local_args.compiler_version = "10"  # required for std::filesystem
@@ -62,7 +62,6 @@ if local_args.compiler == "clang":
 else:
     compiler = gnu(
         fortran=local_args.fortran,
-        extra_repository=True,
         version=local_args.compiler_version,
     )
 toolchain = compiler.toolchain

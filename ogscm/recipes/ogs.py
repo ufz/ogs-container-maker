@@ -297,6 +297,7 @@ if local_args.gui:
             "libgl1-mesa-dev",
             "libglu1-mesa-dev",
             "libxt-dev",
+            "libglib2.0-0",
         ],
         yum=[
             "mesa-libOSMesa-devel",
@@ -339,7 +340,7 @@ if local_args.ogs != "clean":
             bootstrap_opts=boost_bootsrap_opts,
             ldconfig=True,
             sourceforge=local_args.boost_sourceforge,
-            version=versions["minimum_version"]["boost"],
+            version="1.75.0",  # versions["minimum_version"]["boost"], # is too old for gcc 11
         )
         Stage0 += environment(variables={"BOOST_ROOT": "/usr/local/boost"})
         Stage0 += packages(
@@ -534,13 +535,14 @@ if local_args.cvode:
     )
 
 if local_args.cppcheck:
+    cppcheck_version = "2.7.5"
     Stage0 += generic_cmake(
         devel_environment={"PATH": "/usr/local/cppcheck/bin:$PATH"},
-        directory="cppcheck-809a769c690d8ab6fef293e41a29c8490512866e",
+        directory=f"cppcheck-{cppcheck_version}",
         prefix="/usr/local/cppcheck",
         runtime_environment={"PATH": "/usr/local/cppcheck/bin:$PATH"},
         toolchain=toolchain,
-        url="https://github.com/danmar/cppcheck/archive/809a769c690d8ab6fef293e41a29c8490512866e.tar.gz",
+        url=f"https://github.com/danmar/cppcheck/archive/refs/tags/{cppcheck_version}.tar.gz",
     )
 
 if local_args.docs:
