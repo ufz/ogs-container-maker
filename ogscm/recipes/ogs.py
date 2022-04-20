@@ -356,10 +356,10 @@ if local_args.ogs != "clean":
             vtk_cmake_args = vtk_cmake_args[::-1]
         else:
             vtk_cmake_args = [
-                "-DModule_vtkIOXML=ON",
-                "-DModule_vtkIOLegacy=ON",
-                "-DVTK_Group_Rendering=OFF",
-                "-DVTK_Group_StandAlone=OFF",
+                "-DVTK_MODULE_ENABLE_VTK_IOXML=YES",
+                "-DVTK_MODULE_ENABLE_VTK_IOLegacy=YES",
+                "-DVTK_GROUP_ENABLE_Rendering=DONT_WANT",
+                "-DVTK_GROUP_ENABLE_StandAlone=DONT_WANT",
             ]
             if local_args.gui:
                 vtk_cmake_args = [
@@ -370,8 +370,8 @@ if local_args.ogs != "clean":
             if toolchain.CC == "mpicc":
                 vtk_cmake_args.extend(
                     [
-                        "-DModule_vtkIOParallelXML=ON",
-                        "-DModule_vtkParallelMPI=ON",
+                        "-DVTK_MODULE_ENABLE_VTK_IOParallelXML=YES",
+                        "-DVTK_MODULE_ENABLE_VTK_ParallelMPI=YES",
                     ]
                 )
 
