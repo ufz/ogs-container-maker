@@ -2,6 +2,7 @@ import subprocess
 import sys
 import re
 import os
+import platform
 
 
 class builder(object):
@@ -36,8 +37,11 @@ class builder(object):
         exit(0)
 
     def build_docker(self):
+        buildx = False
+        if "arm64" in platform.platform():
+            buildx = True
         build_cmd = (
-            f"DOCKER_BUILDKIT=1 docker build {self.__args.build_args} --platform linux/amd64 "
+            f"DOCKER_BUILDKIT=1 docker{' buildx' if buildx else ''} build{' --output type=docker' if buildx else ''} {self.__args.build_args} --platform linux/amd64 "
             f"-t {self.__tag} -f {self.__definition_file_path} ."
         )
         print(f"Running: {build_cmd}")

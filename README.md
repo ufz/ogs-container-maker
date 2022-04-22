@@ -12,6 +12,14 @@ source ~/.venv/ogs-container-maker/bin/activate
 pip install ogscm
 ```
 
+Apple ARM specific:
+
+```bash
+export DOCKER_BUILDKIT=1
+docker buildx create --use --name=qemu
+docker buildx inspect --bootstrap
+```
+
 ### Generate container definition
 
 OGS Container Maker has builtin *recipes*. You need to specify the recipes to use as command arguments. Each of recipes adds options to the tool. Typically you want to start with a compiler. Add the `compiler.py` recipe and the `--help`-flag to get more options:
