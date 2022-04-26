@@ -329,20 +329,19 @@ if local_args.ogs != "clean":
         cmake_version = versions["tested_version"]["cmake"]
     Stage0 += cmake(eula=True, version=cmake_version)
     if local_args.pm == "system":
-        boost_bootsrap_opts = []
         if local_args.mfront:
             # for mfront python bindings
             boost_bootsrap_opts = ["--with-python=python3"]
-        if toolchain.CC == "clang":
-            boost_bootsrap_opts.append("--with-toolset=clang")
-        Stage0 += boost(
-            b2_opts=["headers"],
-            bootstrap_opts=boost_bootsrap_opts,
-            ldconfig=True,
-            sourceforge=local_args.boost_sourceforge,
-            version="1.75.0",  # versions["minimum_version"]["boost"], # is too old for gcc 11
-        )
-        Stage0 += environment(variables={"BOOST_ROOT": "/usr/local/boost"})
+            if toolchain.CC == "clang":
+                boost_bootsrap_opts.append("--with-toolset=clang")
+            Stage0 += boost(
+                b2_opts=["headers"],
+                bootstrap_opts=boost_bootsrap_opts,
+                ldconfig=True,
+                sourceforge=local_args.boost_sourceforge,
+                version="1.75.0",  # versions["minimum_version"]["boost"], # is too old for gcc 11
+            )
+            Stage0 += environment(variables={"BOOST_ROOT": "/usr/local/boost"})
         Stage0 += packages(
             apt=["libxml2-dev", "xsltproc"], yum=["libxml2-devel", "libxslt"]
         )
