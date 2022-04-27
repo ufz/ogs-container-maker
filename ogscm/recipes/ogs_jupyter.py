@@ -1,3 +1,5 @@
+import os
+
 from hpccm.primitives import comment, copy, environment, raw, shell
 from hpccm.building_blocks import packages
 
@@ -24,23 +26,12 @@ out_dir += f"/jupyter"
 # Implement recipe
 Stage1 += comment(f"Begin {filename}")
 
-# VTUInterface (vtk) dependencies
-Stage1 += packages(
-    apt=[
-        "libgl1-mesa-glx",
-        "libxt6",
-        "libglu1-mesa",
-        "libsm6",
-        "libxrender1",
-        "libfontconfig1",
-        "xvfb",  # for offscreen display server
-        "git",  # for nbdime
-    ]
-)
+Stage1 += packages(apt=["git"])  # for pip packages via git
 
 pip_packages = [
-    "pyvista==0.33.3",
-    "pythreejs==2.3.0",
+    "https://github.com/pyvista/pyvista/releases/download/0.27.0/vtk-egl-9.0.1-cp39-cp39-manylinux2014_x86_64.whl",  # vtk with offscreen (EGL) hardware rendering
+    "ipyvtklink",  # for interactive PyVista
+    "pyvista==0.34.0",
     "nbdime==3.1.1",
     "h5py==3.6.0",
     "jupyterlab-gitlab==3.0.0",
@@ -48,17 +39,8 @@ pip_packages = [
 for package in versions["python"]["notebook_requirements"]:
     pip_packages.append(package)
 
-Stage1 += shell(commands=[f"pip install {' '.join(pip_packages)}"])
-
-# Setup adapted from https://github.com/pyvista/pyvista/blob/main/docker/Dockerfile
-Stage1 += environment(
-    variables={
-        "DISPLAY": ":99.0",
-        "PYVISTA_OFF_SCREEN": True,
-        "PYVISTA_JUPYTER_BACKEND": "pythreejs",
-        "JUPYTER_ENABLE_LAB": True,
-    }
-)
+# Install via shell (and not hpccm pip) to install into conda environment
+Stage1 += shell(commands=[f"pip  --no-cache-dir install {' '.join(pip_packages)}"])
 
 Stage1 += shell(
     commands=[
@@ -72,10 +54,6 @@ Stage1 += shell(
         'fix-permissions "${CONDA_DIR}"',
         'fix-permissions "/home/${NB_USER}"',
     ]
-)
-
-Stage1 += raw(
-    docker='CMD /bin/bash -c "Xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1 &" && sleep 2 && start-notebook.sh'
 )
 
 lab_overrides = """\\n\
@@ -93,6 +71,30 @@ Stage1 += shell(
         "echo $'c.GitLabConfig.url = \"https://gitlab.opengeosys.org\"\\n' >> /etc/jupyter/jupyter_server_config.py",
         "mkdir -p /opt/conda/share/jupyter/lab/settings",
         f"echo $'{lab_overrides}' > /opt/conda/share/jupyter/lab/settings/overrides.json",
+    ]
+)
+
+# NVidia driver
+Stage1 += packages(
+    apt=[
+        "kmod",
+        "libglvnd-dev",
+        "pkg-config",
+        "libxrender1",
+    ]
+)
+
+nv_driver_version = (
+    os.popen("nvidia-smi --query-gpu=driver_version --format=csv,noheader")
+    .read()
+    .strip()
+)
+
+Stage1 += shell(
+    commands=[
+        f"wget https://us.download.nvidia.com/XFree86/Linux-x86_64/{nv_driver_version}/NVIDIA-Linux-x86_64-{nv_driver_version}.run",
+        f"sh NVIDIA-Linux-x86_64-{nv_driver_version}.run -s --no-kernel-module",
+        f"rm NVIDIA-Linux-x86_64-{nv_driver_version}.run",
     ]
 )
 
