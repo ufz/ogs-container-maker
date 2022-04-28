@@ -124,7 +124,7 @@ else:
     Stage1 += packages(
         apt=[
             "libfontconfig1",
-            "libosmesa6-dev",
+            "libosmesa6",
             "libxrender1",
         ]
     )
