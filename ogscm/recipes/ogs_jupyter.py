@@ -35,44 +35,37 @@ Stage1 += comment(f"Begin {filename}")
 
 Stage1 += packages(apt=["git"])  # for pip packages via git
 
+conda_packages = ["snakemake-minimal", "pyvista==0.34.0", "ipyvtklink", "pythreejs"]
 pip_packages = [
     "nbdime==3.1.1",
     "h5py==3.6.0",
     "jupyterlab-gitlab==3.0.0",
-    "pyvista==0.34.0",
 ]
+vtk_rendering_backend = "osmesa"
 if local_args.pyvista_gpu:
-    pip_packages.extend(
-        [
-            # vtk with offscreen (EGL) hardware rendering
-            "https://github.com/pyvista/pyvista/releases/download/0.27.0/vtk-egl-9.0.1-cp39-cp39-manylinux2014_x86_64.whl",
-            # for interactive PyVista
-            "ipyvtklink",
-        ]
-    )
+    vtk_rendering_backend = "egl"
 else:
-    pip_packages.extend(
-        [
-            "pythreejs",  # only working rendering backend in this config
-        ]
-    )
+    conda_packages.append("mesalib")
+conda_packages.append(f"vtk=*={vtk_rendering_backend}*")
 
 for package in versions["python"]["notebook_requirements"]:
     pip_packages.append(package)
 pip_packages.sort()
-
-# Install via shell (and not hpccm pip) to install into conda environment
-Stage1 += shell(commands=[f"pip  --no-cache-dir install {' '.join(pip_packages)}"])
+conda_packages.sort()
 
 Stage1 += shell(
     commands=[
-        # Install snakemake in conda 'base' environment
-        "mamba install --yes --quiet -c bioconda -c conda-forge snakemake-minimal",
+        f"mamba install --yes --quiet -c bioconda -c conda-forge  {' '.join(conda_packages)}",
+        "mamba clean --all -f -y",
+        'fix-permissions "${CONDA_DIR}"',
+        'fix-permissions "/home/${NB_USER}"',
     ]
 )
 
+# Install via shell (and not hpccm pip) to install into conda environment
 Stage1 += shell(
     commands=[
+        f"pip  --no-cache-dir install {' '.join(pip_packages)}",
         'fix-permissions "${CONDA_DIR}"',
         'fix-permissions "/home/${NB_USER}"',
     ]
@@ -120,14 +113,5 @@ if local_args.pyvista_gpu:
             f"rm NVIDIA-Linux-x86_64-{nv_driver_version}.run",
         ]
     )
-else:
-    Stage1 += packages(
-        apt=[
-            "libfontconfig1",
-            "libosmesa6",
-            "libxrender1",
-        ]
-    )
-    Stage1 += environment(variables={"PYVISTA_JUPYTER_BACKEND": "pythreejs"})
 
 Stage1 += comment(f"--- End {filename} ---")
