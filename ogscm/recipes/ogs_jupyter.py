@@ -33,7 +33,9 @@ out_dir += f"/jupyter"
 # Implement recipe
 Stage1 += comment(f"Begin {filename}")
 
-Stage1 += packages(apt=["git", "libgl1-mesa-glx"])  # for pip packages via git, for gmsh conda package
+Stage1 += packages(
+    apt=["git", "libgl1-mesa-glx"]
+)  # for pip packages via git, for gmsh conda package
 
 conda_packages = []
 for package in versions["python"]["jupyter_image"]["conda_packages"]:
