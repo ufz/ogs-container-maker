@@ -33,14 +33,16 @@ out_dir += f"/jupyter"
 # Implement recipe
 Stage1 += comment(f"Begin {filename}")
 
-Stage1 += packages(apt=["git"])  # for pip packages via git
+Stage1 += packages(apt=["git", "libgl1-mesa-glx"])  # for pip packages via git, for gmsh conda package
 
-conda_packages = ["snakemake-minimal", "pyvista==0.34.0", "ipyvtklink", "pythreejs"]
-pip_packages = [
-    "nbdime==3.1.1",
-    "h5py==3.6.0",
-    "jupyterlab-gitlab==3.0.0",
-]
+conda_packages = []
+for package in versions["python"]["jupyter_image"]["conda_packages"]:
+    conda_packages.append(package)
+
+pip_packages = []
+for package in versions["python"]["jupyter_image"]["pip_packages"]:
+    pip_packages.append(package)
+
 vtk_rendering_backend = "osmesa"
 if local_args.pyvista_gpu:
     vtk_rendering_backend = "egl"
@@ -50,6 +52,7 @@ conda_packages.append(f"vtk=*={vtk_rendering_backend}*")
 
 for package in versions["python"]["notebook_requirements"]:
     pip_packages.append(package)
+
 pip_packages.sort()
 conda_packages.sort()
 
