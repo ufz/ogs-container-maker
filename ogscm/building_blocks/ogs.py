@@ -145,8 +145,12 @@ class ogs(bb_base, hpccm.templates.CMakeBuild, hpccm.templates.rm):
             )
         )
 
+        # Install only when build dir is removed
         self.__commands.append(
-            self.build_step(target="install", parallel=self.__parallel)
+            self.build_step(
+                target=("install" if self.__remove_build else "all"),
+                parallel=self.__parallel,
+            )
         )
 
         # ctest
@@ -154,20 +158,19 @@ class ogs(bb_base, hpccm.templates.CMakeBuild, hpccm.templates.rm):
             self.__commands.append(self.build_step(target="ctest"))
 
         # Cleanup
+        bin_dir = f"{self.__prefix}/build/bin"
         if self.__remove_build:
             self.__commands.append(
                 self.cleanup_step(items=[os.path.join(self.__prefix, "build")])
             )
-        else:
-            # Just run the clean-target
-            self.__commands.append(self.build_step(target="clean"))
+            bin_dir = f"{self.__prefix}/bin"
         if self.__remove_source:
             self.__commands.append(
                 self.cleanup_step(items=[os.path.join(self.__prefix, "src")])
             )
 
         # Environment
-        self.__environment_variables["PATH"] = "{0}/bin:$PATH".format(self.__prefix)
+        self.__environment_variables["PATH"] = f"{bin_dir}:$PATH"
 
         # Labels
         if self.__repo == "local":
