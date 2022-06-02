@@ -585,6 +585,9 @@ if local_args.mkl:
     Stage0 += packages(apt=["lib32stdc++6"], yum=["libstdc++.i686"])
     cmake_args.append("-DOGS_USE_MKL=ON")
 
+# Used to fix RPATH in petsc.so build as external dependency
+Stage0 += packages(ospackages=["patchelf"])
+
 if local_args.ccache:
     Stage0 += ccache(cache_size="15G")
 if local_args.ogs != "off" and local_args.ogs != "clean":
