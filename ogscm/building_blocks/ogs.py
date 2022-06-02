@@ -120,7 +120,7 @@ class ogs(bb_base, hpccm.templates.CMakeBuild, hpccm.templates.rm):
                 "-G Ninja",
                 "-DCMAKE_INSTALL_PREFIX={}".format(self.__prefix),
                 "-DOGS_CPU_ARCHITECTURE=OFF",  # optimization handled via --cpu-target argument
-                "-DOGS_INSTALL_EXTERNAL_DEPENDENCIES=ON",
+                "-DOGS_INSTALL_DEPENDENCIES=ON",
             ]
         )
 
