@@ -20,7 +20,7 @@ parse_g.add_argument(
 # Parse local args
 local_args = parser.parse_known_args()[0]
 
-if not local_args.runtime_base_image.startswith("jupyter/"):
+if not "jupyter/" in local_args.runtime_base_image:
     print(
         "The ogs_jupyter.py recipe requires a Jupyter base image for the "
         "runtime stage! E.g. --runtime_base_image jupyter/base-notebook"
