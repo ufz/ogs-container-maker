@@ -29,12 +29,14 @@ username = local_args.vscode_user
 id = 1000
 
 Stage0 += packages(ospackages=["sudo", "gdb"])
-Stage0 += shell(commands=[
-    f"groupadd --gid {id} {username}",
-    f"useradd --uid {id} --gid {id} -m {username}",
-    f"echo {username} ALL=\(root\) NOPASSWD:ALL > /etc/sudoers.d/{username}",
-    f"chmod 0440 /etc/sudoers.d/{username}"
-])
+Stage0 += shell(
+    commands=[
+        f"groupadd --gid {id} {username}",
+        f"useradd --uid {id} --gid {id} -m {username}",
+        f"echo {username} ALL=\(root\) NOPASSWD:ALL > /etc/sudoers.d/{username}",
+        f"chmod 0440 /etc/sudoers.d/{username}",
+    ]
+)
 
 Stage0 += raw(docker=f"USER {username}")
 

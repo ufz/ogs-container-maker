@@ -27,11 +27,13 @@ Stage0 += comment(f"Begin {filename}")
 
 Stage0 += shell(commands=["curl -fsSL https://deb.nodesource.com/setup_18.x | bash -"])
 Stage0 += packages(ospackages=["nodejs", "pandoc"])
-Stage0 += shell(commands=[
-    "npm install --global yarn",
-    "wget https://github.com/gohugoio/hugo/releases/download/v0.101.0/hugo_0.101.0_Linux-64bit.deb",
-    "dpkg -i hugo_0.101.0_Linux-64bit.deb",
-    "rm hugo_0.101.0_Linux-64bit.deb"
-])
+Stage0 += shell(
+    commands=[
+        "npm install --global yarn",
+        "wget https://github.com/gohugoio/hugo/releases/download/v0.101.0/hugo_0.101.0_Linux-64bit.deb",
+        "dpkg -i hugo_0.101.0_Linux-64bit.deb",
+        "rm hugo_0.101.0_Linux-64bit.deb",
+    ]
+)
 
 Stage0 += comment(f"--- End {filename} ---")
