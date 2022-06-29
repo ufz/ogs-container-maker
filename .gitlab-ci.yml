@@ -59,6 +59,7 @@ manual build:
   artifacts:
     paths:
       - _out/images/*.sif
+    expire_in: 1 week
   cache:
     paths:
       - .venv
