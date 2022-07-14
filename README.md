@@ -12,6 +12,9 @@ source ~/.venv/ogs-container-maker/bin/activate
 pip install ogscm
 ```
 
+If you build images with Docker (`--build`-parameter, see below) you need to make sure that you have [setup Docker to be runnable without `sudo`](https://docs.docker.com/engine/install/linux-postinstall/#manage-docker-as-a-non-root-user)!
+
+
 Apple ARM specific:
 
 ```bash
