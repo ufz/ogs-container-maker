@@ -546,6 +546,17 @@ if local_args.cppcheck:
 
 if local_args.docs:
     Stage0 += packages(ospackages=["doxygen", "graphviz", "texlive-base"])
+    Stage0 += pip(pip="pip3", packages=["lizard"])
+    Stage0 += generic_cmake(
+        directory=f"cpp-dependencies-master",
+        cmake_opts=["-DWITH_BOOST=OFF"],
+        ldconfig=True,
+        url=f"https://github.com/tomtom-international/cpp-dependencies/archive/refs/heads/master.zip",
+        prefix="/usr/local/cpp-dependencies",
+        runtime_environment={"PATH": "/usr/local/cpp-dependencies/bin:$PATH"},
+        devel_environment={"PATH": "/usr/local/cpp-dependencies/bin:$PATH"},
+        toolchain=toolchain,
+    )
 if local_args.gcovr:
     Stage0 += pip(pip="pip3", packages=["gcovr"])
 
