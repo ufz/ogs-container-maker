@@ -546,7 +546,7 @@ if local_args.cppcheck:
 
 if local_args.docs:
     Stage0 += packages(ospackages=["doxygen", "graphviz", "texlive-base"])
-    Stage0 += pip(pip="pip3", packages=["lizard"])
+    Stage0 += pip(pip="pip3", packages=["lizard", "pandas"])
     Stage0 += generic_cmake(
         directory=f"cpp-dependencies-master",
         cmake_opts=["-DWITH_BOOST=OFF"],
