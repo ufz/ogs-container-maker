@@ -453,7 +453,7 @@ if local_args.ogs != "clean":
                 edition="CATALYST",
                 ldconfig=True,
                 toolchain=toolchain,
-                version="v5.8.1",
+                version="v5.10.1",
             )
         else:
             vtk_version = versions["minimum_version"]["vtk"]
