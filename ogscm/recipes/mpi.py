@@ -160,7 +160,7 @@ else:
         disable_oshmem=True,
         disable_static=True,
         enable_mca_no_build="btl-uct",
-        with_slurm=False,
+        with_slurm=True,
     )
 toolchain = mpicc.toolchain
 Stage0 += mpicc
