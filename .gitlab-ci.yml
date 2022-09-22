@@ -8,11 +8,14 @@ variables:
   BUILDKIT_PROGRESS: "plain"
   CPU_TARGET: ivybridge
   OGSCM_ARGUMENTS:
-    value: "compiler.py ogs.py --ogs ogs/ogs@master --cmake_args ' -DOGS_CPU_ARCHITECTURE=OFF -DBUILD_TESTING=OFF'"
+    value: "compiler.py ogs.py --ogs ogs/ogs@master"
     description: "Arguments to ogscm. -B -C -R --ccache are always passed automatically. For more args see README.md!"
+  CMAKE_OPTIONS:
+    value: "-DOGS_CPU_ARCHITECTURE=OFF -DBUILD_TESTING=OFF"
+    description: "CMake options"
 
 dev images:
-  tags: ['envinf2-shell']
+  tags: ["envinf2-shell"]
   stage: build
   rules:
     - if: $CI_COMMIT_TAG
@@ -33,11 +36,11 @@ release:
   script:
     - echo 'Running release job.'
   release:
-    tag_name: '$CI_COMMIT_TAG'
-    description: 'Created using the GitLab release-cli.'
+    tag_name: "$CI_COMMIT_TAG"
+    description: "Created using the GitLab release-cli."
 
 publish:
-  tags: ['shell']
+  tags: ["shell"]
   stage: deploy
   rules:
     - if: $CI_COMMIT_TAG
@@ -47,7 +50,7 @@ publish:
     - poetry publish -u $PYPI_USERNAME -p $PYPI_PASSWORD
 
 manual build:
-  tags: ['envinf2-shell']
+  tags: ["envinf2-shell"]
   stage: build
   rules:
     - if: $CI_PIPELINE_SOURCE != "web"
@@ -55,7 +58,7 @@ manual build:
     - if: $CI_COMMIT_BRANCH
   script:
     - poetry install
-    - eval poetry run ogscm -B -C -R --ccache --cpu-target $CPU_TARGET $OGSCM_ARGUMENTS
+    - eval poetry run ogscm ${OGSCM_ARGUMENTS}  --cmake_args \" ${CMAKE_OPTIONS}\" -B -C -R --ccache --cpu-target ${CPU_TARGET}
   artifacts:
     paths:
       - _out/images/*.sif
