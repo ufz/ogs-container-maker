@@ -52,8 +52,9 @@ else:
     conda_packages.append("mesalib")
 conda_packages.append(f"vtk=*={vtk_rendering_backend}*")
 
-for package in versions["python"]["notebook_requirements"]:
-    pip_packages.append(package)
+if "notebook_requirements" in versions["python"]:
+    for package in versions["python"]["notebook_requirements"]:
+        pip_packages.append(package)
 
 pip_packages.sort()
 conda_packages.sort()
