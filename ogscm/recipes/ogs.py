@@ -494,6 +494,12 @@ if local_args.ogs != "clean":
                 toolchain=toolchain,
                 url=f"http://ftp.mcs.anl.gov/pub/petsc/release-snapshots/petsc-lite-{petsc_version}.tar.gz",
             )
+        # Needs to be after PETSc: superlu_dist does not work Ninja
+        Stage0 += environment(
+            variables={
+                "CMAKE_GENERATOR": "Ninja",
+            }
+        )
 
         eigen_version = versions["minimum_version"]["eigen"]
         Stage0 += generic_cmake(

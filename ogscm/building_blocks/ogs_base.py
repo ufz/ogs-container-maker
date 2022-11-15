@@ -41,11 +41,6 @@ class ogs_base(bb_base):
         self += pip(pip="pip3", packages=["virtualenv", "pre-commit", "cmake-format"])
         self += packages(ospackages=self.__ospackages, epel=True)
         self += shell(commands=self.__commands)
-        self += environment(
-            variables={
-                "CMAKE_GENERATOR": "Ninja",
-            }
-        )
 
     def __setup(self):
         self.__ospackages.extend(["git"])
