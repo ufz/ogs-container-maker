@@ -81,7 +81,7 @@ python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*"
 
 [[package]]
 name = "hpccm"
-version = "22.8.0"
+version = "22.10.0"
 description = "HPC Container Maker"
 category = "main"
 optional = false
@@ -248,7 +248,7 @@ testing = ["func-timeout", "jaraco.itertools", "pytest (>=6)", "pytest-black (>=
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.7"
-content-hash = "28d6f2d1d9ad63bb8063a6826ddd07c1fdf091384317b11a34eb947950738865"
+content-hash = "525f8b374482f9947401254697a560cf13cc054e91a2658063ea35f480eb3680"
 
 [metadata.files]
 appdirs = [
@@ -279,8 +279,8 @@ colorama = [
     {file = "colorama-0.4.5.tar.gz", hash = "sha256:e6c6b4334fc50988a639d9b98aa429a0b57da6e17b9a44f0451f930b6967b7a4"},
 ]
 hpccm = [
-    {file = "hpccm-22.8.0-py2.py3-none-any.whl", hash = "sha256:381b7448337ec92f5db3d89b9ff44af77548940371a17c15661ccb81ae98720d"},
-    {file = "hpccm-22.8.0.tar.gz", hash = "sha256:aea3a772ca0506ec3b034c589837862babab17af7eb627ccffb05cd5d89b0492"},
+    {file = "hpccm-22.10.0-py2.py3-none-any.whl", hash = "sha256:fde3ac9f07ea3ede2af98ec99381cd4adf2f12424b72eccbd72bc36cae95ee18"},
+    {file = "hpccm-22.10.0.tar.gz", hash = "sha256:5b9c2e58e123a3c259be4cefbc99735982846f709bc497b92d386c09f062dcae"},
 ]
 idna = [
     {file = "idna-3.4-py3-none-any.whl", hash = "sha256:90b77e79eaa3eba6de819a0c442c0b4ceefc341a7a2ab77d7562bf49f425c5c2"},
