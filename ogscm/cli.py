@@ -210,7 +210,7 @@ def main():  # pragma: no cover
         Stage1.baseimage(image=args.base_image)
     else:
         Stage1.baseimage(image=args.runtime_base_image)
-        if "jupyter/base-notebook" in args.runtime_base_image:
+        if "jupyter/base-notebook-ubuntu" in args.runtime_base_image:
             Stage1 += raw(docker="USER root")
 
     cwd = os.getcwd()
@@ -309,7 +309,7 @@ def main():  # pragma: no cover
             and args.compiler_version != None
         ):
             Stage1 += packages(apt=["libstdc++6"])
-        if "jupyter/base-notebook" in args.runtime_base_image:
+        if "jupyter/base-notebook-ubuntu" in args.runtime_base_image:
             Stage1 += raw(docker="USER ${NB_USER}")
         stages_string += "\n\n" + str(Stage1)
 
