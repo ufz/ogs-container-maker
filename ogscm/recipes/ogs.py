@@ -645,5 +645,6 @@ if local_args.ogs != "off" and local_args.ogs != "clean":
 
 # Required for vtk from Python (for notebooks, VTUInterface)
 # https://github.com/Kaggle/docker-python/pull/358
-Stage0 += packages(apt=["libgl1"], yum=["mesa-libGL"])
-Stage1 += packages(apt=["libgl1"], yum=["mesa-libGL"])
+# xvfb for PyVista
+Stage0 += packages(apt=["libgl1", "xvfb"], yum=["mesa-libGL", "xorg-x11-server-Xvfb"])
+Stage1 += packages(apt=["libgl1", "xvfb"], yum=["mesa-libGL", "xorg-x11-server-Xvfb"])
