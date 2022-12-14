@@ -647,10 +647,10 @@ if local_args.ogs != "off" and local_args.ogs != "clean":
 # https://github.com/Kaggle/docker-python/pull/358
 # xvfb for PyVista
 Stage0 += packages(
-    apt=["libgl1", "xvfb", "libglu1-mesa"],
+    apt=["libgl1", "xvfb", "libgl1-mesa-glx", "libglu1-mesa"],
     yum=["mesa-libGL", "xorg-x11-server-Xvfb", "mesa-libGLU"],
 )
 Stage1 += packages(
-    apt=["libgl1", "xvfb", "libglu1-mesa"],
+    apt=["libgl1", "xvfb", "libgl1-mesa-glx", "libglu1-mesa"],
     yum=["mesa-libGL", "xorg-x11-server-Xvfb", "mesa-libGLU"],
 )
