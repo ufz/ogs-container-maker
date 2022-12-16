@@ -460,11 +460,11 @@ if local_args.ogs != "clean":
             Stage0 += generic_cmake(
                 cmake_opts=vtk_cmake_args,
                 devel_environment={"VTK_ROOT": "/usr/local/vtk"},
-                directory=f"VTK-{vtk_version}",
+                directory=f"vtk-v{vtk_version}",
                 ldconfig=True,
                 prefix="/usr/local/vtk",
                 toolchain=toolchain,
-                url=f"https://www.vtk.org/files/release/{vtk_version[:-2]}/VTK-{vtk_version}.tar.gz",
+                url=f"https://gitlab.kitware.com/vtk/vtk/-/archive/v{vtk_version}/vtk-v{vtk_version}.tar.gz",
             )
         if toolchain.CC == "mpicc":
             Stage0 += packages(yum=["diffutils"])
