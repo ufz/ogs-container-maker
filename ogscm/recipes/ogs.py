@@ -551,7 +551,15 @@ if local_args.cppcheck:
     )
 
 if local_args.docs:
-    Stage0 += packages(ospackages=["doxygen", "graphviz", "texlive-base"])
+    Stage0 += packages(ospackages=["graphviz", "texlive-base"])
+    # doxygen package is out-dated, install Doxygen from binary
+    Stage0 += shell(
+        chdir="/tmp",
+        commands=[
+            "wget https://www.doxygen.nl/files/doxygen-1.9.6.linux.bin.tar.gz",
+            "tar xf doxygen-1.9.6.linux.bin.tar.gz -C /usr/local --strip-components=1",
+        ],
+    )
     Stage0 += pip(pip="pip3", packages=["lizard", "pandas"])
     Stage0 += generic_cmake(
         directory=f"cpp-dependencies-master",
