@@ -191,7 +191,7 @@ def main():  # pragma: no cover
 
     hpccm.config.set_cpu_target(args.cpu_target)
     Stage0 = hpccm.Stage()
-    Stage0 += raw(docker="# syntax=docker/dockerfile:experimental")
+    Stage0 += raw(docker="# syntax=docker/dockerfile:1.4")
 
     if args.runtime_only:
         Stage0.name = "build"
