@@ -19,7 +19,6 @@ import shutil
 
 
 def main():  # pragma: no cover
-
     recipe_args_parser = argparse.ArgumentParser(add_help=False)
     parser = argparse.ArgumentParser(add_help=False)
     recipe_args_parser.add_argument("recipe", nargs="+")
