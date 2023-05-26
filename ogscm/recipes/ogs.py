@@ -323,6 +323,12 @@ versions_master = json.loads(
     ).text
 )
 
+if local_args.mkl:
+    Stage0 += mkl(eula=True, mklvars=False)
+    # For 32-bit mkl_link_tool:
+    Stage0 += packages(apt=["lib32stdc++6"], yum=["libstdc++.i686"])
+    cmake_args.append("-DOGS_USE_MKL=ON")
+
 if local_args.ogs != "clean":
     cmake_version = versions_master["tested_version"]["cmake"]
     if "cmake" in versions["tested_version"]:
@@ -603,12 +609,6 @@ if local_args.mfront and local_args.pm == "system":
     Stage0 += tfel_env
     Stage1 += tfel_env
     cmake_args.append("-DOGS_USE_MFRONT=ON")
-
-if local_args.mkl:
-    Stage0 += mkl(eula=True, mklvars=False)
-    # For 32-bit mkl_link_tool:
-    Stage0 += packages(apt=["lib32stdc++6"], yum=["libstdc++.i686"])
-    cmake_args.append("-DOGS_USE_MKL=ON")
 
 # Used to fix RPATH in petsc.so build as external dependency
 Stage0 += packages(ospackages=["patchelf"])
