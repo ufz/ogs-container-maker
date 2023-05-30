@@ -41,9 +41,7 @@ conda_packages = []
 for package in versions["python"]["jupyter_image"]["conda_packages"]:
     conda_packages.append(package)
 
-pip_packages = []
-for package in versions["python"]["jupyter_image"]["pip_packages"]:
-    pip_packages.append(package)
+pip_packages = pip_requirements
 
 vtk_rendering_backend = "osmesa"
 if local_args.pyvista_gpu:

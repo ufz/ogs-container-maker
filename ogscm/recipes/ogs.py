@@ -189,6 +189,8 @@ if local_args.ogs not in ["off", "clean"]:  # != "off" and local_args.ogs != "cl
         ).stdout.rstrip()
         with open(f"{local_args.ogs}/web/data/versions.json") as fp:
             versions = json.load(fp)
+        with open(f"{local_args.ogs}/Tests/Data/requirements.txt") as fp:
+            pip_requirements = fp.readlines()
         if "GITLAB_CI" in os.environ:
             if "CI_COMMIT_TAG" in os.environ:
                 branch = "master"
@@ -227,6 +229,9 @@ if local_args.ogs not in ["off", "clean"]:  # != "off" and local_args.ogs != "cl
                     f"https://gitlab.opengeosys.org/{repo}/-/raw/{commit_hash}/web/data/versions.json"
                 ).text
             )
+            pip_requirements = requests.get(
+                f"https://gitlab.opengeosys.org/{repo}/-/raw/{commit_hash}/Tests/Data/requirements.txt"
+            ).text
         else:
             if re.search(r"[\d.]+", branch):
                 branch_is_release = True
@@ -242,6 +247,9 @@ if local_args.ogs not in ["off", "clean"]:  # != "off" and local_args.ogs != "cl
                     f"https://gitlab.opengeosys.org/{repo}/-/raw/{branch}/web/data/versions.json"
                 ).text
             )
+            pip_requirements = requests.get(
+                f"https://gitlab.opengeosys.org/{repo}/-/raw/{branch}/Tests/Data/requirements.txt"
+            ).text
 
         if branch_is_release:
             name_start = f"ogs-{branch}"
