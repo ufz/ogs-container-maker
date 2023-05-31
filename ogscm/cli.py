@@ -217,7 +217,7 @@ def main():  # pragma: no cover
     out_dir = f"{args.out}/{args.format}"
     toolchain = None
     versions = None  # versions.json
-    pip_requirements = None
+    pip_requirements = []
 
     for recipe in recipe_args_parser.parse_known_args()[0].recipe:
         import importlib.resources as pkg_resources
