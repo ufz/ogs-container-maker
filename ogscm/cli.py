@@ -250,6 +250,8 @@ def main():  # pragma: no cover
         img_file = ldict["img_file"]
         if "versions" in ldict:
             versions = ldict["versions"]
+        if "pip_requirements" in ldict:
+            pip_requirements = ldict["pip_requirements"]
 
     # Workaround to get the full help message
     help_parser = argparse.ArgumentParser(
