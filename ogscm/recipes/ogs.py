@@ -428,10 +428,11 @@ if local_args.ogs != "clean":
             qt_install_dir = "/opt/qt"
             qt_version = versions["minimum_version"]["qt"]
             qt_dir = f"{qt_install_dir}/{qt_version}/gcc_64"
-            Stage0 += pip(pip="pip3", packages=["aqtinstall==1.2.5"])
+            Stage0 += pip(pip="pip3", packages=["aqtinstall==3.1.6"])
             Stage0 += shell(
                 commands=[
-                    f"aqt install --outputdir {qt_install_dir} {qt_version} linux desktop -m xmlpatterns,x11extras"
+                    f"aqt install-qt --outputdir {qt_install_dir} linux desktop {qt_version} gcc_64",
+                    f"aqt install-qt --outputdir {qt_install_dir} linux desktop {qt_version} gcc_64 --archives qtxmlpatterns qtx11extras"
                 ]
             )
             Stage1 += copy(_from="0", src=qt_install_dir, dest=qt_install_dir)
