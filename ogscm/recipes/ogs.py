@@ -432,7 +432,7 @@ if local_args.ogs != "clean":
             Stage0 += shell(
                 commands=[
                     f"aqt install-qt --outputdir {qt_install_dir} linux desktop {qt_version} gcc_64",
-                    f"aqt install-qt --outputdir {qt_install_dir} linux desktop {qt_version} gcc_64 --archives qtxmlpatterns qtx11extras"
+                    f"aqt install-qt --outputdir {qt_install_dir} linux desktop {qt_version} gcc_64 --archives qtxmlpatterns qtx11extras",
                 ]
             )
             Stage1 += copy(_from="0", src=qt_install_dir, dest=qt_install_dir)

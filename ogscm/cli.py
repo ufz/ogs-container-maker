@@ -10,7 +10,7 @@ from hpccm.building_blocks import (
     packages,
     pip,
 )
-from hpccm.primitives import baseimage, comment, raw, shell
+from hpccm.primitives import baseimage, comment, environment, raw, shell
 
 from ogscm.version import __version__
 from ogscm.app import builder
@@ -293,6 +293,18 @@ def main():  # pragma: no cover
     if args.pip:
         Stage0 += pip(packages=args.pip, pip="pip3")
         Stage1 += pip(packages=args.pip, pip="pip3")
+
+    # set timezone
+    packages_tz = packages(ospackages=["tzdata"])
+    env_tz = environment(variables={"TZ": "Europe/Berlin"})
+    shell_tz = shell(
+        commands=[
+            "ln -snf /usr/share/zoneinfo/$TZ /etc/localtime",
+            "dpkg-reconfigure -f noninteractive tzdata",
+        ]
+    )
+    Stage0 += [packages_tz, env_tz, shell_tz]
+    Stage1 += [packages_tz, env_tz, shell_tz]
 
     # Create definition
     hpccm.config.set_container_format(args.format)
