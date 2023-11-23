@@ -9,7 +9,7 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.7"
-hpccm = "^22.10.0"
+hpccm = "^23.11.0"
 requests = "^2.24.0"
 PyYAML = "^6.0"
 packaging = "^20.4"
