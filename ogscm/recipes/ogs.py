@@ -576,11 +576,12 @@ if local_args.docs:
         ],
     )
     Stage0 += pip(pip="pip3", packages=["lizard", "pandas"])
+    cpp_dep_commit = "17ea25894333813fa4798b40f82d381cefcad0b8"
     Stage0 += generic_cmake(
-        directory=f"cpp-dependencies-master",
+        directory=f"cpp-dependencies-{cpp_dep_commit}",
         cmake_opts=["-DWITH_BOOST=OFF"],
         ldconfig=True,
-        url=f"https://github.com/tomtom-international/cpp-dependencies/archive/refs/heads/master.zip",
+        url=f"https://github.com/tomtom-international/cpp-dependencies/archive/{cpp_dep_commit}.zip",
         prefix="/usr/local/cpp-dependencies",
         runtime_environment={"PATH": "/usr/local/cpp-dependencies/bin:$PATH"},
         devel_environment={"PATH": "/usr/local/cpp-dependencies/bin:$PATH"},
