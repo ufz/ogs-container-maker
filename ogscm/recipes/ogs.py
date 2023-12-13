@@ -620,8 +620,9 @@ if local_args.mfront and local_args.pm == "system":
     Stage1 += tfel_env
     cmake_args.append("-DOGS_USE_MFRONT=ON")
 
-# Used to fix RPATH in petsc.so build as external dependency
-Stage0 += packages(ospackages=["patchelf"])
+# patchelf used to fix RPATH in petsc.so build as external dependency
+# pkg-config for PETSc finding
+Stage0 += packages(ospackages=["patchelf", "pkg-config"])
 
 if local_args.ccache:
     Stage0 += ccache(cache_size="15G")
