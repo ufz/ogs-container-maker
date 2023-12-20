@@ -14,7 +14,6 @@ pip install ogscm
 
 If you build images with Docker (`--build`-parameter, see below) you need to make sure that you have [setup Docker to be runnable without `sudo`](https://docs.docker.com/engine/install/linux-postinstall/#manage-docker-as-a-non-root-user)!
 
-
 Apple ARM specific:
 
 ```bash
@@ -208,7 +207,7 @@ ogs.py:
   --dev                 Installs development tools (vim, gdb) (default: False)
   --mkl                 Use MKL. By setting this option, you agree to the [Intel End User License Agreement](https://software.intel.com/en-us/articles/end-user-license-agreement). (default: False)
   --petsc_configure_args PETSC_CONFIGURE_ARGS
-                        PETSc configuration arguments; has to be quoted. (default: --with-fc=0 --download-f2cblaslapack=1)
+                        PETSc configuration arguments; has to be quoted. (default: --with-fc=0)
   --version_file VERSION_FILE
                         OGS versions.json file (default: None)
   --boost-sourceforge   Boolean flag to specify whether Boost should be downloaded from SourceForge rather than the current Boost repository. (default: False)
@@ -236,7 +235,6 @@ ogscm compiler.py ogs.py -B -C -R --ogs [path to ogs sources]
 - Rename the file `config/deploy_hosts_example.yml` to `config/deploy_hosts.yml`
 - `host` has to be a SSH host to which you have passwordless access
 - Deploy to the host with `... -D myhost`
-
 
 ## PyPi Publication
 
