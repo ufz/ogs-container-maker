@@ -501,7 +501,7 @@ if local_args.ogs != "clean":
             petsc_configure_opts.extend(petsc_args)
             Stage0 += generic_autotools(
                 configure_opts=petsc_configure_opts,
-                devel_environment={"PETSC_DIR": "/usr/local/petsc"},
+                devel_environment={"CMAKE_PREFIX_PATH": "/usr/local/petsc"},
                 directory=f"petsc-{petsc_version}",
                 ldconfig=True,
                 preconfigure=["sed -i -- 's/python/python3/g' configure"],
@@ -620,7 +620,7 @@ if local_args.mfront and local_args.pm == "system":
     Stage1 += tfel_env
     cmake_args.append("-DOGS_USE_MFRONT=ON")
 
-# patchelf used to fix RPATH in petsc.so build as external dependency
+# Used to fix RPATH in petsc.so build as external dependency
 # pkg-config for PETSc finding
 Stage0 += packages(ospackages=["patchelf", "pkg-config"])
 
