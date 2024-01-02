@@ -497,20 +497,14 @@ if local_args.ogs != "clean":
                 "--CXXFLAGS='-O3'",
                 "--FFLAGS='-O3'",
                 "--with-debugging=no",
-                "--download-f2cblaslapack=./f2cblaslapack-3.4.2.q4.tar.gz",
+                "--download-f2cblaslapack=1",
             ]
-            # TODO: remove last line and wget in preconfigure when upgrading
-            # to PETSc > 3.18
             petsc_configure_opts.extend(petsc_args)
             Stage0 += generic_autotools(
                 configure_opts=petsc_configure_opts,
                 devel_environment={"CMAKE_PREFIX_PATH": "/usr/local/petsc"},
                 directory=f"petsc-{petsc_version}",
                 ldconfig=True,
-                preconfigure=[
-                    "wget http://ftp.mcs.anl.gov/pub/petsc/externalpackages/f2cblaslapack-3.4.2.q4.tar.gz",
-                    "sed -i -- 's/python/python3/g' configure",
-                ],
                 prefix="/usr/local/petsc",
                 toolchain=toolchain,
                 url=f"http://ftp.mcs.anl.gov/pub/petsc/release-snapshots/petsc-lite-{petsc_version}.tar.gz",
