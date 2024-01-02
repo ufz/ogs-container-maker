@@ -37,6 +37,22 @@ dev images:
     - poetry run ogscm compiler.py ogs.py -B --ogs off --cpu-target $CPU_TARGET
     - poetry run ogscm compiler.py ogs.py ogs_jupyter.py -B -R --build_args ' --progress=plain' --cvode --ccache --cpmcache --mfront --cpu-target $CPU_TARGET --cmake_args ' -DOGS_CPU_ARCHITECTURE=OFF -DOGS_BUILD_TESTING=OFF -DOGS_BUILD_PROCESSES=SteadyStateDiffusion' --runtime_base_image 'registry.opengeosys.org/ogs/ogs/jupyter/base-notebook-ubuntu:22.04_3.10'
 
+build ogs:
+  tags: ["envinf23", "shell"]
+  stage: build
+  rules:
+    - if: $CI_COMMIT_TAG
+      when: never
+    - if: $CI_PIPELINE_SOURCE == "web"
+      when: never
+    - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
+  script:
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - black --check ogscm
+    - poetry install
+    - poetry run ogscm compiler.py mpi.py ogs.py -B --ogs ogs/ogs@master --build_args ' --progress=plain' --cvode --ccache --cpmcache --mfront --mkl --cmake_args ' -DOGS_BUILD_PROCESSES=SteadyStateDiffusion'
+    - poetry run ogscm compiler.py mpi.py ogs.py -B --ogs ogs/ogs@master --build_args ' --progress=plain' --cvode --ccache --cpmcache --mfront --pm off --cmake_args ' -DOGS_BUILD_PROCESSES=SteadyStateDiffusion'
+
 release:
   stage: release
   image: registry.gitlab.com/gitlab-org/release-cli:latest
