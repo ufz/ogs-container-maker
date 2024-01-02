@@ -13,7 +13,6 @@ from hpccm.building_blocks import (
     generic_autotools,
     generic_cmake,
     hdf5,
-    mkl,
     packages,
     pip,
 )
@@ -332,9 +331,22 @@ versions_master = json.loads(
 )
 
 if local_args.mkl:
-    Stage0 += mkl(eula=True, mklvars=False)
-    # For 32-bit mkl_link_tool:
-    Stage0 += packages(apt=["lib32stdc++6"], yum=["libstdc++.i686"])
+    Stage0 += packages(ospackages=["ca-certificates", "gnupg", "wget"])
+    mkl_version = "2021.4.0"
+    Stage0 += packages(
+        apt_keys=[
+            "https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS-2023.PUB"
+        ],
+        apt_repositories=["deb https://apt.repos.intel.com/oneapi all main"],
+        ospackages=[f"intel-oneapi-mkl-devel-{mkl_version}"],
+    )
+    Stage1 += packages(
+        apt_keys=[
+            "https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS-2023.PUB"
+        ],
+        apt_repositories=["deb https://apt.repos.intel.com/oneapi all main"],
+        ospackages=[f"intel-oneapi-mkl-{mkl_version}"],
+    )
     cmake_args.append("-DOGS_USE_MKL=ON")
 
 if local_args.ogs != "clean":
@@ -497,20 +509,14 @@ if local_args.ogs != "clean":
                 "--CXXFLAGS='-O3'",
                 "--FFLAGS='-O3'",
                 "--with-debugging=no",
-                "--download-f2cblaslapack=./f2cblaslapack-3.4.2.q4.tar.gz",
+                "--download-f2cblaslapack=1",
             ]
-            # TODO: remove last line and wget in preconfigure when upgrading
-            # to PETSc > 3.18
             petsc_configure_opts.extend(petsc_args)
             Stage0 += generic_autotools(
                 configure_opts=petsc_configure_opts,
                 devel_environment={"CMAKE_PREFIX_PATH": "/usr/local/petsc"},
                 directory=f"petsc-{petsc_version}",
                 ldconfig=True,
-                preconfigure=[
-                    "wget http://ftp.mcs.anl.gov/pub/petsc/externalpackages/f2cblaslapack-3.4.2.q4.tar.gz",
-                    "sed -i -- 's/python/python3/g' configure",
-                ],
                 prefix="/usr/local/petsc",
                 toolchain=toolchain,
                 url=f"http://ftp.mcs.anl.gov/pub/petsc/release-snapshots/petsc-lite-{petsc_version}.tar.gz",

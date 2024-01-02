@@ -136,6 +136,8 @@ class ogs(bb_base, hpccm.templates.CMakeBuild, hpccm.templates.rm):
         )
 
         # Configure and build
+        if "-DOGS_USE_MKL=ON" in self.__cmake_args:
+            self.__commands.append(". /opt/intel/oneapi/setvars.sh")
         self.__commands.append(
             self.configure_step(
                 directory="{}/src".format(self.__prefix),
