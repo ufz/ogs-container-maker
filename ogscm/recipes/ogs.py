@@ -13,7 +13,6 @@ from hpccm.building_blocks import (
     generic_autotools,
     generic_cmake,
     hdf5,
-    mkl,
     packages,
     pip,
 )
@@ -332,9 +331,22 @@ versions_master = json.loads(
 )
 
 if local_args.mkl:
-    Stage0 += mkl(eula=True, mklvars=False)
-    # For 32-bit mkl_link_tool:
-    Stage0 += packages(apt=["lib32stdc++6"], yum=["libstdc++.i686"])
+    Stage0 += packages(ospackages=["ca-certificates", "gnupg", "wget"])
+    mkl_version = "2021.4.0"
+    Stage0 += packages(
+        apt_keys=[
+            "https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS-2023.PUB"
+        ],
+        apt_repositories=["deb https://apt.repos.intel.com/oneapi all main"],
+        ospackages=[f"intel-oneapi-mkl-devel-{mkl_version}"],
+    )
+    Stage1 += packages(
+        apt_keys=[
+            "https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS-2023.PUB"
+        ],
+        apt_repositories=["deb https://apt.repos.intel.com/oneapi all main"],
+        ospackages=[f"intel-oneapi-mkl-{mkl_version}"],
+    )
     cmake_args.append("-DOGS_USE_MKL=ON")
 
 if local_args.ogs != "clean":
