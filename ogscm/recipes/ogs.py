@@ -408,6 +408,7 @@ if local_args.ogs != "clean":
 
         if local_args.netcdf:
             Stage0 += packages(apt=["libnetcdf-c++4-dev"])
+            Stage1 += packages(apt=["libnetcdf-c++4"])
 
         if local_args.gui:
             Stage0 += packages(
@@ -563,6 +564,7 @@ if local_args.ogs != "clean":
 
     if local_args.pm == "off" and local_args.netcdf:
         Stage0 += packages(apt=["libnetcdf-dev"])
+        Stage1 += packages(apt=["libnetcdf"])
 
 if local_args.cvode:
     # TODO version
