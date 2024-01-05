@@ -133,6 +133,12 @@ parse_g.add_argument(
     action="store_true",
     help="Use MKL. By setting this option, you agree to the [Intel End User License Agreement](https://software.intel.com/en-us/articles/end-user-license-agreement).",
 )
+parse_g.add_argument(
+    "--netcdf",
+    dest="netcdf",
+    action="store_true",
+    help="Install netcdf and build OGS with -DOGS_USE_NETCDF=ON",
+)
 if toolchain.CC == "mpicc":
     parse_g.add_argument(
         "--petsc_configure_args",
@@ -400,6 +406,9 @@ if local_args.ogs != "clean":
                     ]
                 )
 
+        if local_args.netcdf:
+            Stage0 += packages(apt=["libnetcdf-c++4-dev"])
+
         if local_args.gui:
             Stage0 += packages(
                 apt=[
@@ -551,6 +560,10 @@ if local_args.ogs != "clean":
             toolchain=toolchain,
             version=hdf5_version,
         )
+
+    if local_args.pm == "off" and local_args.netcdf:
+        Stage0 += packages(apt=["libnetcdf-dev"])
+
 if local_args.cvode:
     # TODO version
     Stage0 += generic_cmake(
@@ -651,6 +664,8 @@ if local_args.ogs != "off" and local_args.ogs != "clean":
         cmake_args.append("-DOGS_BUILD_GUI=ON")
     if local_args.insitu:
         cmake_args.append("-DOGS_INSITU=ON")
+    if local_args.netcdf:
+        cmake_args.append("-DOGS_USE_NETCDF=ON")
 
     Stage0 += raw(docker=f"ARG OGS_COMMIT_HASH={commit_hash}")
 
