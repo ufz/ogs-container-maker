@@ -48,7 +48,7 @@ def main():  # pragma: no cover
     general_g.add_argument(
         "--base_image",
         type=str,
-        default="ubuntu:22.04",
+        default="ubuntu:23.04",
         help="The base image.",
     )
     general_g.add_argument(

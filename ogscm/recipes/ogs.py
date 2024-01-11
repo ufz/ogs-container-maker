@@ -371,7 +371,7 @@ if local_args.ogs != "clean":
                 bootstrap_opts=boost_bootsrap_opts,
                 ldconfig=True,
                 sourceforge=local_args.boost_sourceforge,
-                version="1.75.0",  # versions["minimum_version"]["boost"], # is too old for gcc 11
+                version="1.78.0",  # versions["minimum_version"]["boost"], # is too old for gcc 12
             )
             Stage0 += environment(variables={"BOOST_ROOT": "/usr/local/boost"})
         Stage0 += packages(
@@ -450,7 +450,9 @@ if local_args.ogs != "clean":
             qt_install_dir = "/opt/qt"
             qt_version = versions["minimum_version"]["qt"]
             qt_dir = f"{qt_install_dir}/{qt_version}/gcc_64"
-            Stage0 += pip(pip="pip3", packages=["aqtinstall==3.1.6"])
+            Stage0 += shell(
+                commands=["pip3 install --break-system-packages aqtinstall==3.1.6"]
+            )
             Stage0 += shell(
                 commands=[
                     f"aqt install-qt --outputdir {qt_install_dir} linux desktop {qt_version} gcc_64",
@@ -600,9 +602,11 @@ if local_args.docs:
         commands=[
             "wget https://www.doxygen.nl/files/doxygen-1.9.6.linux.bin.tar.gz",
             "tar xf doxygen-1.9.6.linux.bin.tar.gz -C /usr/local --strip-components=1",
+            "pip3 install --break-system-packages lizard",
         ],
     )
-    Stage0 += pip(pip="pip3", packages=["lizard", "pandas"])
+    Stage0 += packages(ospackages=["python3-pandas"])
+
     cpp_dep_commit = "17ea25894333813fa4798b40f82d381cefcad0b8"
     Stage0 += generic_cmake(
         directory=f"cpp-dependencies-{cpp_dep_commit}",
@@ -615,7 +619,7 @@ if local_args.docs:
         toolchain=toolchain,
     )
 if local_args.gcovr:
-    Stage0 += pip(pip="pip3", packages=["gcovr"])
+    Stage0 += shell(commands=["pip3 install --break-system-packages gcovr"])
 
 if local_args.dev:
     Stage0 += packages(

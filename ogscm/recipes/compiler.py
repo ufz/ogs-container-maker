@@ -33,13 +33,7 @@ parse_g.add_argument(
 local_args = parser.parse_known_args()[0]
 
 if local_args.compiler_version == "":
-    if local_args.compiler == "clang":
-        local_args.compiler_version = "11"
-    else:
-        if hpccm.config.g_linux_distro == linux_distro.CENTOS:
-            local_args.compiler_version = "10"  # required for std::filesystem
-        else:
-            local_args.compiler_version = None  # Use default
+    local_args.compiler_version = None  # Use default
 
 # set image file name
 compiler_version_string = local_args.compiler_version

@@ -38,7 +38,10 @@ class ogs_base(bb_base):
         """String representation of the building block"""
         self += comment(__doc__, reformat=False)
         self += python(devel=True, python2=False)
-        self += pip(pip="pip3", packages=["virtualenv", "pre-commit", "cmake-format"])
+        self += packages(ospackages=["python3-pip", "python3-virtualenv"])
+        self += shell(
+            commands=["pip3 install --break-system-packages pre-commit cmake-format"]
+        )
         self += packages(ospackages=self.__ospackages, epel=True)
         self += shell(commands=self.__commands)
 
