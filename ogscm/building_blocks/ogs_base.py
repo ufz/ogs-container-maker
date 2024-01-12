@@ -87,7 +87,7 @@ class ogs_base(bb_base):
         instructions = [
             comment(__doc__, reformat=False),
             python(devel=True, python2=False).runtime(),
-            pip(pip="pip3", packages=["virtualenv"]),
+            packages(ospackages=["python3-virtualenv"]),
             shell(commands=["mkdir -p /apps /scratch /lustre /work /projects"]),
         ]
 

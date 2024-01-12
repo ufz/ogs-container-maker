@@ -26,7 +26,7 @@ out_dir += f"/vscode"
 Stage0 += comment(f"Begin {filename}")
 
 username = local_args.vscode_user
-id = 1000
+id = 1001
 
 Stage0 += packages(ospackages=["sudo", "gdb"])
 Stage0 += shell(
