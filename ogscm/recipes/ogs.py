@@ -338,6 +338,7 @@ versions_master = json.loads(
 
 if local_args.mkl:
     Stage0 += packages(ospackages=["ca-certificates", "gnupg", "wget"])
+    Stage1 += packages(ospackages=["ca-certificates", "gnupg", "wget"])
     mkl_version = "2021.4.0"
     Stage0 += packages(
         apt_keys=[
@@ -353,6 +354,13 @@ if local_args.mkl:
         apt_repositories=["deb https://apt.repos.intel.com/oneapi all main"],
         ospackages=[f"intel-oneapi-mkl-{mkl_version}"],
     )
+    mkl_env = environment(
+        variables={
+            "LD_LIBRARY_PATH": f"/opt/intel/oneapi/tbb/{mkl_version}/env/../lib/intel64/gcc4.8:/opt/intel/oneapi/mkl/{mkl_version}/lib/intel64:/opt/intel/oneapi/compiler/{mkl_version}/linux/lib:/opt/intel/oneapi/compiler/{mkl_version}/linux/lib/x64:/opt/intel/oneapi/compiler/{mkl_version}/linux/lib/emu:/opt/intel/oneapi/compiler/{mkl_version}/linux/compiler/lib/intel64_lin:$LD_LIBRARY_PATH"
+        }
+    )
+    Stage0 += mkl_env
+    Stage1 += mkl_env
     cmake_args.append("-DOGS_USE_MKL=ON")
 
 if local_args.ogs != "clean":
