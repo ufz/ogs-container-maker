@@ -529,9 +529,14 @@ if local_args.ogs != "clean":
                 "--CXXFLAGS='-O3'",
                 "--FFLAGS='-O3'",
                 "--with-debugging=no",
-                "--download-f2cblaslapack=1",
             ]
             petsc_configure_opts.extend(petsc_args)
+            if "--download-f2cblaslapack" not in local_args.petsc_configure_args:
+                petsc_configure_opts.extend(
+                    [
+                        "--download-f2cblaslapack=1",
+                    ]
+                )
             Stage0 += generic_autotools(
                 configure_opts=petsc_configure_opts,
                 devel_environment={"CMAKE_PREFIX_PATH": "/usr/local/petsc"},
