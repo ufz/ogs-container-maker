@@ -35,7 +35,7 @@ dev images:
     - black --diff --check ogscm
     - poetry install
     - poetry run ogscm compiler.py ogs.py -B --ogs off --cpu-target $CPU_TARGET
-    - poetry run ogscm compiler.py ogs.py ogs_jupyter.py -B -R --build_args ' --progress=plain' --cvode --ccache --cpmcache --mfront --cpu-target $CPU_TARGET --cmake_args ' -DOGS_CPU_ARCHITECTURE=OFF -DOGS_BUILD_TESTING=OFF -DOGS_BUILD_PROCESSES=SteadyStateDiffusion' --runtime_base_image 'registry.opengeosys.org/ogs/ogs/jupyter/base-notebook-ubuntu:22.04_3.10'
+    - poetry run ogscm compiler.py ogs.py ogs_jupyter.py -B -R --build_args ' --progress=plain' --cvode --ccache --cpmcache --mfront --cpu-target $CPU_TARGET --cmake_args ' -DOGS_CPU_ARCHITECTURE=OFF -DOGS_BUILD_TESTING=OFF -DOGS_BUILD_PROCESSES=SteadyStateDiffusion' --runtime_base_image 'registry.opengeosys.org/ogs/ogs/jupyter/base-notebook-ubuntu:23.04_3.10'
 
 build ogs:
   tags: ["envinf23", "shell"]
