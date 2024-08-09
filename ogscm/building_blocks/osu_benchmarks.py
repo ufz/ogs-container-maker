@@ -103,10 +103,10 @@ class osu_benchmarks(
 
         # Environment
         libexec_path = "{0}/libexec/osu-micro-benchmarks/mpi".format(self.prefix)
-        self.__environment_variables[
-            "PATH"
-        ] = "{0}/collective:{0}/one-sided:{0}/pt2pt:{0}/startup::$PATH".format(
-            libexec_path
+        self.__environment_variables["PATH"] = (
+            "{0}/collective:{0}/one-sided:{0}/pt2pt:{0}/startup::$PATH".format(
+                libexec_path
+            )
         )
 
         # Labels

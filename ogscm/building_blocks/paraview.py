@@ -126,9 +126,9 @@ class paraview(
             if self.ldconfig:
                 self += shell(commands=[self.ldcache_step(directory=libpath)])
             else:
-                self.__environment_variables[
-                    "LD_LIBRARY_PATH"
-                ] = "{}:$LD_LIBRARY_PATH".format(libpath)
+                self.__environment_variables["LD_LIBRARY_PATH"] = (
+                    "{}:$LD_LIBRARY_PATH".format(libpath)
+                )
 
         self += environment(variables=self.__environment_variables)
 

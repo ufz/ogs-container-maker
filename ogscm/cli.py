@@ -200,7 +200,7 @@ def main():  # pragma: no cover
         f"Generated with ogs-container-maker {__version__}", reformat=False
     )
     Stage0 += packages(
-        ospackages=["wget", "tar", "curl", "ca-certificates", "make", "unzip"]
+        ospackages=["wget", "tar", "curl", "ca-certificates", "make", "unzip", "patch"]
     )
 
     # Prepare runtime stage
