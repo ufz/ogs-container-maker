@@ -13,6 +13,7 @@ hpccm = "^24.8.0"
 requests = "^2.24.0"
 PyYAML = "^6.0"
 packaging = "^20.4"
+setuptools = "^72.1.0"
 
 [tool.poetry.dev-dependencies]
 black = { version = "^20.8b1", allow-prereleases = true }
@@ -22,9 +23,6 @@ ogscm = "ogscm.cli:main"
 
 [tool.poetry.urls]
 "OpenGepSys project" = "https://www.opengeosys.org"
-
-[tool.poetry.group.dev.dependencies]
-setuptools = "^72.1.0"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
