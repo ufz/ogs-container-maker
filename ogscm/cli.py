@@ -231,8 +231,8 @@ def main():  # pragma: no cover
     versions = None  # versions.json
     pip_requirements = []
 
-    Stage0 += environment(variables={'PIP_BREAK_SYSTEM_PACKAGES': '1'})
-    Stage1 += environment(variables={'PIP_BREAK_SYSTEM_PACKAGES': '1'})
+    Stage0 += environment(variables={"PIP_BREAK_SYSTEM_PACKAGES": "1"})
+    Stage1 += environment(variables={"PIP_BREAK_SYSTEM_PACKAGES": "1"})
 
     for recipe in recipe_args_parser.parse_known_args()[0].recipe:
         import importlib.resources as pkg_resources
