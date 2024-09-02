@@ -322,7 +322,7 @@ if local_args.gui:
     Stage1 += packages(
         apt=[
             "libosmesa6",
-            "libgl1-mesa-glx",
+            "libglx-mesa0/",
             "libglu1-mesa",
             "libxt6",
             "libopengl0",
@@ -441,7 +441,7 @@ if local_args.ogs != "clean":
                     "libexpat1",
                     "libfontconfig1",
                     "libfreetype6",
-                    "libgl1-mesa-glx",
+                    "libglx-mesa0",
                     "libglib2.0-0",
                     "libx11-6",
                     "libx11-xcb1",
@@ -644,7 +644,7 @@ if local_args.mfront and local_args.pm == "system":
     if "tfel-rliv" in versions["minimum_version"]:
         tfel_version = versions["minimum_version"]["tfel-rliv"]
     Stage0 += generic_cmake(
-        cmake_opts=["-Denable-python-bindings=ON", "-Denable-portable-build=ON"],
+        cmake_opts=["-Denable-python-bindings=ON", "-Denable-portable-build=ON", "-DPython_ADDITIONAL_VERSIONS=3.12"],
         directory=f"tfel-rliv-{tfel_version}",
         ldconfig=True,
         url=f"https://github.com/thelfer/tfel/archive/refs/heads/rliv-{tfel_version}.zip",
@@ -712,10 +712,10 @@ if local_args.ogs != "off" and local_args.ogs != "clean":
 # https://github.com/Kaggle/docker-python/pull/358
 # xvfb for PyVista
 Stage0 += packages(
-    apt=["libgl1", "xvfb", "libgl1-mesa-glx", "libglu1-mesa"],
+    apt=["libgl1", "xvfb", "libglx-mesa0", "libglu1-mesa"],
     yum=["mesa-libGL", "xorg-x11-server-Xvfb", "mesa-libGLU"],
 )
 Stage1 += packages(
-    apt=["libgl1", "xvfb", "libgl1-mesa-glx", "libglu1-mesa"],
+    apt=["libgl1", "xvfb", "libglx-mesa0", "libglu1-mesa"],
     yum=["mesa-libGL", "xorg-x11-server-Xvfb", "mesa-libGLU"],
 )

@@ -34,7 +34,7 @@ out_dir += f"/jupyter"
 Stage1 += comment(f"Begin {filename}")
 
 Stage1 += packages(
-    apt=["git", "libgl1-mesa-glx"]
+    apt=["git", "libglx-mesa0"]
 )  # for pip packages via git, for gmsh conda package
 
 conda_packages = []
